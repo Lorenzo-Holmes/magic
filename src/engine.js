@@ -3,7 +3,8 @@
   else root.FSEngine = factory(root.FSData);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (D) {
   'use strict';
-  const VERSION = 4;
+  const VERSION = 5;
+  const immortalEngine = () => typeof module === 'object' && module.exports ? require('./immortal.js') : globalThis.FSImmortal;
   const PHASES = ['talents', 'attributes', 'playing', 'draft', 'mutation', 'fusion', 'tribulation', 'complete', 'dead'];
   const EVENT_IDS = ['arrival', 'quiet', 'herbs', 'ruin', 'swordsman', 'hunt', 'first-python', 'revenge', 'remains', 'advanced', 'boss', 'high', 'trace-echo', 'trace-resonance'];
   const BOSS_ROUTE_IDS = ['fight', 'see-through', 'sword-break', 'devour-eye', 'body-charge', 'fate'];
@@ -238,7 +239,7 @@
       highSeen: [], realmProofs: [], tribulationStage: 0, tribulationBase: null, ascendedPower: null,
       carriedTrace, bossRoute: null, tribulationRoutes: [], batchCultivations: 0,
       event: null, draft: null, firstPower: null, revengePower: null, lastGain: 0,
-      ending: null, log: []
+      ending: null, log: [], immortal: null
     };
     s.offer = openingOffer(s);
     return s;
@@ -478,6 +479,18 @@
     requireThat(action && typeof action.type === 'string', '无效操作。');
     if (action.revision !== undefined) requireThat(action.revision === state.revision, '此选择已失效，请使用当前画面的选项。');
     const s = copy(state);
+    if (action.type.startsWith('immortal-')) {
+      requireThat(s.phase === 'complete' && s.flags.ascended, '只有飞升后才能踏入仙界。');
+      const I = immortalEngine();
+      if (action.type === 'immortal-enter' || action.type === 'immortal-retry') {
+        requireThat(action.type === 'immortal-enter' ? !s.immortal : s.immortal?.phase === 'dead', '不能重复领取仙界开局。');
+        s.immortal = I.create(s);
+      } else {
+        requireThat(s.immortal, '尚未进入仙界。');
+        s.immortal = I.transition(s.immortal, { ...action, type: action.type.slice(9) });
+      }
+      s.revision++; validate(s); return s;
+    }
     switch (action.type) {
       case 'select':
         requireThat(s.phase === 'talents' && s.offer.includes(action.id), '无法选择这条天命。');
@@ -590,6 +603,10 @@
   function validate(s) {
     requireThat(s && typeof s === 'object' && !Array.isArray(s) && s.version === VERSION, '存档版本不兼容。');
     requireThat(PHASES.includes(s.phase), '存档阶段无效。');
+    if (s.immortal != null) {
+      requireThat(s.phase === 'complete' && s.flags?.ascended && s.immortal.mortalPower === s.ascendedPower, '仙界与凡界成就不一致。');
+      immortalEngine().validate(s.immortal);
+    }
     requireThat(s.defeats === undefined || s.defeats === null || (Number.isSafeInteger(s.defeats) && s.defeats >= 0), '败退记录损坏。');
     for (const key of ['seed', 'rng']) requireThat(Number.isInteger(s[key]) && s[key] > 0 && s[key] <= 4294967295, '随机种子损坏。');
     for (const key of ['revision', 'age', 'realm', 'vitality', 'openingRerolls', 'redrawUsed', 'rebirthUsed', 'actions', 'devours', 'tribulationStage', 'batchCultivations']) requireThat(Number.isInteger(s[key]) && s[key] >= 0 && s[key] <= 1000000, '存档数值损坏。');
@@ -665,7 +682,11 @@
     if (s.defeats === undefined) s.defeats = null;
     return s;
   }
-  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); validate(s); return s; }
+  function migrateV4(s) {
+    if (!s || s.version !== 4) return s;
+    s.version = 5; s.immortal = null; return s;
+  }
+  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); validate(s); return s; }
   function synergies(s) {
     const list = [];
     if (s.sword && s.root === 'thunder' && s.talents.includes('swordbone')) list.push({ name: '雷剑体', text: '雷灵根 × 天生剑骨 × 青云剑诀：战力额外 +20%。' });

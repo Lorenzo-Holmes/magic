@@ -170,12 +170,12 @@ async function main() {
     widths: [...new Set(smoke.layouts.map(x => x.width))],
     backgrounds: visual.backgrounds.length, highEventFixtures: visual.highEvents.length, traceEventFixtures: visual.traceEvents.length,
     fileCases: visual.fileCases.length, reducedMotion: true,
-    extension: { audio: extension.audio },
+    extension: { audio: extension.audio, immortal: extension.immortal },
     consoleErrors: [...smoke.errors, ...visual.errors, ...extension.errors, ...downloads.errors],
     failedRequests: [...smoke.failedRequests, ...visual.failedRequests, ...extension.failedRequests],
     externalRequests: smoke.externalRequests + visual.externalRequests + extension.externalRequests + downloads.externalRequests,
     downloadsVerified: downloads.passed,
-    scope: 'One real DOM-click playthrough; visual fixtures are additional coverage, not independent playthroughs. Desktop Chromium at four viewports is not a physical iOS/Android device test.' };
+    scope: 'One real DOM-click mortal playthrough, plus its earned-save immortal continuation. Visual fixtures and file-mode imported checkpoints are not separate playthroughs. Desktop Chromium is not a physical iOS/Android device test.' };
   writeJSON('final-qa-report.json', result);
   const evidence = fs.readdirSync(out, { withFileTypes: true }).filter(e => e.isFile()).map(e => {
     const bytes = fs.readFileSync(path.join(out, e.name));

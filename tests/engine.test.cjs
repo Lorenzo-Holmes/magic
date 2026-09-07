@@ -235,26 +235,26 @@ test('三眼妖王存在 Build 专属破局路线', () => {
   const routes = E.bossChoices(s).map(x => x.id);
   assert.ok(routes.includes('see-through')); assert.ok(routes.includes('fight'));
 });
-test('v1 赤鳞结算存档可迁移为 v4 并继续完整凡界', () => {
+test('v1 赤鳞结算存档可迁移为 v5 并继续完整凡界', () => {
   const legacy = finish(12).state;
   legacy.version = 1; legacy.realm = 2; legacy.phase = 'complete'; legacy.flags = { pythonSeen: true, pythonSlain: true, swordEvent: false }; legacy.fusions = undefined; legacy.fusionOffer = undefined; legacy.advancedSeen = undefined; legacy.advancedResolved = undefined;
   legacy.highSeen = undefined; legacy.realmProofs = undefined; legacy.tribulationStage = undefined; legacy.tribulationBase = undefined; legacy.ascendedPower = undefined;
   const migrated = E.deserialize(JSON.stringify(legacy));
-  assert.equal(migrated.version, 4); assert.equal(migrated.phase, 'playing'); assert.equal(migrated.realm, 2); assert.deepEqual(migrated.fusions, []); assert.deepEqual(migrated.realmProofs, []); assert.equal(migrated.carriedTrace, null);
+  assert.equal(migrated.version, 5); assert.equal(migrated.phase, 'playing'); assert.equal(migrated.realm, 2); assert.deepEqual(migrated.fusions, []); assert.deepEqual(migrated.realmProofs, []); assert.equal(migrated.carriedTrace, null);
 });
-test('v2 金丹结算存档可迁移为 v4 并继续元婴', () => {
+test('v2 金丹结算存档可迁移为 v5 并继续元婴', () => {
   const legacy = finish(18).state;
   legacy.version = 2; legacy.realm = 3; legacy.phase = 'complete'; legacy.ending = '金丹初成'; legacy.flags = { pythonSeen: true, pythonSlain: true, swordEvent: true, bossSeen: true, bossSlain: true };
   delete legacy.highSeen; delete legacy.realmProofs; delete legacy.tribulationStage; delete legacy.tribulationBase; delete legacy.ascendedPower;
   const migrated = E.deserialize(JSON.stringify(legacy));
-  assert.equal(migrated.version, 4); assert.equal(migrated.realm, 3); assert.equal(migrated.phase, 'playing'); assert.equal(migrated.flags.bossSlain, true); assert.equal(migrated.flags.ascended, false);
+  assert.equal(migrated.version, 5); assert.equal(migrated.realm, 3); assert.equal(migrated.phase, 'playing'); assert.equal(migrated.flags.bossSlain, true); assert.equal(migrated.flags.ascended, false);
 });
 test('v3 完整凡界存档迁移后保留结局，并补齐轮回字段', () => {
   const legacy = finish(19).state;
   legacy.version = 3;
   delete legacy.carriedTrace; delete legacy.bossRoute; delete legacy.tribulationRoutes; delete legacy.batchCultivations;
   const migrated = E.deserialize(JSON.stringify(legacy));
-  assert.equal(migrated.version, 4); assert.equal(migrated.phase, 'complete'); assert.equal(migrated.flags.ascended, true);
+  assert.equal(migrated.version, 5); assert.equal(migrated.phase, 'complete'); assert.equal(migrated.flags.ascended, true);
   assert.deepEqual(migrated.tribulationRoutes, ['legacy', 'legacy', 'legacy']); assert.equal(migrated.batchCultivations, 0);
 });
 test('每个高境界至少需要一次天地印证才能破境', () => {

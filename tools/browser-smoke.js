@@ -215,7 +215,7 @@ async (page, options = {}) => {
   check(finished.flags.ascended && finished.realm === 9 && finished.tribulationStage === 3, 'Run did not complete three tribulations and ascend');
   check(finished.realmProofs.length === 5, 'High-realm proof chain is incomplete');
   check(finished.sword, 'Sword encounter did not activate the technique');
-  check(finished.version === 4, 'Run save did not use the v0.6 save schema');
+  check(finished.version === await page.evaluate(() => FSEngine.VERSION), 'Run save did not use the current save schema');
   check(typeof finished.bossRoute === 'string', 'Boss route was not recorded');
   check(finished.tribulationRoutes.length === 3, 'Tribulation route history is incomplete');
   check(await page.locator('.immortal-preview').innerText().then(t => t.includes('仙界噬灵虫')), 'Ascension Easter egg missing');

@@ -9,7 +9,7 @@
   const notice = document.getElementById('notice');
   const dialog = document.createElement('dialog');
   dialog.className = 'scroll-dialog'; dialog.setAttribute('aria-label', '命册与设置'); document.body.appendChild(dialog);
-  let state = null, meta = M.createMeta(), home = true, runStorageWarning = '', metaStorageWarning = '', noticeTimer, previousView = '', pendingImport = null;
+  let state = null, meta = M.createMeta(), home = true, mortalSummary = false, runStorageWarning = '', metaStorageWarning = '', noticeTimer, previousView = '', pendingImport = null;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fmt = value => Number(value || 0).toLocaleString('zh-CN');
   const find = (items, id) => items.find(item => item.id === id);
@@ -79,7 +79,7 @@
     return `<div class="meta-strip"><div><span>轮回已录</span><b>${summary.ended} 世 · ${summary.ascended} 次飞升</b></div><div><span>命途图谱</span><b>${summary.discovered} / ${summary.total}</b></div><div><span>下一世道痕</span><b>${trace ? esc(trace.name) : '尚未凝练'}</b></div></div>`;
   }
   function homeView() {
-    const text = state ? `${['talents', 'attributes'].includes(state.phase) ? '命数未定' : `${D.REALMS[state.realm].name} · ${state.age} 岁`} · 本地存档` : '无须登录 · 文字修仙 · 单人离线';
+    const text = state ? `${state.immortal ? `仙界 · 第 ${state.immortal.days} 日` : ['talents', 'attributes'].includes(state.phase) ? '命数未定' : `${D.REALMS[state.realm].name} · ${state.age} 岁`} · 本地存档` : '无须登录 · 文字修仙 · 单人离线';
     const inherited = meta.nextTrace ? find(D.TRACES, meta.nextTrace) : null;
     return `<section class="home-view"><p class="eyebrow">文字修仙 · 吞噬进化 · 轮回道痕</p><div class="mobile-art">${ornament()}</div><h2 class="home-title">命由天定。<br><em>道，由我吞。</em></h2><p class="home-copy">从凡人开始，吞旧敌、炼异变、结金丹。<br>飞升不是清空，而是给下一世留下一道痕。</p>${inherited ? `<div class="inheritance-call"><span>下一世将继承</span><b>${esc(inherited.name)}</b><p>${esc(inherited.description)}</p></div>` : ''}<div class="home-actions">${state ? button('continue', `续写此生${small(text)}`, { ui: true, classes: 'primary large', aria: '继续已有存档' }) : button('new', `此生，从何而起？${small(inherited ? `携「${inherited.name}」入世` : '窥探天命 · 此世可至飞升')}`, { ui: true, classes: 'primary large' })}${state ? button('new', inherited ? `转世 · 携「${esc(inherited.name)}」再活一世` : '再活一世', { ui: true, classes: 'secondary' }) : ''}</div>${metaStrip()}<div class="chapter-note"><span>轮 回</span><div><strong>一世一痕</strong><p>飞升或陨落后，从这一世真实走成的道中凝练一枚道痕。它只影响下一世，不永久堆叠战力。</p></div></div><div class="home-bottom"><span>${state ? esc(text) : '不充值 · 无广告 · 无外部资源'}</span><span>${button('codex', '命途图谱', { ui: true, classes: 'text-button' })}${button('settings', '存档与说明', { ui: true, classes: 'text-button' })}</span></div></section>`;
   }
@@ -229,21 +229,65 @@
     const ascended = state.phase === 'complete' && state.flags.ascended, mutation = find(D.MUTATIONS, state.mutations[0]), fusion = find(D.FUSIONS, state.fusions?.[0]);
     if (ascended) {
       const worm = Math.ceil(state.ascendedPower * 1.7);
-      return `<section class="ending-view ascension-ending"><p class="eyebrow">凡界篇 · 正式通关</p><span class="ending-seal ascended-seal">天门已开</span><h2>你已飞升。</h2><p class="intro">天门洞开，劫云从脚下散去。凡界众生抬头，只能看到一道越来越远的光。你终于完成了这一世最初写下的两个字：飞升。</p>${endingTitlePanel()}<div class="revenge-comparison"><div><span>最初旧敌 · 赤鳞妖蟒</span><strong>150</strong></div><i>→</i><div><span>飞升时 · 你的战力</span><strong>${fmt(state.ascendedPower)}</strong></div></div><p class="comparison-note">${mutation ? `首次异变「${mutation.name}」` : ''}${fusion ? ` → 金丹融合「${fusion.name}」` : ''}。五次天地印证、三重天劫，凡界主线已完整闭环。</p><div class="immortal-preview"><span class="eyebrow">仙界 · 一息之后</span><h3>路边有什么东西动了一下。</h3><p>一只不起眼的仙界噬灵虫正在啃食仙草。你下意识扫了一眼它的气息。</p><div class="versus"><div><small>你的战力</small><strong>${fmt(state.ascendedPower)}</strong></div><span>对</span><div><small>仙界噬灵虫</small><strong>${fmt(worm)}</strong></div></div><b>凶险</b><p>你忽然明白：所谓飞升，不过是换了一个更大的池塘。</p></div><div class="result-grid"><div><span>最终境界</span><b>渡劫飞升</b></div><div><span>飞升战力</span><b>${fmt(state.ascendedPower)}</b></div><div><span>飞升年龄</span><b>${state.age} 岁</b></div><div><span>吞噬次数</span><b>${state.devours}</b></div></div><div class="chosen-line"><span>本世先天</span>${state.innate.map(id => `<b>${find(D.TALENTS, id).name}</b>`).join('')}</div>${fusion ? `<div class="chosen-line"><span>大道核心</span><b class="gold-text">${fusion.name}</b></div>` : ''}${traceChoicePanel()}<div class="ending-actions">${button('share', '生成飞升命格图', { ui: true, classes: 'primary full' })}${button('new', '转世重修 · 换一条道', { ui: true, classes: 'secondary full' })}${button('codex', '查看命途图谱', { ui: true, classes: 'secondary full' })}${button('journal', '翻阅这一世', { ui: true, classes: 'text-button full' })}</div><p class="chapter-disclaimer">凡界主线已经完成。仙界目前只作为通关彩蛋，不是第二套未完成的主线。<br>轮回道痕会被下一世消耗；无付费、无广告、无联网排行。</p></section>`;
+      return `<section class="ending-view ascension-ending">
+        <p class="eyebrow">凡界篇 · 正式通关</p><span class="ending-seal ascended-seal">天门已开</span><h2>你已飞升。</h2>
+        <p class="intro">天门洞开，劫云从脚下散去。凡界众生抬头，只能看到一道越来越远的光。你终于完成了这一世最初写下的两个字：飞升。</p>${endingTitlePanel()}
+        <div class="revenge-comparison"><div><span>最初旧敌 · 赤鳞妖蟒</span><strong>150</strong></div><i>→</i><div><span>飞升时 · 你的战力</span><strong>${fmt(state.ascendedPower)}</strong></div></div>
+        <p class="comparison-note">${mutation ? `首次异变「${mutation.name}」` : ''}${fusion ? ` → 金丹融合「${fusion.name}」` : ''}。五次天地印证、三重天劫，凡界主线已完整闭环。</p>
+        <div class="immortal-preview"><span class="eyebrow">仙界 · 一息之后</span><h3>路边有什么东西动了一下。</h3><p>一只不起眼的仙界噬灵虫正在啃食仙草。你下意识扫了一眼它的气息。</p><div class="versus"><div><small>你的战力</small><strong>${fmt(state.ascendedPower)}</strong></div><span>对</span><div><small>仙界噬灵虫</small><strong>${fmt(worm)}</strong></div></div><b>凶险</b><p>你忽然明白：所谓飞升，不过是换了一个更大的池塘。</p></div>
+        <div class="chapter-entry"><p>凡界已经完成。可以带着道痕转世，也可以保留这一世继续进入仙界。</p>${state.immortal ? button('immortal-continue', '继续仙界道途', { ui: true, classes: 'primary full' }) : button('immortal-enter', `踏入仙界${small('保留凡界成就 · 开启噬灵虫序章')}`, { classes: 'primary full' })}</div>
+        <div class="result-grid"><div><span>凡界境界</span><b>渡劫飞升</b></div><div><span>飞升战力</span><b>${fmt(state.ascendedPower)}</b></div><div><span>飞升年龄</span><b>${state.age} 岁</b></div><div><span>吞噬次数</span><b>${state.devours}</b></div></div>
+        <div class="chosen-line"><span>本世先天</span>${state.innate.map(id => `<b>${find(D.TALENTS, id).name}</b>`).join('')}</div>${fusion ? `<div class="chosen-line"><span>大道核心</span><b class="gold-text">${fusion.name}</b></div>` : ''}${traceChoicePanel()}
+        <div class="ending-actions">${button('share', '生成飞升命格图', { ui: true, classes: 'primary full' })}${button('new', '转世重修 · 换一条道', { ui: true, classes: 'secondary full' })}${button('codex', '查看命途图谱', { ui: true, classes: 'secondary full' })}${button('journal', '翻阅这一世', { ui: true, classes: 'text-button full' })}</div>
+        <p class="chapter-disclaimer">凡界结局不会因新增篇章消失。仙界为独立可选后续，进入后仍可回看此页。<br>无付费、无广告、无联网排行。</p></section>`;
     }
     return `<section class="ending-view"><p class="eyebrow">一世道途 · 到此为止</p><span class="ending-seal">此世终</span><h2>${esc(state.ending)}</h2><p class="intro">${esc(state.log[state.log.length - 1]?.text || '这一世没能走到天门之前。')}</p>${endingTitlePanel()}<div class="result-grid"><div><span>终止境界</span><b>${D.REALMS[state.realm].name}</b></div><div><span>最终战力</span><b>${fmt(E.power(state))}</b></div><div><span>此刻年龄</span><b>${state.age} 岁</b></div><div><span>吞噬次数</span><b>${state.devours}</b></div></div>${traceChoicePanel()}<div class="ending-actions">${button('share', '生成此世命格图', { ui: true, classes: 'primary full' })}${button('new', '再活一世 · 换一条道', { ui: true, classes: 'secondary full' })}${button('codex', '查看命途图谱', { ui: true, classes: 'secondary full' })}${button('journal', '翻阅此世命册', { ui: true, classes: 'text-button full' })}</div><p class="chapter-disclaimer">失败同样会形成道痕并保留完整历程。可以导出存档或直接重开。</p></section>`;
   }
+  function immortalView() {
+    const I = window.FSImmortal, i = state.immortal, law = I.LAWS.find(l => l.id === i.law);
+    const titles = { arrival: '此界，重新学会弱小。', shelter: '凡力未失，仙躯未成。', field: '向仙气深处去。', encounter: '仙草之间，亦有生死。', law: '这一口，尝到了法则。', 'prologue-complete': '你又把它吞了。', dead: '仙躯崩散，道基犹存。' };
+    const act = (type, label, opts = {}) => button(`immortal-${type}`, label, { classes: 'secondary full', ...opts });
+    let content = '';
+    if (i.phase === 'arrival') {
+      content = `<div class="pressure-note"><p>凡界的修为没有被清零。此界以更重的灵压和新的仙躯刻度衡量力量：凡力 ÷ ${fmt(I.PRESSURE)}。</p><dl><dt>原有凡界战力</dt><dd>${fmt(i.mortalPower)}</dd><dt>折算后的初始势能</dt><dd>${fmt(i.basePower)}</dd><dt>噬灵虫的仙界势能</dt><dd>${fmt(i.wormPower)}</dd></dl><p>换了刻度，强弱却仍然分明。你可以先退开，也可以亲自试探这片天地的重量。</p></div><div class="immortal-actions">${act('approach', '收敛气息，退进石隙', { id: 'hide', classes: 'primary full' })}${act('approach', `试探界压${small('必定受伤 30 · 不会因此死亡')}`, { id: 'test' })}</div>`;
+    } else if (i.phase === 'shelter') {
+      content = `<p class="intro">先让凡界道基承得住第一缕仙气，再从弱小的仙兽开始。仙元用于重构仙躯；法则碎片用于凝练新的能力。</p>${act('adapt', `引仙气重构道基${small('仙元 +25 · 元气恢复 20')}`, { classes: 'primary full' })}`;
+    } else if (i.phase === 'field') {
+      const cost = I.trainingCost(i);
+      content = `<div class="immortal-goal"><span>此地旧敌</span><b>仙界噬灵虫 · ${fmt(i.wormPower)}</b><p>重构仙躯、凝练一枚法则后再回去。有效势能达到敌方两倍时可以碾压无伤。</p></div>
+        <div class="immortal-actions">${act('train', `${i.level < 8 ? `重构仙躯 · 第 ${i.level + 1} 重` : '序章仙躯已成'}${small(`需要 ${cost} 仙元 · 现有 ${i.essence}`)}`, { classes: 'primary full', disabled: i.level >= 8 || i.essence < cost })}
+        ${act('rest', `藏身调息${small('恢复 35 元气 · 无仙元收益')}`, { disabled: i.health === 100 })}${act('cultivate', `缓炼仙气${small('3 日 · 仙元 +10 · 无战斗风险')}`, { disabled: i.essence >= 100000 })}</div>
+        <h3 class="immortal-subtitle">在这一片仙草中狩猎</h3><div class="immortal-actions">${I.availableCreatures(i).map(c => { const e = I.enemy(i, c.id), t = I.threat(i, e); return act('hunt', `${esc(c.name)}${small(`势能 ${fmt(e.power)} · ${t.label} · 吞噬基础仙元 ${c.reward}`)}`, { id: c.id, classes: `${c.boss ? 'trace-route' : 'secondary'} full` }); }).join('')}</div>`;
+    } else if (i.phase === 'encounter') {
+      const target = I.enemy(i, i.target), t = I.threat(i, target);
+      content = `<div class="enemy-card"><h3>${esc(target.name)}</h3><div class="versus"><div><small>仙兽势能</small><strong>${fmt(target.power)}</strong></div><span>对</span><div><small>你的有效势能</small><strong>${fmt(I.power(i, target))}</strong></div></div><p>${t.label} · ${t.chance === 1 ? '必胜，不损元气' : `胜率约 ${Math.round(t.chance * 100)}%；失败损失元气，耗尽则仙躯崩散`}</p></div><div class="immortal-actions">${act('devour', `吞噬${target.name}`, { classes: 'primary full', disabled: !t.chance })}${act('retreat', '收敛锋芒，暂且退去')}</div>`;
+    } else if (i.phase === 'law') {
+      content = `<p class="intro">三道法则从碎片中浮现。耗费一枚碎片，选择一道。凡界道途让其中一道与你共鸣，但选择仍然自由。</p><div class="immortal-actions">${i.lawOffer.map(id => { const l = I.LAWS.find(l => l.id === id); return act('law', `<span class="eyebrow">${id === i.lineage ? '凡界道途共鸣' : '此界新路'}</span><h3>${esc(l.name)}</h3><p>${esc(l.description)}</p>`, { id, classes: 'secondary full law-card' }); }).join('')}</div>`;
+    } else if (i.phase === 'prologue-complete') {
+      content = `<div class="revenge-comparison"><div><span>初临时的你</span><strong>${fmt(i.basePower)}</strong></div><i>→</i><div><span>吞虫时的你</span><strong>${fmt(I.power(i))}</strong></div></div><p class="story-lead">它仍然只有 ${fmt(i.wormPower)} 势能。那一刻你终于确认：飞升没有抹去过去，只让你的饥饿有了更远的方向。</p><p class="intro">仙界序章已完成。本世凡界结局与道痕选择仍然保留。</p>`;
+    } else if (i.phase === 'dead') {
+      content = `${act('retry', `从飞升落点重试${small('重置本次仙界探索 · 保留凡界成就')}`, { classes: 'primary full' })}`;
+    }
+    return `<section class="immortal-view"><p class="eyebrow">仙界序章 · 下界仙域</p><h2>${titles[i.phase]}</h2>
+      <div class="immortal-stats"><div><span>仙界势能</span><b>${powerFigure(I.power(i))}</b></div><div><span>仙躯 · 元气</span><b>${i.level} 重 · ${i.health}/100</b></div><div><span>仙元</span><b>${fmt(i.essence)}</b></div><div><span>法则碎片</span><b>${fmt(i.fragments)}</b></div></div>
+      <div class="chosen-line"><span>凡界道途</span><b>${esc(M.PATHS[i.lineage].name)}</b>${law ? `<span>此界法则</span><b>${esc(law.name)}</b>` : ''}</div>
+      <section class="event-sheet"><div class="event-kicker"><span>仙界第 ${i.days} 日</span><span>${i.devours} 次吞噬</span></div><p class="story-lead">${esc(i.note)}</p>${content}</section>
+      <div class="immortal-actions">${button('immortal-journal', '翻阅仙界命册', { ui: true, classes: 'secondary full' })}${button('mortal-summary', '回看凡界结局 · 凝练道痕', { ui: true, classes: 'secondary full' })}${button('new', '另起一世', { ui: true, classes: 'text-button full' })}</div></section>`;
+  }
   function render() {
-    sound.scene(state, home);
-    const view = home ? 'home' : state.phase;
-    const scene = world.update(state, home);
+    const inImmortal = !!(state?.immortal && !mortalSummary);
+    const shown = mortalSummary && state?.immortal ? { ...state, immortal: null } : state;
+    sound.scene(shown, home);
+    const view = home ? 'home' : inImmortal ? `immortal-${state.immortal.phase}` : state.phase;
+    const scene = world.update(shown, home);
     const warning = warningText();
     const vista = home ? '' : `<div class="world-vista" aria-hidden="true"><span>${esc(scene.title)}</span><small>${esc(scene.subtitle)}</small></div>`;
-    const body = home ? homeView() : state.phase === 'talents' ? talentsView() : state.phase === 'attributes' ? attributesView() : state.phase === 'playing' ? playingView() : state.phase === 'draft' ? draftView() : state.phase === 'mutation' ? mutationView() : state.phase === 'fusion' ? fusionView() : state.phase === 'tribulation' ? tribulationView() : endingView();
+    const body = home ? homeView() : inImmortal ? immortalView() : state.phase === 'talents' ? talentsView() : state.phase === 'attributes' ? attributesView() : state.phase === 'playing' ? playingView() : state.phase === 'draft' ? draftView() : state.phase === 'mutation' ? mutationView() : state.phase === 'fusion' ? fusionView() : state.phase === 'tribulation' ? tribulationView() : endingView();
     app.innerHTML = `<div class="shell">${rail()}<div class="content-shell">${header()}<main id="main" tabindex="-1" data-view="${view}">${vista}${tutorialNote()}${body}</main><footer class="app-footer"><span>我欲飞升 · v${S.VERSION}</span><span>本地运行 / 无付费抽取</span></footer>${warning ? `<div class="storage-warning" role="alert">${esc(warning)}</div>` : ''}</div></div>`;
     if (view !== previousView) { window.scrollTo({ top: 0, behavior: 'instant' }); previousView = view; }
   }
   function modal(title, body) {
+    if (title === '存档与说明') body = body.replace('仙界仍只保留一个反差彩蛋，不提供第二套主线', '飞升后可主动踏入仙界，重构仙躯、凝练法则并吞噬噬灵虫').replace('旧 v1 / v2 / v3 存档', '旧 v1 / v2 / v3 / v4 存档');
     if (title === '存档与说明') body = `<div class="settings-extra"><h3>命册批注</h3><p class="intro">首次飞升后自动关闭；也可以提前关闭。战力主显示使用万、亿，点按数字查看完整值。</p>${button('tutorial-reset', '重新阅读批注', { ui: true, classes: 'secondary full', disabled: meta.totals.ascended > 0 })}</div>${body}`;
     dialog.innerHTML = `<div class="dialog-head"><h2>${title}</h2>${button('close-dialog', '×', { ui: true, classes: 'icon-button', aria: '关闭窗口' })}</div>${body}`;
     if (!dialog.open) dialog.showModal();
@@ -304,7 +348,7 @@
     const next = E.createRun(seed, meta.nextTrace);
     const inherited = M.consumeTrace(meta);
     meta = inherited.meta;
-    state = next; home = false; dialog.close(); persist(); render();
+    state = next; home = false; mortalSummary = false; dialog.close(); persist(); render();
   }
   function confirmNew() {
     if (!state && !warningText()) { begin(); return; }
@@ -315,6 +359,11 @@
     const el = event.target.closest('button'); if (!el || el.disabled) return;
     if (el.dataset.ui) {
       switch (el.dataset.ui) {
+        case 'immortal-continue': mortalSummary = false; home = false; render(); break;
+        case 'mortal-summary': mortalSummary = true; render(); break;
+        case 'immortal-journal':
+          if (state?.immortal) modal('仙界命册', `<ol class="history">${state.immortal.journal.slice().reverse().map(j => `<li><small>仙界第 ${j.day} 日</small><p>${esc(j.text)}</p></li>`).join('')}</ol>${button('settings', '存档与说明', { ui: true, classes: 'secondary full' })}`);
+          break;
         case 'audio-settings': audioSettings(); break;
         case 'audio-music': sound.update({ music: !sound.settings().music }); audioSettings(); break;
         case 'audio-effects': sound.update({ effects: !sound.settings().effects }); audioSettings(); break;
@@ -328,7 +377,7 @@
         case 'confirm-new':
           try { const old = localStorage.getItem(KEY); if (old) localStorage.setItem(BACKUP, old); } catch { /* Storage warning is surfaced by save(). */ }
           begin(); break;
-        case 'continue': if (state) { home = false; render(); } break;
+        case 'continue': if (state) { home = false; mortalSummary = false; render(); } break;
         case 'journal': journal(); break;
         case 'codex': codex(); break;
         case 'settings': settings(); break;
@@ -345,7 +394,7 @@
           if (!pendingImport) { announce('没有待载入的数据。'); break; }
           if (pendingImport.type === 'run') {
             try { const old = localStorage.getItem(KEY); if (old) localStorage.setItem(BACKUP, old); } catch { /* Import can still work in memory. */ }
-            state = pendingImport.data; pendingImport = null; home = false; dialog.close(); persist(); render(); announce('本世存档已载入。');
+            state = pendingImport.data; pendingImport = null; home = false; mortalSummary = false; dialog.close(); persist(); render(); announce('本世存档已载入。');
           } else {
             meta = pendingImport.data; pendingImport = null; dialog.close(); saveMeta(); render(); announce('轮回册已载入。');
           }
@@ -364,6 +413,7 @@
       if (el.dataset.delta) action.delta = Number(el.dataset.delta);
       const before = state.phase, beforeState = state;
       state = E.transition(state, action);
+      if (action.type.startsWith('immortal-')) mortalSummary = false;
       try { sound.cue(window.FSAudio.cueFor(beforeState, state, action)); } catch { /* Audio must never interrupt a game action. */ }
       const noteId = document.querySelector('.tutorial-note')?.dataset.note;
       if (noteId && !['select', 'stat', 'preset', 'reroll-opening'].includes(action.type)) {
@@ -377,7 +427,7 @@
       } else document.getElementById('main').focus({ preventScroll: true });
       if (before !== state.phase && state.phase === 'draft') announce(`突破成功，踏入${D.REALMS[state.realm].name}。请选择一道天命。`, false);
       else if (before !== state.phase && state.phase === 'tribulation') announce('渡劫开始。三重劫尽，天门才会真正打开。', false);
-      else if (state.phase === 'complete' && state.flags.ascended) announce('飞升成功。凡界篇已正式通关。', false);
+      else if (before !== state.phase && state.phase === 'complete' && state.flags.ascended) announce('飞升成功。凡界篇已正式通关。', false);
     } catch (error) { announce(error.message || '此操作未能完成，存档未改变。'); }
   });
   document.addEventListener('input', event => {

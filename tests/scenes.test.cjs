@@ -63,7 +63,7 @@ test('视觉查询不修改存档、随机种子、战力或数据结构', () =>
   const state = E.createRun(42), raw = E.serialize(state), before = E.power(state);
   Object.freeze(state.flags); Object.freeze(state);
   for (let i = 0; i < 100; i++) { S.resolve(state); S.resolve(state, true); }
-  assert.equal(E.serialize(state), raw); assert.equal(E.power(state), before); assert.equal(E.VERSION, 4);
+  assert.equal(E.serialize(state), raw); assert.equal(E.power(state), before); assert.equal(E.VERSION, state.version);
 });
 test('全部正式背景存在、为轻量自包含 SVG 且进入生产白名单', () => {
   for (const scene of Object.values(S.STAGES)) {
@@ -78,7 +78,7 @@ test('全部正式背景存在、为轻量自包含 SVG 且进入生产白名单
   }
 });
 test('生产清单唯一且不携带截图、文档、字体或开发依赖', () => {
-  assert.equal(files.length, 17); assert.equal(new Set(files).size, files.length);
+  assert.equal(files.length, 18); assert.equal(new Set(files).size, files.length);
   for (const file of files) {
     assert.ok(fs.existsSync(path.join(root, file)), file);
     assert.doesNotMatch(file, /\.\.|^\/|output|tests|docs|README|node_modules|\.(png|gif|mp4|woff2?|ttf)$/i);
@@ -88,7 +88,7 @@ test('版本显示、轮回配置和存档版本统一', () => {
   const pkg = require('../package.json');
   assert.equal(S.VERSION, pkg.version);
   assert.match(pkg.version, /^\d+\.\d+\.\d+$/);
-  assert.equal(E.VERSION, 4);
+  assert.equal(E.VERSION, 5);
   assert.equal(D.TRACES.length, 6);
   assert.ok(files.includes('src/meta.js'));
   assert.ok(fs.readFileSync(path.join(root, 'index.html'), 'utf8').includes(`v${pkg.version}`));

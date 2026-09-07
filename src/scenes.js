@@ -5,7 +5,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
   // Presentation only: never mutate the run, advance RNG, or add save fields.
-  const VERSION = '0.7.0';
+  const VERSION = '0.8.0';
   const STAGES = Object.freeze(Object.fromEntries([
     ['mortal', '黑风岭', '山野如墨 · 此身如尘'],
     ['foundation', '凌云之巅', '云海在下 · 初窥天地'],
@@ -29,6 +29,11 @@
   });
   function resolve(state, home = false) {
     if (home || !state || ['talents', 'attributes'].includes(state.phase)) return { ...STAGES.mortal, atmosphere: 'calm' };
+    if (state.immortal) {
+      const i = state.immortal, ended = i.phase === 'prologue-complete';
+      return { ...STAGES[ended ? 'ascension' : 'nascent'], title: ended ? '仙界 · 初劫已过' : '仙界 · 下界仙域', subtitle: '凡力未失 · 仙躯新生',
+        atmosphere: i.phase === 'dead' ? 'still' : ended ? 'ascension' : i.target === 'spirit-worm' ? 'world-rift' : 'world-spirit' };
+    }
     let id = REALM_SCENES[state.realm] || 'mortal', atmosphere = 'calm';
     if (state.phase === 'complete' && state.flags?.ascended) { id = 'ascension'; atmosphere = 'ascension'; }
     else if (state.phase === 'dead') atmosphere = 'still';

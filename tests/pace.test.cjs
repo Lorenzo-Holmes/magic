@@ -33,6 +33,7 @@ test('旧 v4 不伪造无暇证明；逆寿按入劫前寿元核验', () => {
   s.defeats = 1; s.log = s.log.slice(-2);
   assert.ok(!M.endingTitles(s).some(t => t.id === 'flawless-ascension'));
   delete s.defeats;
+  s.version = 4;
   const old = E.deserialize(JSON.stringify(s));
   assert.equal(old.defeats, null);
   assert.ok(!M.endingTitles(old).some(t => t.id === 'flawless-ascension'));
