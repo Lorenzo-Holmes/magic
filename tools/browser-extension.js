@@ -103,6 +103,22 @@ async (page, options = {}) => {
     report.systems.equipment = { passed:true, inventory:equipmentStart.equipment.inventory.length, capacity:12, identified:true, equippedSlot:def.slot, reloadPreserved:true, mortalOnly:true };
     await restore('ascension--ascension');
   }
+  if (await page.evaluate(() => !!window.FSBuild)) {
+    // The calm gold-core visual checkpoint is captured during the breakthrough
+    // draft, where the normal play HUD (and therefore the Build entry) is not
+    // intentionally rendered. Use the real gold-core boss checkpoint instead:
+    // it is a playing-state save with an established mutation/fusion and the
+    // same deterministic Build data, so the user-facing "查看协同" entry exists.
+    await restore('goldcore--demon-eye');
+    const buildBefore=JSON.stringify(await run()), evaluated=await page.evaluate(()=>FSBuild.evaluateBuild(JSON.parse(localStorage.getItem('feisheng.run.v1'))));
+    check(evaluated.main && evaluated.sources.length > 0 && evaluated.synergies.length > 0, 'Build evaluator did not form an explainable build on the gold-core fixture');
+    await ui('build').click();
+    check(await page.locator('dialog .build-synergy').count() === evaluated.synergies.length, 'Build modal does not match pure evaluator');
+    await layout('build-synergies'); await close();
+    check(JSON.stringify(await run()) === buildBefore, 'Opening Build explanation changed the save');
+    report.systems.build={passed:true,main:evaluated.main,sub:evaluated.sub,sources:evaluated.sources.length,synergies:evaluated.synergies.length,readOnly:true};
+    await restore('ascension--ascension');
+  }
   await restore('ascension--ascension');
   const mortal = await run(), originalPower = mortal.ascendedPower;
   await action('immortal-enter').click();

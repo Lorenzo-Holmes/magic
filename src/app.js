@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat, P = window.FSPresentation, G = window.FSEquipment;
+  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat, P = window.FSPresentation, G = window.FSEquipment, B = window.FSBuild;
   const world = S.attach(document.getElementById('world'));
   const sound = window.FSAudio.create();
   window.FSSound = sound; // Readable audio diagnostics; no gameplay state is exposed.
@@ -151,7 +151,8 @@
   function pathBanner() {
     const profile = M.classifyPath(state);
     if (!profile.id) return '';
-    return `<section class="path-banner" aria-label="本世道途"><div><span>本世道途 · ${esc(profile.stage)}</span><b>${esc(profile.name)}</b></div><p>${profile.signals.map(esc).join(' · ') || '当前倾向仍在形成'}</p><small>${esc(profile.next)}</small>${button('codex', '查看图谱', { ui: true, classes: 'text-button' })}</section>`;
+    const build=B.evaluateBuild(state), main=build.main?B.TAGS[build.main]:'未定', sub=build.sub?` · 辅 ${B.TAGS[build.sub]}`:'';
+    return `<section class="path-banner" aria-label="本世道途"><div><span>本世道途 · ${esc(profile.stage)}</span><b>${esc(profile.name)}</b></div><p>${profile.signals.map(esc).join(' · ') || '当前倾向仍在形成'}</p><small>${esc(profile.next)}<br>Build：主 ${esc(main)}${esc(sub)} · ${build.synergies.length} 条协同</small><div>${button('build', '查看协同', { ui:true, classes:'text-button' })}${button('codex', '查看图谱', { ui: true, classes: 'text-button' })}</div></section>`;
   }
   function enemyView(enemy, first = false, revenge = false) {
     const t = E.threat(state, enemy), p = E.power(state, enemy);
@@ -408,6 +409,16 @@
     const last=eq.lastDrop&&!eq.lastDrop.missed?`<p class="footnote">最近所得：${eq.lastDrop.full?`行囊已满，自动化为 ${eq.lastDrop.converted} 器蕴。`:`${esc(G.BY_ID[eq.lastDrop.id]?.name||'未知器物')} · 来源 ${esc(eq.lastDrop.kind)}`}</p>`:'';
     modal('本命神兵', `<div class="gear-summary"><div><span>行囊</span><b>${eq.inventory.length} / ${G.MAX_INVENTORY}</b></div><div><span>器蕴</span><b>${eq.essence}</b></div><div><span>规则</span><b>无耐久 · 无失败</b></div></div><p class="intro">四槽装备只作用于凡界 Build，与仙界肉身 / 血脉 / 神魂 / 神通 / 法则五槽完全分离。历练与战斗可让已穿戴本命神兵获得历练；温养使用归炉所得器蕴，显示阶段名而不是“+N”。</p><div class="gear-slots">${slots}</div><h3>行囊</h3><div class="gear-grid">${inventory||'<p class="intro">行囊尚空。历练、妖王、天地印证与天劫会确定性生成掉落。</p>'}</div>${last}`);
   }
+  function buildModal() {
+    if (!state || ['talents','attributes'].includes(state.phase)) { modal('万法归一','<p class="intro">入世之后，天命、属性、异变、融合、装备与真实路线才会逐渐形成 Build。</p>'); return; }
+    const value=B.evaluateBuild(state), tags=value.tags.map(t=>`<span class="build-tag"><b>${esc(t.name)}</b><small>${t.score}</small></span>`).join('');
+    const synergies=value.synergies.map(s=>{
+      const matching=value.sources.filter(src=>s.requires.some(tag=>src.tags.includes(tag))).slice(0,4);
+      return `<article class="build-synergy"><span>${s.requires.map(id=>esc(B.TAGS[id])).join(' × ')}</span><h3>${esc(s.name)}</h3><p><b>来源</b> ${matching.map(x=>esc(x.name)).join('、') || '无'}</p><p><b>当前效果</b> ${esc(s.text)}</p></article>`;
+    }).join('');
+    const sourceRows=value.sources.map(src=>`<li><b>${esc(src.name)}</b><span>${src.tags.map(id=>esc(B.TAGS[id])).join(' / ')}</span></li>`).join('');
+    modal('万法归一', `<div class="build-head"><div><span>主脉</span><b>${esc(value.main?B.TAGS[value.main]:'未显')}</b></div><div><span>辅脉</span><b>${esc(value.sub?B.TAGS[value.sub]:'未显')}</b></div><div><span>激活协同</span><b>${value.synergies.length}</b></div></div><p class="intro">${esc(value.explanation)} 标签只解释真实来源；打开或关闭命册不会推进 RNG，也不会写入存档。</p><div class="build-tags">${tags}</div><h3>来源 → 协同 → 当前效果</h3><div class="build-synergies">${synergies||'<p class="intro">当前尚没有满足两类标签的协同。继续让这一世的选择互相呼应。</p>'}</div><details class="build-sources"><summary>查看全部来源 · ${value.sources.length}</summary><ul>${sourceRows}</ul></details>`);
+  }
   function settings() {
     modal('存档与说明', `<p class="intro">游戏使用当前浏览器本地存储。本世存档与轮回册分开保存：前者记录凡界装备、仙界与无尽进化，后者记录图谱、称号、历世结果和下一世待继承道痕。同一网址下可续玩，不会自动跨浏览器或设备同步。</p><div class="settings-actions">${button('export', '导出当前存档 JSON', { ui: true, classes: 'secondary full', disabled: !state })}${button('export-meta', '导出轮回册 JSON', { ui: true, classes: 'secondary full' })}${button('export-raw', '导出浏览器原始存档', { ui: true, classes: 'text-button full' })}<label class="file-label secondary">导入本世存档<input id="import-save" type="file" accept=".json,application/json"></label><label class="file-label secondary">导入轮回册<input id="import-meta" type="file" accept=".json,application/json"></label></div><h3>怎么玩</h3><p class="intro">凡界以天命、异变、融合、四槽装备和天地印证形成道途；本命神兵可在实战中积累历练并沿三条路线蜕变。飞升后进入仙界，肉身、血脉、神魂、神通、法则五槽是另一套独立系统，不继承凡界装备槽位。正式阶段结局之后可继续无尽诸天。</p><h3>轮回</h3><p class="intro">一世结束后可凝练一枚道痕。下一世八选三会固定加入一张对应的玄品前世天命，同时保留两段前世回声和一条天劫路线；这些影响只服务下一世，不永久累加基础战力。</p><p class="footnote">v${S.VERSION} · ${state ? `本世种子 ${state.seed} · ` : ''}存档格式 v${E.VERSION} · 轮回册格式 v${M.VERSION}<br>全部生产资源本地运行；没有付费抽取、广告或联网排行。</p>`);
   }
@@ -475,6 +486,7 @@
           break;
         case 'audio-settings': audioSettings(); break;
         case 'equipment': equipmentModal(); break;
+        case 'build': buildModal(); break;
         case 'audio-music': sound.update({ music: !sound.settings().music }); audioSettings(); break;
         case 'audio-effects': sound.update({ effects: !sound.settings().effects }); audioSettings(); break;
         case 'number-detail': modal('完整战力', `<p class="exact-number">${esc(F.full(Number(el.dataset.id)))}</p><p class="intro">主显示只改变排版，不改变战力计算或存档精度。</p>`); break;
