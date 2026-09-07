@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat, P = window.FSPresentation, G = window.FSEquipment, B = window.FSBuild, C = window.FSCombat, R = window.FSSecretRealm, X = window.FSSect, L = window.FSLife, Z = window.FSSpiritBeast, K = window.FSCrafting;
+  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat, P = window.FSPresentation, G = window.FSEquipment, B = window.FSBuild, C = window.FSCombat, R = window.FSSecretRealm, X = window.FSSect, L = window.FSLife, Z = window.FSSpiritBeast, K = window.FSCrafting, Y = window.FSKarma;
   const world = S.attach(document.getElementById('world'));
   const sound = window.FSAudio.create();
   window.FSSound = sound; // Readable audio diagnostics; no gameplay state is exposed.
@@ -141,7 +141,8 @@
   function header() {
     const gear = state && !['talents','attributes'].includes(state.phase) ? button('equipment', `行囊 ${state.equipment.inventory.length}/${G.MAX_INVENTORY}`, { ui:true, classes:'text-button', aria:'本命神兵与四槽装备' }) : '';
     const secret = state && state.phase === 'playing' && !state.immortal ? button('secret-realm', state.secretRealm?.active ? `秘境 · ${state.secretRealm.active.floor}/${state.secretRealm.active.floors}` : '秘境', { ui:true, classes:'text-button', aria:'九州秘境与短局历练' }) : '';
-    return `<header class="topbar">${button('home', '<span class="brand-mark">升</span><span>我欲飞升</span>', { ui: true, classes: 'brand', aria: '返回首页，不删除进度' })}<span class="chapter-badge">${state?.immortal && !home && !mortalSummary ? '仙界 · 进化篇' : '凡界 · 轮回篇'}</span><div class="topbar-actions">${secret}${gear}${button('audio-settings', '音景', { ui: true, classes: 'text-button', aria: '音乐、音效与音量设置' })}${button('codex', '图谱', { ui: true, classes: 'text-button' })}${button('journal', '命册', { ui: true, classes: 'text-button' })}</div></header>`;
+    const karma = state?.karma && (state.karma.active.length || state.karma.summaries.length) ? button('karma', state.karma.pending ? '因果 · 回响' : '因果', { ui:true, classes:'text-button', aria:'因果天网与来源追溯' }) : '';
+    return `<header class="topbar">${button('home', '<span class="brand-mark">升</span><span>我欲飞升</span>', { ui: true, classes: 'brand', aria: '返回首页，不删除进度' })}<span class="chapter-badge">${state?.immortal && !home && !mortalSummary ? '仙界 · 进化篇' : '凡界 · 轮回篇'}</span><div class="topbar-actions">${secret}${gear}${karma}${button('audio-settings', '音景', { ui: true, classes: 'text-button', aria: '音乐、音效与音量设置' })}${button('codex', '图谱', { ui: true, classes: 'text-button' })}${button('journal', '命册', { ui: true, classes: 'text-button' })}</div></header>`;
   }
   function metaStrip() {
     const summary = M.summary(meta), trace = summary.nextTrace;
@@ -463,6 +464,14 @@
     const sourceRows=value.sources.map(src=>`<li><b>${esc(src.name)}</b><span>${src.tags.map(id=>esc(B.TAGS[id])).join(' / ')}</span></li>`).join('');
     modal('万法归一', `<div class="build-head"><div><span>主脉</span><b>${esc(value.main?B.TAGS[value.main]:'未显')}</b></div><div><span>辅脉</span><b>${esc(value.sub?B.TAGS[value.sub]:'未显')}</b></div><div><span>激活协同</span><b>${value.synergies.length}</b></div></div><p class="intro">${esc(value.explanation)} 标签只解释真实来源；打开或关闭命册不会推进 RNG，也不会写入存档。</p><div class="build-tags">${tags}</div><h3>来源 → 协同 → 当前效果</h3><div class="build-synergies">${synergies||'<p class="intro">当前尚没有满足两类标签的协同。继续让这一世的选择互相呼应。</p>'}</div><details class="build-sources"><summary>查看全部来源 · ${value.sources.length}</summary><ul>${sourceRows}</ul></details>`);
   }
+  function karmaModal() {
+    if (!state?.karma) { modal('因果天网','<p class="intro">当前没有可读取的因果账本。</p>'); return; }
+    const pending=Y.pendingEntry(state.karma), event=Y.eventFor(pending);
+    const pendingBlock=pending&&event?`<section class="karma-event"><span>因果回响 · 强度 ${pending.strength}/3</span><h3>${esc(event.title)}</h3><p>${esc(event.text)}</p><small>来源：${esc(pending.source)} → ${esc(pending.relation)}</small><div>${event.choices.map((choice,index)=>button('karma-resolve',`${esc(choice.name)}${small(choice.note)}`,{id:choice.id,classes:`${index===0?'primary':'secondary'} full`})).join('')}</div></section>`:'<p class="karma-clear">当前没有必须处理的因果回响。账本只记录已经发生的来源，不提前剧透完整结果。</p>';
+    const active=state.karma.active.map(row=>{const trigger=row.trigger.type==='immortal'?'真正踏入仙界后':`${D.REALMS[row.trigger.value]?.name||row.trigger.value}以后`;return `<li class="${row.id===state.karma.pending?'pending':''}"><span>${esc(row.relation)} · ${row.strength}/3</span><b>${esc(row.source)}</b><p>${esc(row.hint)}</p><small>${esc(trigger)}可能回响 · 来源键 ${esc(row.sourceKey)}</small></li>`;}).join('');
+    const settled=state.karma.summaries.slice().reverse().map(row=>`<li><span>${esc(row.relation)}</span><b>${esc(row.source)}</b><small>${esc(row.outcome)} · 已偿</small></li>`).join('');
+    modal('因果天网', `<div class="karma-head"><div><span>活跃因果</span><b>${state.karma.active.length} / ${Y.ACTIVE_LIMIT}</b></div><div><span>已偿摘要</span><b>${state.karma.summaries.length} / ${Y.SUMMARY_LIMIT}</b></div></div><p class="intro">因果不是随机惩罚。每条记录都保存“来源 → 关系 → 强度 → 可触发阶段”，结算后只保留有界摘要；同一来源不会重复领奖。</p>${pendingBlock}${active?`<h3>已知因果</h3><ul class="karma-list">${active}</ul>`:''}${settled?`<h3>已偿因果</h3><ul class="karma-settled">${settled}</ul>`:''}`);
+  }
   function spiritBeastModal() {
     if (!state || ['talents','attributes'].includes(state.phase)) { modal('灵兽仙缘','<p class="intro">入世之后才能与主灵兽结契。</p>'); return; }
     const summary=Z.summary(state.spiritBeast);
@@ -620,6 +629,7 @@
         case 'secret-realm': secretRealmModal(); break;
         case 'spirit-beast': spiritBeastModal(); break;
         case 'crafting': craftingModal(); break;
+        case 'karma': karmaModal(); break;
         case 'sect': sectModal(); break;
         case 'life': lifeModal(); break;
         case 'equipment': equipmentModal(); break;
@@ -686,7 +696,10 @@
       clearTimeout(noticeTimer); notice.classList.remove('visible'); notice.textContent = '';
       persist(); render();
       showFeedback(feedback);
-      if (action.type.startsWith('craft-')) {
+      if (action.type.startsWith('karma-')) {
+        karmaModal();
+        dialog.querySelector('[data-action^="karma-"]')?.focus({ preventScroll:true });
+      } else if (action.type.startsWith('craft-')) {
         craftingModal();
         dialog.querySelector('[data-action^="craft-"]')?.focus({ preventScroll:true });
       } else if (action.type.startsWith('beast-')) {

@@ -2,6 +2,7 @@ async (page, options = {}) => {
   const version = await page.evaluate(() => FSScenes.VERSION), baseURL = new URL(page.url()).origin;
   const out = options.out || `output/playwright/v${version}`;
   const report = { version, passed: false, errors: [], requests: [], failedRequests: [], layouts: [], screenshots: [], systems:{} };
+  let earnedKarma = null;
   const check = (ok, message) => { if (!ok) throw new Error(message); };
   page.on('pageerror', e => report.errors.push(e.message));
   page.on('console', e => { if (e.type() === 'error') report.errors.push(e.text()); });
@@ -244,6 +245,7 @@ async (page, options = {}) => {
     await page.locator('dialog [data-action="beast-evolve"][data-id="sacred"]').click();
     const branched=await run(); check(branched.spiritBeast.companion.stage===2&&branched.spiritBeast.companion.branch==='sacred','Spirit beast branch was not committed');
     check(branched.spiritBeast.essence===14,'Spirit beast evolution did not consume the declared material cost');
+    if (branched.karma?.active?.length) earnedKarma=branched.karma;
     const saved=JSON.stringify(branched); await close(); await page.reload(); await ui('continue').click(); check(JSON.stringify(await run())===saved,'Reload changed spirit-beast branch or materials');
     const build=await page.evaluate(()=>FSBuild.evaluateBuild(JSON.parse(localStorage.getItem('feisheng.run.v1'))));
     check(build.sources.some(x=>x.source==='spirit-beast:moonfox'),'Spirit beast did not become an explainable Build source');
@@ -275,6 +277,23 @@ async (page, options = {}) => {
     await page.reload();await ui('continue').click();const beforeForge=await run(),weapon=beforeForge.equipment.inventory.find(x=>x.uid===beforeForge.equipment.slots.weapon),xpBefore=weapon.xp;await ui('crafting').click();
     await page.locator('dialog [data-action="craft-weapon"][data-id="sword-temper"]').click();const forged=await run(),forgedWeapon=forged.equipment.inventory.find(x=>x.uid===forged.equipment.slots.weapon);check(forgedWeapon.xp===xpBefore+65,'Named-weapon crafting did not grant the declared existing weapon XP');
     report.systems.crafting={passed:true,pills:10,materials:8,methods:3,weaponRecipes:4,materialSpent:true,buffBounded:true,reloadPreserved:true,buildSource:true,weaponXp:true};
+    await restore('ascension--ascension');
+  }
+  if (await page.evaluate(() => !!window.FSKarma)) {
+    check(earnedKarma?.active?.some(x=>x.kind==='beast'),'A real irreversible spirit-beast branch did not create traceable karma');
+    await restore('high-nascent-sea');
+    await page.evaluate(karma=>{let s=JSON.parse(localStorage.getItem('feisheng.run.v1'));s.karma=FSKarma.refresh(karma,{realm:s.realm,playable:true,immortal:false});localStorage.setItem('feisheng.run.v1',FSEngine.serialize(s));},earnedKarma);
+    await page.reload();await ui('continue').click();
+    const pending=await run();check(pending.karma.pending&&pending.karma.active.length===1,'Delayed karma did not become pending at its declared later realm');
+    const source=pending.karma.active[0];check(source.sourceKey.startsWith('beast:')&&source.source.includes('灵兽分支'),'Karma lost its original high-value source');
+    await ui('karma').click();check(await page.locator('dialog .karma-event').count()===1,'Pending karma event is not visible');check(await page.locator('dialog [data-action="karma-resolve"]').count()===3,'Karma event must expose three explicit choices');
+    check((await page.locator('dialog').innerText()).includes(source.source)&& (await page.locator('dialog').innerText()).includes(source.relation),'Karma UI does not expose source and relation');
+    await layout('karma-pending');
+    const xp=pending.xp, choice=await page.locator('dialog [data-action="karma-resolve"]').first().getAttribute('data-id');await page.locator(`dialog [data-action="karma-resolve"][data-id="${choice}"]`).click();
+    const settled=await run();check(!settled.karma.pending&&settled.karma.active.length===0&&settled.karma.summaries.length===1,'Karma did not settle exactly once');check(settled.xp>=xp,'Karma resolution unexpectedly reduced mainline progress');
+    const saved=JSON.stringify(settled);await close();await page.reload();await ui('continue').click();check(JSON.stringify(await run())===saved,'Reload changed settled karma or repaid its reward');
+    await ui('karma').click();await layout('karma-settled');await close();
+    report.systems.karma={passed:true,activeLimit:24,summaryLimit:40,sourceTraceable:true,delayed:true,choices:3,settledOnce:true,reloadPreserved:true,noRandomPenalty:true};
     await restore('ascension--ascension');
   }
   await restore('ascension--ascension');
