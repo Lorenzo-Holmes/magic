@@ -12,6 +12,7 @@ if (report.errors?.length || report.failedRequests?.length) throw new Error('Bro
 if (report.externalRequests !== 0) throw new Error('Unexpected external resource requests.');
 if (name === 'browser-smoke' && report.completed?.phase !== 'complete') throw new Error('Main route did not finish.');
 if (name === 'browser-visual' && report.passed !== true) throw new Error('Visual matrix did not finish.');
+if (name === 'browser-extension' && report.passed !== true) throw new Error('Extension suite did not finish.');
 if (report.sceneStates) {
   fs.mkdirSync(path.join(base, 'states'), { recursive: true });
   for (const [id, state] of Object.entries(report.sceneStates)) {

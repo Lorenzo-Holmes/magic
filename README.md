@@ -1,4 +1,6 @@
-# 我欲飞升 · v0.6.1「节奏打磨」
+# 我欲飞升 · v0.7.0「声境入道」
+
+新增山野、云上、界外、天门四层本地合成环境音乐，以及天命、突破、吞噬、异变、融合、妖王、雷劫、飞升和道痕九类音效。顶部「音景」可分别关闭音乐/音效、调整音量。首次真实交互后启动，失焦或隐藏页面暂停。没有录制 BGM、音频下载、收费服务或外部音源，音景是原创程序合成的低声部与稀疏五声音阶拨弦。
 
 本版新增首局命册批注、安全连续闭关和「寻天地印证」入口；战力主显示改为万/亿并可点按查看全数。印证本来就首次历练保底，因此不会自动替玩家处理事件。无暇飞升使用持久败退记录，旧档缺记录不伪造称号；逆寿成仙按入劫前寿元判定。
 
@@ -173,7 +175,7 @@ npm run test:browser
 最新隔离验收目录由 `npm run test:browser` 写入：
 
 ```text
-output/playwright/v0.6.1/runs/acceptance-*/
+output/playwright/v0.7.0/runs/acceptance-*/
 ```
 
 当前版本对应目录中的 `latest-isolated-run.json` 指向最近一次成功运行。自动测试证明流程、边界和状态闭环可执行，不等同于实体手机、iOS Safari 或真人长期留存测试。
@@ -189,6 +191,7 @@ src/data.js
 src/engine.js
 src/scenes.js
 src/format.js
+src/audio.js
 src/meta.js
 src/app.js
 assets/seal.svg
@@ -204,7 +207,7 @@ assets/bg/realm-ascension.svg
 正式候选包：
 
 ```text
-release/wo-yu-fei-sheng-v0.6.1.zip
+release/wo-yu-fei-sheng-v0.7.0.zip
 ```
 
 `index.html` 位于 ZIP 根目录。构建脚本检查 3 MB 内部目标和 10 MB 外部上限。README、文档、测试、截图、缓存、字体和开发工具不进入生产包。`npm run verify:release` 校验文件清单、CRC32、SHA-256，以及源码、`dist/` 和 ZIP 三者的一致性。

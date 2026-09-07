@@ -152,7 +152,10 @@ async function main() {
   tool('prepare-visual-fixtures.cjs', [], 'visual-fixtures.log');
   await smokePage.close();
   const visualPage = await suite('browser-visual', baseURL, build);
-  const downloads = await verifyDownloads(visualPage);
+  await visualPage.close();
+  const extensionPage = await suite('browser-extension', baseURL, build);
+  const extension = JSON.parse(fs.readFileSync(path.join(out, 'browser-extension-report.json'), 'utf8'));
+  const downloads = await verifyDownloads(extensionPage);
   tool('verify-release.cjs', [], 'package-check.log');
   const currentBuild = JSON.parse(fs.readFileSync(path.join(root, 'release/build-report.json'), 'utf8'));
   assert.equal(currentBuild.zipSha256, build.zipSha256, 'Candidate changed during browser verification');
@@ -163,13 +166,14 @@ async function main() {
     testedZipSha256: build.zipSha256, zipBytes: build.zipBytes,
     mainFlow: smoke.completed, batchCultivation: smoke.batchCultivation,
     reincarnation: smoke.reincarnation, metaAfterEnding: smoke.metaAfterEnding,
-    layoutChecks: smoke.layouts.length, dialogLayoutChecks: smoke.dialogLayouts.length,
+    layoutChecks: smoke.layouts.length + extension.layouts.length, dialogLayoutChecks: smoke.dialogLayouts.length,
     widths: [...new Set(smoke.layouts.map(x => x.width))],
     backgrounds: visual.backgrounds.length, highEventFixtures: visual.highEvents.length, traceEventFixtures: visual.traceEvents.length,
     fileCases: visual.fileCases.length, reducedMotion: true,
-    consoleErrors: [...smoke.errors, ...visual.errors, ...downloads.errors],
-    failedRequests: [...smoke.failedRequests, ...visual.failedRequests],
-    externalRequests: smoke.externalRequests + visual.externalRequests + downloads.externalRequests,
+    extension: { audio: extension.audio },
+    consoleErrors: [...smoke.errors, ...visual.errors, ...extension.errors, ...downloads.errors],
+    failedRequests: [...smoke.failedRequests, ...visual.failedRequests, ...extension.failedRequests],
+    externalRequests: smoke.externalRequests + visual.externalRequests + extension.externalRequests + downloads.externalRequests,
     downloadsVerified: downloads.passed,
     scope: 'One real DOM-click playthrough; visual fixtures are additional coverage, not independent playthroughs. Desktop Chromium at four viewports is not a physical iOS/Android device test.' };
   writeJSON('final-qa-report.json', result);

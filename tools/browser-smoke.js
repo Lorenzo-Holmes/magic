@@ -246,6 +246,9 @@ async (page, options = {}) => {
   const selectedTrace = await traceButton.getAttribute('data-id');
   const traceData = await page.evaluate(id => FSData.TRACES.find(trace => trace.id === id), selectedTrace);
   await traceButton.click();
+  const audioCues = await page.evaluate(() => FSSound.diagnostics().cueCounts);
+  check(['talent','breakthrough','devour','mutation','fusion','demon','thunder','ascension','trace'].every(id => audioCues[id] > 0), 'Some real-playthrough sound cues never triggered');
+  report.audioCues = audioCues;
   const selectedMeta = await meta();
   check(selectedMeta.nextTrace === selectedTrace && selectedMeta.nextTraceSource === finished.seed, 'Selected trace was not persisted for the next life');
   check(await page.locator('.trace-card.selected').count() === 1, 'Selected trace is not visibly marked');

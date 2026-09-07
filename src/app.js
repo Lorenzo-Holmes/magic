@@ -2,6 +2,8 @@
   'use strict';
   const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat;
   const world = S.attach(document.getElementById('world'));
+  const sound = window.FSAudio.create();
+  window.FSSound = sound; // Readable audio diagnostics; no gameplay state is exposed.
   const KEY = 'feisheng.run.v1', BACKUP = 'feisheng.backup.v1', META_KEY = 'feisheng.meta.v1';
   const app = document.getElementById('app');
   const notice = document.getElementById('notice');
@@ -70,7 +72,7 @@
     return `<aside class="story-rail"><div class="rail-heading"><span class="seal small-seal">道</span><span>一卷命册 · 万般道途</span></div><h1>我欲<br><em>飞升</em></h1><p class="rail-poem">山外有山，天外有天。<br>此刻不可撼动的庞然大物，<br>终有一日，只是你的一口修为。</p>${ornament()}<div class="road"><span class="${level >= 0 ? 'lit' : ''}">凡</span><i></i><span class="${level >= 2 ? 'lit' : ''}">筑基</span><i></i><span class="${level >= 3 ? 'lit' : ''}">金丹</span><i></i><span class="${level >= 5 ? 'lit' : ''}">化神</span><i></i><span class="${level >= 8 ? 'lit' : ''}">大乘</span><i></i><span class="${state?.flags?.ascended ? 'lit' : ''}">飞升</span></div><p class="rail-foot">凡界卷 · 直到天门洞开<br>飞升是终点，也是下一池塘的起点。</p>${mountain()}</aside>`;
   }
   function header() {
-    return `<header class="topbar">${button('home', '<span class="brand-mark">升</span><span>我欲飞升</span>', { ui: true, classes: 'brand', aria: '返回首页，不删除进度' })}<span class="chapter-badge">凡界 · 轮回篇</span><div class="topbar-actions">${button('codex', '图谱', { ui: true, classes: 'text-button' })}${button('journal', '命册', { ui: true, classes: 'text-button' })}</div></header>`;
+    return `<header class="topbar">${button('home', '<span class="brand-mark">升</span><span>我欲飞升</span>', { ui: true, classes: 'brand', aria: '返回首页，不删除进度' })}<span class="chapter-badge">凡界 · 轮回篇</span><div class="topbar-actions">${button('audio-settings', '音景', { ui: true, classes: 'text-button', aria: '音乐、音效与音量设置' })}${button('codex', '图谱', { ui: true, classes: 'text-button' })}${button('journal', '命册', { ui: true, classes: 'text-button' })}</div></header>`;
   }
   function metaStrip() {
     const summary = M.summary(meta), trace = summary.nextTrace;
@@ -232,6 +234,7 @@
     return `<section class="ending-view"><p class="eyebrow">一世道途 · 到此为止</p><span class="ending-seal">此世终</span><h2>${esc(state.ending)}</h2><p class="intro">${esc(state.log[state.log.length - 1]?.text || '这一世没能走到天门之前。')}</p>${endingTitlePanel()}<div class="result-grid"><div><span>终止境界</span><b>${D.REALMS[state.realm].name}</b></div><div><span>最终战力</span><b>${fmt(E.power(state))}</b></div><div><span>此刻年龄</span><b>${state.age} 岁</b></div><div><span>吞噬次数</span><b>${state.devours}</b></div></div>${traceChoicePanel()}<div class="ending-actions">${button('share', '生成此世命格图', { ui: true, classes: 'primary full' })}${button('new', '再活一世 · 换一条道', { ui: true, classes: 'secondary full' })}${button('codex', '查看命途图谱', { ui: true, classes: 'secondary full' })}${button('journal', '翻阅此世命册', { ui: true, classes: 'text-button full' })}</div><p class="chapter-disclaimer">失败同样会形成道痕并保留完整历程。可以导出存档或直接重开。</p></section>`;
   }
   function render() {
+    sound.scene(state, home);
     const view = home ? 'home' : state.phase;
     const scene = world.update(state, home);
     const warning = warningText();
@@ -258,6 +261,10 @@
   }
   function settings() {
     modal('存档与说明', `<p class="intro">游戏使用当前浏览器本地存储。本世存档与轮回册分开保存：前者记录正在进行的一世，后者记录图谱、称号、历世结果和下一世待继承道痕。同一网址下可续玩，不会自动跨浏览器或设备同步。</p><div class="settings-actions">${button('export', '导出当前存档 JSON', { ui: true, classes: 'secondary full', disabled: !state })}${button('export-meta', '导出轮回册 JSON', { ui: true, classes: 'secondary full' })}${button('export-raw', '导出浏览器原始存档', { ui: true, classes: 'text-button full' })}<label class="file-label secondary">导入本世存档<input id="import-save" type="file" accept=".json,application/json"></label><label class="file-label secondary">导入轮回册<input id="import-meta" type="file" accept=".json,application/json"></label></div><h3>怎么玩</h3><p class="intro">开局八选三天命并分配 20 点。闭关稳定修炼，“闭关至当前桎梏”会在强制遭遇、修为圆满或寿元警戒前自动停止；历练寻找机缘并完成天地印证；狩猎承担吞噬与风险。飞升或陨落后可从本世最鲜明的三条道途中凝练一枚道痕，它只影响下一世的天命签池，并在对应天劫开启一次专属路线。</p><h3>当前边界</h3><p class="intro">v${S.VERSION}「轮回道痕」保留完整凡界主线、七阶段境界背景与正式飞升结局，新增六类流派识别、命途图谱、飞升称号、六枚一次性轮回道痕和连续闭关。仙界仍只保留一个反差彩蛋，不提供第二套主线；没有永久战力叠加、付费抽奖、联网排行或广告。旧 v1 / v2 / v3 存档会自动迁移到当前 v${E.VERSION} 格式。</p><p class="footnote">${state ? `本世种子：${state.seed} · 存档格式 v${E.VERSION}` : `存档格式 v${E.VERSION}`} · 轮回册格式 v${M.VERSION}<br>天命按单项权重抽取，无放回。高气运增加高品权重；轮回道痕只保证对应流派至少出现一项，不承诺固定单卡概率。</p>`);
+  }
+  function audioSettings() {
+    const a = sound.settings(), status = sound.diagnostics();
+    modal('声境设置', `<p class="intro">山野、云上、界外、天门四层环境音乐，配合九类关键音效。声音由本地程序合成，不下载录音文件。</p><div class="audio-controls">${button('audio-music', `环境音乐：${a.music ? '开' : '关'}`, { ui: true, classes: 'secondary full', pressed: a.music })}${button('audio-effects', `关键音效：${a.effects ? '开' : '关'}`, { ui: true, classes: 'secondary full', pressed: a.effects })}<label for="audio-volume">总音量 <output id="audio-volume-label">${Math.round(a.volume * 100)}%</output></label><input id="audio-volume" aria-label="总音量" type="range" min="0" max="80" step="1" value="${Math.round(a.volume * 100)}"></div><p class="footnote">首次点按后启声；页面隐藏或失焦时暂停，返回后恢复。静音也会停止播放。设置单独保存在此浏览器，不改变本世存档。</p><p class="audio-status">${status.supported ? `当前声境：${window.FSAudio.BANDS[status.band].name}` : '当前浏览器不支持声音，文字游戏不受影响。'}${status.warning ? `<br>${esc(status.warning)}` : ''}</p>`);
   }
   function download(blob, filename) {
     const url = URL.createObjectURL(blob), anchor = document.createElement('a');
@@ -308,6 +315,9 @@
     const el = event.target.closest('button'); if (!el || el.disabled) return;
     if (el.dataset.ui) {
       switch (el.dataset.ui) {
+        case 'audio-settings': audioSettings(); break;
+        case 'audio-music': sound.update({ music: !sound.settings().music }); audioSettings(); break;
+        case 'audio-effects': sound.update({ effects: !sound.settings().effects }); audioSettings(); break;
         case 'number-detail': modal('完整战力', `<p class="exact-number">${esc(F.full(Number(el.dataset.id)))}</p><p class="intro">主显示只改变排版，不改变战力计算或存档精度。</p>`); break;
         case 'dismiss-note':
           meta.tutorialSeen = [...new Set([...(meta.tutorialSeen || []), el.dataset.id])]; saveMeta(); render(); break;
@@ -326,6 +336,7 @@
           if (!state) break;
           try {
             meta = M.selectTrace(meta, state, el.dataset.id); saveMeta(); render();
+            sound.cue('trace');
             announce(`已凝练「${find(D.TRACES, el.dataset.id).name}」。它将在下一世被继承并消耗。`);
           } catch (error) { announce(error.message || '这枚道痕尚未形成。'); }
           break;
@@ -351,8 +362,9 @@
     try {
       const action = { type: el.dataset.action, id: el.dataset.id, choice: el.dataset.choice, kind: el.dataset.kind, revision: Number(el.dataset.revision) };
       if (el.dataset.delta) action.delta = Number(el.dataset.delta);
-      const before = state.phase;
+      const before = state.phase, beforeState = state;
       state = E.transition(state, action);
+      try { sound.cue(window.FSAudio.cueFor(beforeState, state, action)); } catch { /* Audio must never interrupt a game action. */ }
       const noteId = document.querySelector('.tutorial-note')?.dataset.note;
       if (noteId && !['select', 'stat', 'preset', 'reroll-opening'].includes(action.type)) {
         meta.tutorialSeen = [...new Set([...(meta.tutorialSeen || []), noteId])];
@@ -367,6 +379,11 @@
       else if (before !== state.phase && state.phase === 'tribulation') announce('渡劫开始。三重劫尽，天门才会真正打开。', false);
       else if (state.phase === 'complete' && state.flags.ascended) announce('飞升成功。凡界篇已正式通关。', false);
     } catch (error) { announce(error.message || '此操作未能完成，存档未改变。'); }
+  });
+  document.addEventListener('input', event => {
+    if (event.target.id !== 'audio-volume') return;
+    const settings = sound.update({ volume: Number(event.target.value) / 100 });
+    document.getElementById('audio-volume-label').textContent = `${Math.round(settings.volume * 100)}%`;
   });
   document.addEventListener('change', async event => {
     if (!['import-save', 'import-meta'].includes(event.target.id)) return;

@@ -104,6 +104,7 @@ main{padding-top:0}
 /* Keep full large integers on one line in the narrowest ascension comparison. */
 @media(max-width:380px){.immortal-preview .versus{flex-direction:column;gap:8px;text-align:center}.immortal-preview .versus>div:last-child{text-align:center}.ascension-ending .immortal-preview .versus strong{font-size:23px;word-break:normal}}
 .text-button{min-width:44px}
+.audio-controls{display:grid;gap:12px}.audio-controls label{display:flex;justify-content:space-between;color:var(--gold);font-size:13px}.audio-controls input{width:100%;min-height:44px;accent-color:#c6ac75}.audio-status{font-size:12px;color:var(--muted);line-height:1.8;margin-top:15px}
 .number-button{display:inline-block;max-width:100%;min-width:44px;min-height:44px;padding:0;border:0;border-bottom:1px dotted #8b835b;background:transparent;color:inherit;font:inherit;letter-spacing:inherit;cursor:pointer;white-space:nowrap}
 .exact-number{font:clamp(20px,4vw,32px)/1.6 Georgia,serif;color:var(--gold);overflow-wrap:anywhere}
 .tutorial-note{margin:0 0 18px;padding:12px 16px;border-left:2px solid #b09a6b;background:linear-gradient(90deg,#28372dbb,#15282b80);text-align:left}
