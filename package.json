@@ -9,7 +9,9 @@
     "test:final": "node tools/final-simulation.cjs",
     "build": "node tools/build.cjs",
     "test:browser": "node tools/run-browser-qa.cjs",
-    "verify:release": "node tools/verify-release.cjs"
+    "verify:release": "node tools/verify-release.cjs",
+    "deploy": "npx wrangler deploy",
+    "preview": "npx wrangler dev"
   },
   "engines": { "node": ">=20" }
 }

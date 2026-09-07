@@ -32,6 +32,15 @@ npm start
 
 然后打开 `http://127.0.0.1:4317`。
 
+## Cloudflare 部署
+
+仓库已提供 `wrangler.jsonc`，静态资源目录固定为 `./dist`。Cloudflare 构建时应先执行 `npm run build`，再执行 `npx wrangler deploy`；Wrangler 只会上传构建后的生产文件，不会把仓库根目录、`node_modules`、测试或截图当作静态资源上传。
+
+```sh
+npm run build
+npm run deploy
+```
+
 生产运行不需要安装第三方依赖。游戏只使用本地脚本、系统字体和自包含 SVG，没有 CDN、联网接口、广告或外部资源。`file://` 与本地 HTTP 地址属于不同浏览器存储域，可通过 JSON 导出和导入转移本世存档与轮回册。
 
 ## 正式版核心

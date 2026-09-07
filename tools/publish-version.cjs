@@ -10,6 +10,7 @@ process.chdir(root);
 const { version } = require('../package.json');
 const repo = 'Lorenzo-Holmes/magic';
 const expected = process.argv[2];
+const message = process.argv[3] || `feat: wo-yu-fei-sheng v${version}`;
 if (!/^[a-f0-9]{40}$/.test(expected || '')) throw new Error('Provide the inspected remote parent SHA.');
 function api(endpoint, body) {
   const args = ['api', `repos/${repo}/${endpoint}`];
@@ -27,7 +28,7 @@ if (current !== expected) throw new Error(`Remote moved: expected ${expected}, g
 const tree = api(`git/trees/${current}?recursive=1`);
 if (tree.truncated) throw new Error('Remote tree incomplete.');
 const remote = new Map(tree.tree.filter(x => x.type === 'blob').map(x => [x.path, x.sha]));
-const roots = ['.gitignore', 'index.html', 'package.json', 'README.md', 'src', 'assets', 'tests', 'tools', 'docs'];
+const roots = ['.gitignore', 'wrangler.jsonc', 'index.html', 'package.json', 'README.md', 'src', 'assets', 'tests', 'tools', 'docs'];
 const files = [];
 function walk(name) {
   const stat = fs.lstatSync(name);
@@ -50,7 +51,7 @@ for (const file of files) {
 if (!changes.length) throw new Error('No changed source to publish.');
 // base_tree preserves remote-only files. No deleting unrelated remote work.
 const nextTree = api('git/trees', { base_tree: tree.sha, tree: changes });
-const commit = api('git/commits', { message: `feat: wo-yu-fei-sheng v${version}`, tree: nextTree.sha, parents: [current] });
+const commit = api('git/commits', { message, tree: nextTree.sha, parents: [current] });
 if (api('git/ref/heads/main').object.sha !== current) throw new Error('Remote moved while preparing commit; no ref was changed.');
 api('git/refs/heads/main', { sha: commit.sha, force: false });
 if (api('git/ref/heads/main').object.sha !== commit.sha) throw new Error('Remote verification failed.');
