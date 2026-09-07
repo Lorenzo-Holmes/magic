@@ -36,6 +36,6 @@ test('engine resolves, rewards and reloads life choices',()=>{
  let n=E.transition(s,{type:'life-resolve',id:'herb-heal',revision:s.revision});assert.equal(JSON.stringify(s),before);assert.ok(n.xp>xp);assert.notEqual(String(n.revision),String(s.revision));
  assert.ok(n.life.completed.includes('herb-home'));assert.deepEqual(E.deserialize(E.serialize(n)),n);
 });
-test('v9 migration adds empty life state only',()=>{
- const old=clone(E.createRun(710));old.version=9;delete old.life;const n=E.deserialize(JSON.stringify(old));assert.equal(n.version,10);assert.deepEqual(n.life,L.createState());
+test('v9 migration reaches current schema while preserving an empty life state',()=>{
+ const old=clone(E.createRun(710));old.version=9;delete old.life;delete old.spiritBeast;const n=E.deserialize(JSON.stringify(old));assert.equal(n.version,E.VERSION);assert.deepEqual(n.life,L.createState());assert.equal(n.spiritBeast.companion,null);
 });

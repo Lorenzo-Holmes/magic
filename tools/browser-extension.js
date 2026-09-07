@@ -225,6 +225,33 @@ async (page, options = {}) => {
     report.systems.life={passed:true,origin:chosen.origin,event:pending.id,choices:3,settledOnce:true,reloadPreserved:true,buildSource:true,refusalAvailable:pending.choices.some(x=>x.xp===0)};
     await restore('ascension--ascension');
   }
+  if (await page.evaluate(() => !!window.FSSpiritBeast)) {
+    await restore('foundation--serpent-prey');
+    await page.locator('[data-action="resolve"][data-choice="devour"]').click();
+    await page.locator('[data-action="mutate"][data-id="serpenteye"]').click();
+    await ui('spirit-beast').click();
+    check(await page.locator('dialog .beast-card').count()===4,'Spirit-beast chooser must expose exactly four initial species');
+    await layout('spirit-beast-chooser');
+    await page.locator('dialog [data-action="beast-bond"][data-id="moonfox"]').click();
+    let bonded=await run(); check(bonded.spiritBeast.companion?.species==='moonfox','Spirit beast was not bonded to the single main slot');
+    check(await page.locator('dialog [data-action="beast-bond"]').count()===0,'A second companion slot appeared after bonding');
+    // Fixture-only material grant: acquisition rules are state-machine tested;
+    // browser acceptance here verifies the actual irreversible evolution UI.
+    await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('feisheng.run.v1'));s.spiritBeast=FSSpiritBeast.addEssence(s.spiritBeast,20,'browser-fixture');localStorage.setItem('feisheng.run.v1',FSEngine.serialize(s));});
+    await page.reload(); await ui('continue').click(); await ui('spirit-beast').click();
+    await page.locator('dialog [data-action="beast-evolve"]:not([data-id])').click();
+    check((await run()).spiritBeast.companion.stage===1,'Spirit beast did not reach the spirit-beast stage');
+    await page.locator('dialog [data-action="beast-evolve"][data-id="sacred"]').click();
+    const branched=await run(); check(branched.spiritBeast.companion.stage===2&&branched.spiritBeast.companion.branch==='sacred','Spirit beast branch was not committed');
+    check(branched.spiritBeast.essence===14,'Spirit beast evolution did not consume the declared material cost');
+    const saved=JSON.stringify(branched); await close(); await page.reload(); await ui('continue').click(); check(JSON.stringify(await run())===saved,'Reload changed spirit-beast branch or materials');
+    const build=await page.evaluate(()=>FSBuild.evaluateBuild(JSON.parse(localStorage.getItem('feisheng.run.v1'))));
+    check(build.sources.some(x=>x.source==='spirit-beast:moonfox'),'Spirit beast did not become an explainable Build source');
+    const gate=await page.evaluate(()=>{let b=FSSpiritBeast.bond(FSSpiritBeast.createState(),'moonfox');b=FSSpiritBeast.addEssence(b,30,'gate');b=FSSpiritBeast.evolve(b,{realm:1});b=FSSpiritBeast.evolve(b,{realm:2},'sacred');b=FSSpiritBeast.evolve(b,{realm:4});return {without:FSSpiritBeast.canEvolve(b,{realm:9,ascended:true,immortal:false}).ok,with:FSSpiritBeast.canEvolve(b,{realm:9,ascended:true,immortal:true}).ok};});
+    check(!gate.without&&gate.with,'Final spirit-beast evolution is not gated by actual immortal entry');
+    report.systems.spiritBeast={passed:true,choices:4,oneSlot:true,branch:'sacred',irreversible:true,materialSpent:true,reloadPreserved:true,buildSource:true,immortalGate:true};
+    await restore('ascension--ascension');
+  }
   await restore('ascension--ascension');
   const mortal = await run(), originalPower = mortal.ascendedPower;
   await action('immortal-enter').click();

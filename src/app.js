@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat, P = window.FSPresentation, G = window.FSEquipment, B = window.FSBuild, C = window.FSCombat, R = window.FSSecretRealm, X = window.FSSect, L = window.FSLife;
+  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat, P = window.FSPresentation, G = window.FSEquipment, B = window.FSBuild, C = window.FSCombat, R = window.FSSecretRealm, X = window.FSSect, L = window.FSLife, Z = window.FSSpiritBeast;
   const world = S.attach(document.getElementById('world'));
   const sound = window.FSAudio.create();
   window.FSSound = sound; // Readable audio diagnostics; no gameplay state is exposed.
@@ -263,6 +263,10 @@
     const batch = state.realm < 9 ? button('cultivate-to-ready', `闭关至当前桎梏${small('自动停在强制遭遇、修为圆满或寿元警戒之前')}`, { classes: 'secondary full batch-cultivate', disabled: !E.canCultivateToReady(state) }) : '';
     return `${boss}${proof}<div class="action-trio">${[['cultivate', '闭关', '稳定修为'], ['explore', '历练', state.realm >= 4 ? '天地印证' : state.realm >= 2 ? 'Build 条件机缘' : '奇遇与功法'], ['hunt', '狩猎', '吞噬与风险']].map(([kind, name, text]) => { const p = E.actionPreview(state, kind); return button('act', `<strong>${name}</strong><span>${text}</span><small>${p.xp ? `修为 +${p.xp} · ` : ''}${p.years} 年</small>`, { kind, classes: `action-tile ${kind === 'cultivate' ? 'quiet-action' : ''}` }); }).join('')}</div>${batch}`;
   }
+  function spiritBeastCall() {
+    const beast=state?.spiritBeast&&Z.summary(state.spiritBeast);
+    return `<div class="beast-call"><div><span>${beast?`${esc(beast.stageName)} · 灵兽精华 ${state.spiritBeast.essence}`:'单主灵兽位 · 此世唯一'}</span><b>${beast?esc(beast.name):'灵兽仙缘'}</b><p>${beast?`Build：${beast.tags.map(id=>esc(B.TAGS[id]||id)).join(' / ')}`:'四种初始灵兽，只能选择一只长期陪伴。'}</p></div>${button('spirit-beast',beast?'查看灵兽':'寻一只主灵兽',{ui:true,classes:'secondary'})}</div>`;
+  }
   function playingView() {
     const quest = !state.flags.pythonSeen ? '初入黑风岭 · 尝试一次行动'
       : state.realm === 0 ? '引气入体 · 修为满后破境'
@@ -271,7 +275,7 @@
       : state.realm === 3 ? (state.flags.bossSlain ? '妖眼已闭 · 向元婴迈进' : `金丹炼道 · 已历 ${state.advancedResolved} 处机缘`)
       : state.realm >= 4 && state.realm <= 8 ? `${D.REALMS[state.realm].name} · ${state.realmProofs.includes(state.realm) ? '天地印证已成' : '去看一眼更大的世界'}`
       : '渡劫将至';
-    return `<section>${hud()}<p class="quest"><span class="quest-dot"></span>${quest}</p>${pathBanner()}${eventView()}${actionsView()}<div class="play-bottom">${button('journal', '查看命格与历程', { ui: true, classes: 'text-button' })}<span>每次选择自动存档</span></div></section>`;
+    return `<section>${hud()}<p class="quest"><span class="quest-dot"></span>${quest}</p>${pathBanner()}${spiritBeastCall()}${eventView()}${actionsView()}<div class="play-bottom">${button('journal', '查看命格与历程', { ui: true, classes: 'text-button' })}<span>每次选择自动存档</span></div></section>`;
   }
   function draftView() {
     const redraws = Math.max(0, 1 + (E.effects(state).redraw || 0) - state.redrawUsed);
@@ -312,7 +316,7 @@
         <div class="revenge-comparison"><div><span>最初旧敌 · 赤鳞妖蟒</span><strong>150</strong></div><i>→</i><div><span>飞升时 · 你的战力</span><strong>${fmt(state.ascendedPower)}</strong></div></div>
         <p class="comparison-note">${mutation ? `首次异变「${mutation.name}」` : ''}${fusion ? ` → 金丹融合「${fusion.name}」` : ''}。五次天地印证、三重天劫，凡界主线已完整闭环。</p>
         <div class="immortal-preview"><span class="eyebrow">仙界 · 一息之后</span><h3>路边有什么东西动了一下。</h3><p>一只不起眼的仙界噬灵虫正在啃食仙草。你下意识扫了一眼它的气息。</p><div class="versus"><div><small>你的战力</small><strong>${fmt(state.ascendedPower)}</strong></div><span>对</span><div><small>仙界噬灵虫</small><strong>${fmt(worm)}</strong></div></div><b>凶险</b><p>你忽然明白：所谓飞升，不过是换了一个更大的池塘。</p></div>
-        <div class="chapter-entry"><p>凡界已经完成。可以带着道痕转世，也可以保留这一世继续进入仙界。</p>${state.immortal ? button('immortal-continue', '继续仙界道途', { ui: true, classes: 'primary full' }) : button('immortal-enter', `踏入仙界${small('保留凡界成就 · 开启噬灵虫序章')}`, { classes: 'primary full' })}</div>
+        <div class="chapter-entry"><p>凡界已经完成。可以带着道痕转世，也可以保留这一世继续进入仙界。</p>${state.immortal ? button('immortal-continue', '继续仙界道途', { ui: true, classes: 'primary full' }) : button('immortal-enter', `踏入仙界${small('保留凡界成就 · 开启噬灵虫序章')}`, { classes: 'primary full' })}${button('spirit-beast','查看主灵兽',{ui:true,classes:'secondary full'})}</div>
         <div class="result-grid"><div><span>凡界境界</span><b>渡劫飞升</b></div><div><span>飞升战力</span><b>${fmt(state.ascendedPower)}</b></div><div><span>飞升年龄</span><b>${state.age} 岁</b></div><div><span>吞噬次数</span><b>${state.devours}</b></div></div>
         <div class="chosen-line"><span>本世先天</span>${state.innate.map(id => `<b>${find(D.TALENTS, id).name}</b>`).join('')}</div>${fusion ? `<div class="chosen-line"><span>大道核心</span><b class="gold-text">${fusion.name}</b></div>` : ''}${traceChoicePanel()}
         <div class="ending-actions">${button('share', '生成飞升命格图', { ui: true, classes: 'primary full' })}${button('new', '转世重修 · 换一条道', { ui: true, classes: 'secondary full' })}${button('codex', '查看命途图谱', { ui: true, classes: 'secondary full' })}${button('journal', '翻阅这一世', { ui: true, classes: 'text-button full' })}</div>
@@ -350,7 +354,7 @@
       <div class="immortal-stats"><div><span>仙界势能</span><b>${powerFigure(I.power(i))}</b></div><div><span>仙躯 · 元气</span><b>${i.level} 重 · ${i.health}/100</b></div><div><span>仙元</span><b>${fmt(i.essence)}</b></div><div><span>法则碎片</span><b>${fmt(i.fragments)}</b></div></div>
       <div class="chosen-line"><span>凡界道途</span><b>${esc(M.PATHS[i.lineage].name)}</b>${law ? `<span>此界法则</span><b>${esc(law.name)}</b>` : ''}</div>
       <section class="event-sheet"><div class="event-kicker"><span>仙界第 ${i.days} 日</span><span>${i.devours} 次吞噬</span></div><p class="story-lead">${esc(i.note)}</p>${content}</section>
-      <div class="immortal-actions">${button('immortal-journal', '翻阅仙界命册', { ui: true, classes: 'secondary full' })}${button('mortal-summary', '回看凡界结局 · 凝练道痕', { ui: true, classes: 'secondary full' })}${button('new', '另起一世', { ui: true, classes: 'text-button full' })}</div></section>`;
+      <div class="immortal-actions">${button('spirit-beast','查看主灵兽',{ui:true,classes:'secondary full'})}${button('immortal-journal', '翻阅仙界命册', { ui: true, classes: 'secondary full' })}${button('mortal-summary', '回看凡界结局 · 凝练道痕', { ui: true, classes: 'secondary full' })}${button('new', '另起一世', { ui: true, classes: 'text-button full' })}</div></section>`;
   }
   function evolutionView() {
     const V = window.FSEvolution, Q = window.FSQuantity, i = state.immortal, e = i.evolution;
@@ -393,7 +397,7 @@
       <div class="immortal-stats"><div><span>当前势能 · 数量级</span><b>${quantityFigure(V.power(i))}</b></div><div><span>元气 · 本界炼化</span><b>${i.health}/100 · ${e.refinement} 重</b></div><div><span>仙元</span><b>${fmt(i.essence)}</b></div><div><span>碎片</span><b>${fmt(i.fragments)}</b></div></div>
       <p class="world-affix">${esc(affix.name)} · ${esc(affix.text)}<br>仙兽法则：${e.enemyLaws.map(id=>window.FSImmortal.LAWS.find(l=>l.id===id).name).map(esc).join(' × ')}。锋芒使敌势能 +8%，不灭 +10%，破妄形成幻象；同源法则使你的守界破局更强。</p>${slots}
       <section class="event-sheet"><p class="story-lead">${esc(i.note)}</p>${content}</section>
-      <div class="immortal-actions">${button('immortal-journal','翻阅仙界命册',{ui:true,classes:'secondary full'})}${button('mortal-summary','回看凡界 · 凝练道痕',{ui:true,classes:'secondary full'})}${button('new','另起一世',{ui:true,classes:'text-button full'})}</div></section>`;
+      <div class="immortal-actions">${button('spirit-beast','查看主灵兽',{ui:true,classes:'secondary full'})}${button('immortal-journal','翻阅仙界命册',{ui:true,classes:'secondary full'})}${button('mortal-summary','回看凡界 · 凝练道痕',{ui:true,classes:'secondary full'})}${button('new','另起一世',{ui:true,classes:'text-button full'})}</div></section>`;
   }
   function render() {
     const inImmortal = !!(state?.immortal && !mortalSummary);
@@ -458,6 +462,28 @@
     }).join('');
     const sourceRows=value.sources.map(src=>`<li><b>${esc(src.name)}</b><span>${src.tags.map(id=>esc(B.TAGS[id])).join(' / ')}</span></li>`).join('');
     modal('万法归一', `<div class="build-head"><div><span>主脉</span><b>${esc(value.main?B.TAGS[value.main]:'未显')}</b></div><div><span>辅脉</span><b>${esc(value.sub?B.TAGS[value.sub]:'未显')}</b></div><div><span>激活协同</span><b>${value.synergies.length}</b></div></div><p class="intro">${esc(value.explanation)} 标签只解释真实来源；打开或关闭命册不会推进 RNG，也不会写入存档。</p><div class="build-tags">${tags}</div><h3>来源 → 协同 → 当前效果</h3><div class="build-synergies">${synergies||'<p class="intro">当前尚没有满足两类标签的协同。继续让这一世的选择互相呼应。</p>'}</div><details class="build-sources"><summary>查看全部来源 · ${value.sources.length}</summary><ul>${sourceRows}</ul></details>`);
+  }
+  function spiritBeastModal() {
+    if (!state || ['talents','attributes'].includes(state.phase)) { modal('灵兽仙缘','<p class="intro">入世之后才能与主灵兽结契。</p>'); return; }
+    const summary=Z.summary(state.spiritBeast);
+    if (!summary) {
+      const cards=Z.SPECIES.map(item=>`<article class="beast-card"><span>${item.tags.map(id=>esc(B.TAGS[id]||id)).join(' / ')}</span><h3>${esc(item.name)}</h3><p>${esc(item.note)}</p><small>两条不可逆进化分支：${esc(item.branches.wild.name)} / ${esc(item.branches.sacred.name)}</small>${button('beast-bond','与它结契',{id:item.id,classes:'primary full'})}</article>`).join('');
+      modal('灵兽仙缘', `<p class="intro">这一世只有一个主灵兽位。结契后不可更换，也不会自动带入下一世；灵兽精华来自真实战斗、秘境、天地印证与仙界吞噬。</p><div class="beast-grid">${cards}</div>`); return;
+    }
+    const ctx={realm:state.realm,ascended:state.flags.ascended,immortal:!!state.immortal};
+    const fxNames={explore:'历练修为',cultivate:'闭关修为',devour:'吞噬修为',devourHeal:'吞噬恢复',guard:'承伤减免',bossPower:'首领有效战力',swordPower:'剑诀有效战力',mind:'神识',rest:'闭关恢复'};
+    const fx=Object.entries(summary.effects).map(([key,value])=>`${fxNames[key]||key} ${Math.abs(value)<1?`${value>0?'+':''}${Math.round(value*100)}%`:`${value>0?'+':''}${value}`}`).join(' · ')||'尚未形成额外效果';
+    let evolve='';
+    if (summary.stage<4) {
+      if(summary.stage===1){
+        evolve=`<div class="beast-branches">${['wild','sacred'].map(branch=>{const b=Z.BY_ID[summary.species].branches[branch],check=Z.canEvolve(state.spiritBeast,ctx,branch);return button('beast-evolve',`<b>${esc(b.name)}</b><span>${branch==='wild'?'妖兽分支':'圣兽分支'}</span><p>${esc(b.text)}</p>${small(check.ok?`消耗 ${check.cost} 灵兽精华 · 分支永久确定`:check.reason)}`,{id:branch,classes:'secondary full beast-branch',disabled:!check.ok});}).join('')}</div>`;
+      } else {
+        const check=Z.canEvolve(state.spiritBeast,ctx,null);
+        evolve=button('beast-evolve',`继续进化${small(check.ok?`消耗 ${check.cost} 灵兽精华 → ${Z.STAGES[summary.stage+1]}`:check.reason)}`,{classes:'primary full',disabled:!check.ok});
+      }
+    }
+    const history=state.spiritBeast.history.slice().reverse().map(row=>`<li><span>${esc(row.type)}</span><b>${row.type==='essence'?`精华 +${row.amount}`:`阶段 ${row.stage??0}`}</b><small>${esc(row.source||row.branch||'')}</small></li>`).join('');
+    modal(`灵兽仙缘 · ${summary.name}`, `<div class="beast-head"><span>${esc(summary.stageName)} · ${summary.branchName?esc(summary.branchName):'分支未定'}</span><b>${esc(summary.name)}</b><small>灵兽精华 ${state.spiritBeast.essence} · ${summary.tags.map(id=>esc(B.TAGS[id]||id)).join(' / ')}</small></div><p class="intro">${esc(fx)}。进化不可逆；最终「仙兽」阶段要求本世已经飞升并真正踏入仙界。</p>${evolve}${history?`<h3>最近灵兽历程</h3><ul class="beast-history">${history}</ul>`:''}<p class="footnote">换世规则：主灵兽属于本世，不写入轮回册，也不产生永久战力继承。后续百世回响只允许留下传说摘要。</p>`);
   }
   function lifeModal() {
     if (!state || ['talents','attributes'].includes(state.phase)) { modal('天命人生','<p class="intro">入世以后，出身才会在后续境界留下真正回响。</p>'); return; }
@@ -576,6 +602,7 @@
         case 'audio-settings': audioSettings(); break;
         case 'skip-combat': finishCombatReplay(); break;
         case 'secret-realm': secretRealmModal(); break;
+        case 'spirit-beast': spiritBeastModal(); break;
         case 'sect': sectModal(); break;
         case 'life': lifeModal(); break;
         case 'equipment': equipmentModal(); break;
@@ -642,7 +669,10 @@
       clearTimeout(noticeTimer); notice.classList.remove('visible'); notice.textContent = '';
       persist(); render();
       showFeedback(feedback);
-      if (action.type.startsWith('life-')) {
+      if (action.type.startsWith('beast-')) {
+        spiritBeastModal();
+        dialog.querySelector('[data-action^="beast-"]')?.focus({ preventScroll:true });
+      } else if (action.type.startsWith('life-')) {
         lifeModal();
         dialog.querySelector('[data-action^="life-"]')?.focus({ preventScroll:true });
       } else if (action.type.startsWith('sect-')) {

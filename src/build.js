@@ -3,11 +3,12 @@
     typeof module === 'object' && module.exports ? require('./data.js') : root.FSData,
     typeof module === 'object' && module.exports ? require('./equipment.js') : root.FSEquipment,
     typeof module === 'object' && module.exports ? require('./sect.js') : root.FSSect,
-    typeof module === 'object' && module.exports ? require('./life.js') : root.FSLife
+    typeof module === 'object' && module.exports ? require('./life.js') : root.FSLife,
+    typeof module === 'object' && module.exports ? require('./spirit-beast.js') : root.FSSpiritBeast
   );
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.FSBuild = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (D, G, X, L) {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (D, G, X, L, P) {
   'use strict';
   const VERSION = 1;
   const TAGS = Object.freeze({
@@ -70,6 +71,10 @@
       if (sect) addSource(list,`sect:${sect.id}`,sect.name,sect.tags,state.sect.heritageUnlocked?2:1);
     }
     if (state.life && L?.buildSources) for (const item of L.buildSources(state.life)) addSource(list,item.source,item.name,item.tags,item.weight);
+    if (state.spiritBeast?.companion && P?.summary) {
+      const beast=P.summary(state.spiritBeast);
+      if (beast) addSource(list,`spirit-beast:${beast.species}`,`${beast.name} · ${beast.stageName}`,beast.tags,beast.stage>=2?2:1);
+    }
     return list;
   }
   function evaluateTags(inputTags) {
