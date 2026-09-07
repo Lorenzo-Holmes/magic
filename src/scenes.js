@@ -5,7 +5,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
   // Presentation only: never mutate the run, advance RNG, or add save fields.
-  const VERSION = '1.4.0';
+  const VERSION = '1.5.0';
   const STAGES = Object.freeze(Object.fromEntries([
     ['mortal', '黑风岭', '山野如墨 · 此身如尘'],
     ['foundation', '凌云之巅', '云海在下 · 初窥天地'],

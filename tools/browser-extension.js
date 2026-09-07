@@ -147,6 +147,34 @@ async (page, options = {}) => {
     report.systems.combat={passed:true,replayId:committedState.combatReplay.id,events:committedState.combatReplay.events.length,skipReadOnly:true,reloadPreserved:true,reducedMotion:true,result:committedState.combatReplay.result};
     await restore('ascension--ascension');
   }
+  if (await page.evaluate(() => !!window.FSSecretRealm)) {
+    // Use the real 筑基 revenge checkpoint, then resolve the mandatory
+    // serpent/mutation flow through DOM actions. The generic calm fixtures are
+    // intentionally captured during draft screens and therefore do not expose
+    // normal-world side activities such as secret realms.
+    await restore('foundation--serpent-prey');
+    await page.locator('[data-action="resolve"][data-choice="devour"]').click();
+    await page.locator('[data-action="mutate"][data-id="serpenteye"]').click();
+    const secretStart=await run();
+    check(secretStart.phase==='playing'&&!secretStart.secretRealm.active,'Secret-realm fixture is not a normal mortal playing state');
+    await ui('secret-realm').click();
+    check(await page.locator('dialog .secret-realm-card').count()===1,'Current realm should expose exactly one secret realm');
+    await page.locator('dialog [data-action="secret-enter"]').click();
+    const entered=await run(); check(entered.secretRealm.active?.floor===1,'Secret realm did not enter floor 1');
+    const enteredRaw=JSON.stringify(entered), option=entered.secretRealm.active.options.find(o=>['herb','page'].includes(o.type))||entered.secretRealm.active.options[0];
+    await layout('secret-realm-active');
+    await page.reload(); await ui('continue').click();
+    check(JSON.stringify(await run())===enteredRaw,'Reload changed secret-realm route or temporary state');
+    await page.getByRole('button',{name:'返回秘境'}).click();
+    await page.locator(`[data-action="secret-choose"][data-id="${option.id}"]`).click();
+    const advanced=await run(); check(advanced.secretRealm.active?.floor===2,'Secret realm did not advance exactly one floor');
+    const beforeExit=JSON.stringify(advanced); await page.locator('dialog [data-action="secret-exit"]').click();
+    const exited=await run(); check(!exited.secretRealm.active&&exited.phase==='playing','Safe secret-realm exit did not return to the mortal mainline');
+    check(exited.secretRealm.history.length===1&&exited.secretRealm.history[0].ending==='exit','Safe exit was not recorded exactly once');
+    check(exited.xp>=JSON.parse(beforeExit).xp,'Safe exit lost already banked mainline progress');
+    report.systems.secretRealm={passed:true,realmId:entered.secretRealm.active.realmId,reloadPreserved:true,advancedFloor:2,safeExit:true,history:exited.secretRealm.history.length,mainlinePreserved:true};
+    await restore('ascension--ascension');
+  }
   await restore('ascension--ascension');
   const mortal = await run(), originalPower = mortal.ascendedPower;
   await action('immortal-enter').click();

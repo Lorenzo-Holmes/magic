@@ -49,8 +49,9 @@ test('主 reducer 一次结算战斗并保存固定回放，刷新不会重新�
   assert.equal(next.combatReplay,null);
 });
 
-test('旧 v6 存档迁移到 v7 只补空战斗回放，不伪造历史战斗', () => {
+test('旧 v6 存档迁移到当前版本只补空战斗回放，不伪造历史战斗', () => {
   const current=E.createRun(99), old=clone(current); old.version=6; delete old.combatReplay;
+  delete old.secretRealm;
   const migrated=E.deserialize(JSON.stringify(old));
-  assert.equal(migrated.version,7); assert.equal(migrated.combatReplay,null);
+  assert.equal(migrated.version,E.VERSION); assert.equal(migrated.combatReplay,null);
 });

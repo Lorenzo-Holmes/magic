@@ -1,4 +1,16 @@
-# 《我欲飞升》实现基线 v1.4.0 · 九州历练
+# 《我欲飞升》实现基线 v1.5.0 · 秘境降临
+
+## v1.5.0 短局秘境约定
+
+新增 `src/secret-realm.js`，秘境总状态为 `{ version, active, completed, history }`。首版三座秘境固定 3 / 4 / 5 层，分别覆盖凡人～筑基、金丹～化神、炼虚～大乘阶段。每一层的候选路线使用 `run seed + realm id + floor` 派生的独立 deterministic hash，UI 打开、关闭、刷新都不推进主 RNG。
+
+每个普通层至少保留灵药或功法残页之一作为非失败路线；战斗、禁制和异象可以有更高收益与失败结果。失败只结束 `active` 秘境并结算可保留部分，不设置本世 `dead`。任何层都存在显式 `secret-exit`，退出保留已 banked 收益与一部分未保底收益。临时 `tempPower / tempGuard` 只存在于 active session，结束后随 session 一起清理。
+
+Boss 首次完成把 realm id 写入最多三项的 `completed`，并通过已有装备系统生成唯一 `secret:<realm>:boss` 来源；重复通关不再得到首胜装备。秘境历史最多 12 条摘要。主存档 v7→v8 只补 `secretRealm=createState()`，不从旧历程猜测任何秘境完成状态。
+
+当秘境 active 时，主 reducer 拒绝闭关、历练、突破和装备操作，只接受 `secret-*` 结算动作，避免在秘境内部借主界面改写入口战力。刷新恢复后仍停在同一层、同一候选与同一暂存收益。
+
+## v1.4.0 确定性战斗与文字回放约定
 
 ## v1.4.0 确定性战斗与文字回放约定
 

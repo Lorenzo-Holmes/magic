@@ -3,11 +3,12 @@
   else root.FSEngine = factory(root.FSData);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (D) {
   'use strict';
-  const VERSION = 7;
+  const VERSION = 8;
   const immortalEngine = () => typeof module === 'object' && module.exports ? require('./immortal.js') : globalThis.FSImmortal;
   const equipmentEngine = () => typeof module === 'object' && module.exports ? require('./equipment.js') : globalThis.FSEquipment;
   const buildEngine = () => typeof module === 'object' && module.exports ? require('./build.js') : globalThis.FSBuild;
   const combatEngine = () => typeof module === 'object' && module.exports ? require('./combat.js') : globalThis.FSCombat;
+  const secretRealmEngine = () => typeof module === 'object' && module.exports ? require('./secret-realm.js') : globalThis.FSSecretRealm;
   const PHASES = ['talents', 'attributes', 'playing', 'draft', 'mutation', 'fusion', 'tribulation', 'complete', 'dead'];
   const EVENT_IDS = ['arrival', 'quiet', 'herbs', 'ruin', 'swordsman', 'hunt', 'first-python', 'revenge', 'remains', 'advanced', 'boss', 'high', 'trace-echo', 'trace-resonance'];
   const BOSS_ROUTE_IDS = ['fight', 'see-through', 'sword-break', 'devour-eye', 'body-charge', 'fate'];
@@ -246,7 +247,7 @@
       highSeen: [], realmProofs: [], tribulationStage: 0, tribulationBase: null, ascendedPower: null,
       carriedTrace, traceSourceSeed, bossRoute: null, tribulationRoutes: [], batchCultivations: 0,
       event: null, draft: null, firstPower: null, revengePower: null, lastGain: 0,
-      ending: null, log: [], equipment: equipmentEngine().createState(), combatReplay: null, immortal: null
+      ending: null, log: [], equipment: equipmentEngine().createState(), combatReplay: null, secretRealm: secretRealmEngine().createState(), immortal: null
     };
     s.offer = openingOffer(s);
     return s;
@@ -509,6 +510,7 @@
     // A replay is evidence of an already committed result. Any subsequent
     // gameplay action dismisses it without rerolling or paying rewards again.
     if (s.combatReplay) s.combatReplay = null;
+    if (state.secretRealm?.active && !action.type.startsWith('secret-')) requireThat(false, '秘境尚未结束，请先继续路线或安全退出。');
     if (action.type.startsWith('immortal-')) {
       requireThat(s.phase === 'complete' && s.flags.ascended, '只有飞升后才能踏入仙界。');
       const I = immortalEngine();
@@ -642,6 +644,27 @@
       case 'equipment-evolve':
         requireThat(!['talents', 'attributes'].includes(s.phase), '尚未入世，不能蜕变神兵。');
         s.equipment = equipmentEngine().evolve(s.equipment, action.id); break;
+      case 'secret-enter': {
+        requireThat(s.phase === 'playing' && !isBlocking(s), '当前无法进入秘境。');
+        const R=secretRealmEngine(), threshold=D.REALMS[s.realm].threshold || D.REALMS[8].threshold;
+        s.secretRealm=R.start(s.secretRealm,action.id,s.seed,s.realm,power(s),threshold);
+        log(s,'秘境开启',`踏入${R.REALMS.find(r=>r.id===action.id).name}。任何一层都可以选择安全退出。`,'gold');
+        break;
+      }
+      case 'secret-choose': {
+        const R=secretRealmEngine(), result=R.choose(s.secretRealm,action.id); s.secretRealm=result.state;
+        if(result.settlement){
+          const actual=result.settlement.awardXp?gain(s,result.settlement.awardXp,'explore'):0;
+          if(result.settlement.boss) s.equipment=equipmentEngine().addDrop(s.equipment,s.seed,`secret:${result.settlement.realmId}:boss`,'boss',s.realm,buildEngine().evaluateBuild(s).main || '');
+          log(s,`秘境 · ${result.settlement.name}`,`${result.settlement.ending==='complete'?'破境而出':result.settlement.ending==='failed'?'败退离境':'收束所得'}，带回修为 +${actual}。${result.settlement.boss?'首胜独有装备来源已结算。':''}`,result.settlement.ending==='failed'?'danger':'gold');
+        }
+        break;
+      }
+      case 'secret-exit': {
+        const result=secretRealmEngine().exit(s.secretRealm); s.secretRealm=result.state;
+        const actual=result.settlement.awardXp?gain(s,result.settlement.awardXp,'explore'):0;
+        log(s,`秘境 · ${result.settlement.name}`,`你主动收束路线，安全带回修为 +${actual}。`,'gold'); break;
+      }
       default: throw new Error('未识别的操作。');
     }
     if (!action.type.startsWith('equipment-')) {
@@ -669,6 +692,7 @@
     }
     equipmentEngine().validate(s.equipment);
     combatEngine().validateReplay(s.combatReplay);
+    secretRealmEngine().validate(s.secretRealm);
     requireThat(s.defeats === undefined || s.defeats === null || (Number.isSafeInteger(s.defeats) && s.defeats >= 0), '败退记录损坏。');
     for (const key of ['seed', 'rng']) requireThat(Number.isInteger(s[key]) && s[key] > 0 && s[key] <= 4294967295, '随机种子损坏。');
     requireThat(Number.isSafeInteger(s.revision) && s.revision >= 0 || typeof s.revision === 'string' && s.revision.length <= 2048 && /^(0|[1-9]\d*)$/.test(s.revision), '操作版本损坏。');
@@ -758,7 +782,11 @@
     if (!s || s.version !== 6) return s;
     s.version = 7; s.combatReplay = null; return s;
   }
-  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); s = migrateV5(s); s = migrateV6(s); if (s?.version === VERSION && s.immortal) s.immortal = immortalEngine().migrate(s.immortal); validate(s); return s; }
+  function migrateV7(s) {
+    if (!s || s.version !== 7) return s;
+    s.version = 8; s.secretRealm = secretRealmEngine().createState(); return s;
+  }
+  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); s = migrateV5(s); s = migrateV6(s); s = migrateV7(s); if (s?.version === VERSION && s.immortal) s.immortal = immortalEngine().migrate(s.immortal); validate(s); return s; }
   function synergies(s) {
     const list = [];
     if (s.sword && s.root === 'thunder' && s.talents.includes('swordbone')) list.push({ name: '雷剑体', text: '雷灵根 × 天生剑骨 × 青云剑诀：战力额外 +20%。' });
