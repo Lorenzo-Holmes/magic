@@ -84,7 +84,7 @@ test('宗门动作进入主reducer，revision、奖励与刷新保存都可验�
   const left=E.transition(restored,{type:'sect-leave',revision:restored.revision}); assert.equal(left.sect.membership,null); assert.deepEqual(X.effects(left.sect),{});
 });
 
-test('旧v8存档迁移到v9只补空宗门态，不伪造入宗与事件历史', () => {
-  const current=E.createRun(609), old=clone(current); old.version=8; delete old.sect;
-  const migrated=E.deserialize(JSON.stringify(old)); assert.equal(migrated.version,9); assert.deepEqual(migrated.sect,X.createState());
+test('旧v8存档迁移到当前版本仍只补空宗门态，不伪造入宗与事件历史', () => {
+  const current=E.createRun(609), old=clone(current); old.version=8; delete old.sect; delete old.life;
+  const migrated=E.deserialize(JSON.stringify(old)); assert.equal(migrated.version,E.VERSION); assert.deepEqual(migrated.sect,X.createState());
 });

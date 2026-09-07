@@ -2,11 +2,12 @@
   const api = factory(
     typeof module === 'object' && module.exports ? require('./data.js') : root.FSData,
     typeof module === 'object' && module.exports ? require('./equipment.js') : root.FSEquipment,
-    typeof module === 'object' && module.exports ? require('./sect.js') : root.FSSect
+    typeof module === 'object' && module.exports ? require('./sect.js') : root.FSSect,
+    typeof module === 'object' && module.exports ? require('./life.js') : root.FSLife
   );
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.FSBuild = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (D, G, X) {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (D, G, X, L) {
   'use strict';
   const VERSION = 1;
   const TAGS = Object.freeze({
@@ -68,6 +69,7 @@
       const sect=X.data(state.sect.membership);
       if (sect) addSource(list,`sect:${sect.id}`,sect.name,sect.tags,state.sect.heritageUnlocked?2:1);
     }
+    if (state.life && L?.buildSources) for (const item of L.buildSources(state.life)) addSource(list,item.source,item.name,item.tags,item.weight);
     return list;
   }
   function evaluateTags(inputTags) {

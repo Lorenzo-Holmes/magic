@@ -202,6 +202,29 @@ async (page, options = {}) => {
     report.systems.sect={passed:true,choices:4,declineReconsiderable:true,membership:'qingyun',inheritanceUnlocked:true,reloadPreserved:true,buildSource:true,leaveClearsEffects:true};
     await restore('ascension--ascension');
   }
+  if (await page.evaluate(() => !!window.FSLife)) {
+    await restore('foundation--serpent-prey');
+    await page.locator('[data-action="resolve"][data-choice="devour"]').click();
+    await page.locator('[data-action="mutate"][data-id="serpenteye"]').click();
+    const lifeStart=await run();
+    check(lifeStart.life?.pending,'Origin echo did not become pending after reaching Foundation');
+    const pending=await page.evaluate(()=>FSLife.event(JSON.parse(localStorage.getItem('feisheng.run.v1')).life.pending));
+    await ui('life').click();
+    check(await page.locator('dialog .life-event').count()===1,'Origin echo event is not visible');
+    check(await page.locator('dialog [data-action="life-resolve"]').count()===3,'Origin echo must offer three explicit choices including refusal');
+    await layout('life-echo');
+    const raw=JSON.stringify(lifeStart), firstChoice=pending.choices[0].id;
+    await page.locator(`dialog [data-action="life-resolve"][data-id="${firstChoice}"]`).click();
+    const chosen=await run(); check(JSON.stringify(chosen)!==raw&&chosen.life.completed.includes(pending.id),'Origin echo did not settle exactly once');
+    check(chosen.life.history.length===1,'Origin echo history was not recorded once');
+    const build=await page.evaluate(()=>FSBuild.evaluateBuild(JSON.parse(localStorage.getItem('feisheng.run.v1'))));
+    check(build.sources.some(x=>x.source.startsWith('life:')),'Origin choice did not become a Build source');
+    const saved=JSON.stringify(chosen); await close(); await page.reload(); await ui('continue').click();
+    check(JSON.stringify(await run())===saved,'Reload changed origin echo choice or reward');
+    await ui('life').click(); await layout('life-history'); await close();
+    report.systems.life={passed:true,origin:chosen.origin,event:pending.id,choices:3,settledOnce:true,reloadPreserved:true,buildSource:true,refusalAvailable:pending.choices.some(x=>x.xp===0)};
+    await restore('ascension--ascension');
+  }
   await restore('ascension--ascension');
   const mortal = await run(), originalPower = mortal.ascendedPower;
   await action('immortal-enter').click();

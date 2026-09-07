@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat, P = window.FSPresentation, G = window.FSEquipment, B = window.FSBuild, C = window.FSCombat, R = window.FSSecretRealm, X = window.FSSect;
+  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat, P = window.FSPresentation, G = window.FSEquipment, B = window.FSBuild, C = window.FSCombat, R = window.FSSecretRealm, X = window.FSSect, L = window.FSLife;
   const world = S.attach(document.getElementById('world'));
   const sound = window.FSAudio.create();
   window.FSSound = sound; // Readable audio diagnostics; no gameplay state is exposed.
@@ -186,7 +186,8 @@
     const build=B.evaluateBuild(state), main=build.main?B.TAGS[build.main]:'未定', sub=build.sub?` · 辅 ${B.TAGS[build.sub]}`:'';
     const sect=state.realm>=1&&state.sect?.membership?X.data(state.sect.membership):null;
     const sectAction=state.realm>=1?button('sect',sect?`${esc(sect.name)}${state.sect.pending?' · 有事':''}`:'择宗门',{ui:true,classes:'text-button'}):'';
-    return `<section class="path-banner" aria-label="本世道途"><div><span>本世道途 · ${esc(profile.stage)}</span><b>${esc(profile.name)}</b></div><p>${profile.signals.map(esc).join(' · ') || '当前倾向仍在形成'}</p><small>${esc(profile.next)}<br>Build：主 ${esc(main)}${esc(sub)} · ${build.synergies.length} 条协同</small><div>${button('build', '查看协同', { ui:true, classes:'text-button' })}${sectAction}${button('codex', '查看图谱', { ui: true, classes: 'text-button' })}</div></section>`;
+    const lifeAction=state.life?.pending||state.life?.history?.length?button('life',state.life.pending?'宿命 · 有事':'人生回响',{ui:true,classes:'text-button'}):'';
+    return `<section class="path-banner" aria-label="本世道途"><div><span>本世道途 · ${esc(profile.stage)}</span><b>${esc(profile.name)}</b></div><p>${profile.signals.map(esc).join(' · ') || '当前倾向仍在形成'}</p><small>${esc(profile.next)}<br>Build：主 ${esc(main)}${esc(sub)} · ${build.synergies.length} 条协同</small><div>${button('build', '查看协同', { ui:true, classes:'text-button' })}${lifeAction}${sectAction}${button('codex', '查看图谱', { ui: true, classes: 'text-button' })}</div></section>`;
   }
   function enemyView(enemy, first = false, revenge = false) {
     const t = E.threat(state, enemy), p = E.power(state, enemy);
@@ -458,6 +459,16 @@
     const sourceRows=value.sources.map(src=>`<li><b>${esc(src.name)}</b><span>${src.tags.map(id=>esc(B.TAGS[id])).join(' / ')}</span></li>`).join('');
     modal('万法归一', `<div class="build-head"><div><span>主脉</span><b>${esc(value.main?B.TAGS[value.main]:'未显')}</b></div><div><span>辅脉</span><b>${esc(value.sub?B.TAGS[value.sub]:'未显')}</b></div><div><span>激活协同</span><b>${value.synergies.length}</b></div></div><p class="intro">${esc(value.explanation)} 标签只解释真实来源；打开或关闭命册不会推进 RNG，也不会写入存档。</p><div class="build-tags">${tags}</div><h3>来源 → 协同 → 当前效果</h3><div class="build-synergies">${synergies||'<p class="intro">当前尚没有满足两类标签的协同。继续让这一世的选择互相呼应。</p>'}</div><details class="build-sources"><summary>查看全部来源 · ${value.sources.length}</summary><ul>${sourceRows}</ul></details>`);
   }
+  function lifeModal() {
+    if (!state || ['talents','attributes'].includes(state.phase)) { modal('天命人生','<p class="intro">入世以后，出身才会在后续境界留下真正回响。</p>'); return; }
+    const chain=L.chain(state.origin), pending=L.event(state.life?.pending), fx=L.effects(state.life);
+    if (!chain) { modal('天命人生','<p class="intro">当前出身没有可追踪的人生链。</p>'); return; }
+    const effects=Object.entries(fx).map(([key,value])=>`${key} ${Math.abs(value)<1?`${value>0?'+':''}${Math.round(value*100)}%`:`${value>0?'+':''}${value}`}`).join(' · ')||'尚无持续余波';
+    const pendingBlock=pending?`<section class="life-event${pending.major?' major':''}"><span>${pending.major?'人生重大选择':'出身回响'} · ${D.REALMS[pending.minRealm].name}以后</span><h3>${esc(pending.title)}</h3><p>${esc(pending.text)}</p><div>${pending.choices.map((choice,index)=>button('life-resolve',`${esc(choice.name)}${small(`${choice.note}${choice.effects?' · 会留下轻量余波':''}`)}`,{id:choice.id,classes:`${index===0?'primary':'secondary'} full`})).join('')}</div></section>`:'<p class="life-clear">这一阶段没有新的出身回响。过去已经完成的选择仍可在这里回看。</p>';
+    const progress=chain.events.map(event=>`<li class="${state.life.completed.includes(event.id)?'done':state.life.pending===event.id?'pending':''}"><span>${state.life.completed.includes(event.id)?'已结':state.life.pending===event.id?'当前':`需 ${D.REALMS[event.minRealm].name}`}</span><b>${esc(event.title)}</b></li>`).join('');
+    const history=state.life.history.slice().reverse().map(row=>{const event=L.event(row.event),choice=event?.choices.find(x=>x.id===row.choice);return `<li><span>${D.REALMS[row.realm]?.name||''}</span><b>${esc(event?.title||row.event)}</b><small>${esc(choice?.name||row.choice)}</small></li>`;}).join('');
+    modal(`天命人生 · ${chain.name}`, `<div class="life-head"><span>此生出身</span><b>${esc(chain.name)}</b><small>当前余波：${esc(effects)}</small></div><p class="intro">出身不会锁死职业。每次回响都可以选择介入、换一种方式，或明确拒绝；拒绝同样算作已经作出的决定，不会刷新后重复领奖。</p>${pendingBlock}<h3>人生节点</h3><ol class="life-progress">${progress}</ol>${history?`<h3>已作选择</h3><ul class="life-log">${history}</ul>`:''}`);
+  }
   function sectModal() {
     if (!state || state.realm<1 || ['talents','attributes'].includes(state.phase)) { modal('宗门时代','<p class="intro">炼气以后，山门才会正式向你打开。宗门是传承与事件，不是贡献币和职位后台。</p>'); return; }
     const sect=X.current(state.sect), pending=X.pendingEvent(state.sect);
@@ -566,6 +577,7 @@
         case 'skip-combat': finishCombatReplay(); break;
         case 'secret-realm': secretRealmModal(); break;
         case 'sect': sectModal(); break;
+        case 'life': lifeModal(); break;
         case 'equipment': equipmentModal(); break;
         case 'build': buildModal(); break;
         case 'audio-music': sound.update({ music: !sound.settings().music }); audioSettings(); break;
@@ -630,7 +642,10 @@
       clearTimeout(noticeTimer); notice.classList.remove('visible'); notice.textContent = '';
       persist(); render();
       showFeedback(feedback);
-      if (action.type.startsWith('sect-')) {
+      if (action.type.startsWith('life-')) {
+        lifeModal();
+        dialog.querySelector('[data-action^="life-"]')?.focus({ preventScroll:true });
+      } else if (action.type.startsWith('sect-')) {
         sectModal();
         dialog.querySelector('[data-action^="sect-"]')?.focus({ preventScroll:true });
       } else if (action.type.startsWith('equipment-')) {
