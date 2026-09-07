@@ -177,7 +177,7 @@ async function main() {
     widths: [...new Set([...smoke.layouts.map(x => x.width), ...extension.layouts.map(x => x.width), ...(v100?.layouts || []).map(x => x.width)])],
     backgrounds: visual.backgrounds.length, highEventFixtures: visual.highEvents.length, traceEventFixtures: visual.traceEvents.length,
     fileCases: visual.fileCases.length, reducedMotion: true,
-    extension: { audio: extension.audio, immortal: extension.immortal, evolution: extension.evolution, secondLife: v100?.secondLife || null },
+    extension: { audio: extension.audio, immortal: extension.immortal, evolution: extension.evolution, systems: extension.systems || {}, secondLife: v100?.secondLife || null },
     consoleErrors: [...smoke.errors, ...visual.errors, ...extension.errors, ...(v100?.errors || []), ...downloads.errors],
     failedRequests: [...smoke.failedRequests, ...visual.failedRequests, ...extension.failedRequests, ...(v100?.failedRequests || [])],
     externalRequests: smoke.externalRequests + visual.externalRequests + extension.externalRequests + (v100?.externalRequests || 0) + downloads.externalRequests,

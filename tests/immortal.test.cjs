@@ -49,7 +49,7 @@ test('仙躯崩散可从落点重试，原凡界结局与道痕不丢失', () =>
 test('旧 v4 通关档升级仍在原结局，损坏仙界存档被拦截', () => {
   const old = simulate(810).state; old.version = 4; delete old.immortal;
   const migrated = E.deserialize(JSON.stringify(old));
-  assert.equal(migrated.version, 5); assert.equal(migrated.phase, 'complete'); assert.equal(migrated.immortal, null);
+  assert.equal(migrated.version, E.VERSION); assert.equal(migrated.phase, 'complete'); assert.equal(migrated.immortal, null); assert.deepEqual(migrated.equipment.inventory, []);
   const real = prologue(migrated).state;
   for (const mutate of [i=>i.basePower++,i=>i.wormPower++,i=>i.health=101,i=>i.law='fake',i=>i.journal=Array(41).fill({day:0,text:'x'}),i=>i.target='fake']) {
     const broken = clone(real); mutate(broken.immortal); assert.throws(() => E.deserialize(JSON.stringify(broken)));

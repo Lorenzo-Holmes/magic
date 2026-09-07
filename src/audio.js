@@ -24,6 +24,7 @@
     return s.realm >= 9 ? 'tribulation' : s.realm >= 6 ? 'void' : s.realm >= 3 ? 'cloud' : 'mortal';
   }
   function cueFor(before, after, action) {
+    if (action?.type === 'equipment-evolve') return 'fusion';
     if (!action) return null;
     if (after?.immortal?.wormSlain && !before?.immortal?.wormSlain || after?.immortal?.phase === 'ending' && before?.immortal?.phase !== 'ending') return 'ascension';
     if (action.type === 'immortal-evolution-fuse') return 'fusion';

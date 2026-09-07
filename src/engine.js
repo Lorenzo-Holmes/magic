@@ -3,8 +3,9 @@
   else root.FSEngine = factory(root.FSData);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (D) {
   'use strict';
-  const VERSION = 5;
+  const VERSION = 6;
   const immortalEngine = () => typeof module === 'object' && module.exports ? require('./immortal.js') : globalThis.FSImmortal;
+  const equipmentEngine = () => typeof module === 'object' && module.exports ? require('./equipment.js') : globalThis.FSEquipment;
   const PHASES = ['talents', 'attributes', 'playing', 'draft', 'mutation', 'fusion', 'tribulation', 'complete', 'dead'];
   const EVENT_IDS = ['arrival', 'quiet', 'herbs', 'ruin', 'swordsman', 'hunt', 'first-python', 'revenge', 'remains', 'advanced', 'boss', 'high', 'trace-echo', 'trace-resonance'];
   const BOSS_ROUTE_IDS = ['fight', 'see-through', 'sword-break', 'devour-eye', 'body-charge', 'fate'];
@@ -27,6 +28,7 @@
       ...s.talents.map(id => byId(D.TALENTS, id)), ...s.mutations.map(id => byId(D.MUTATIONS, id)),
       ...(s.fusions || []).map(id => byId(D.FUSIONS, id))];
     for (const source of sources.filter(Boolean)) for (const [key, value] of Object.entries(source.effects)) result[key] = (result[key] || 0) + value;
+    if (s.equipment) for (const [key, value] of Object.entries(equipmentEngine().effects(s.equipment))) result[key] = (result[key] || 0) + value;
     if (s.talents.includes('taotie') && s.talents.includes('stomach')) { result.devour = (result.devour || 0) + 0.25; result.power = (result.power || 0) + 0.15; }
     if (s.root === 'thunder' && s.talents.includes('swordbone') && s.sword) result.power = (result.power || 0) + 0.20;
     return result;
@@ -241,7 +243,7 @@
       highSeen: [], realmProofs: [], tribulationStage: 0, tribulationBase: null, ascendedPower: null,
       carriedTrace, traceSourceSeed, bossRoute: null, tribulationRoutes: [], batchCultivations: 0,
       event: null, draft: null, firstPower: null, revengePower: null, lastGain: 0,
-      ending: null, log: [], immortal: null
+      ending: null, log: [], equipment: equipmentEngine().createState(), immortal: null
     };
     s.offer = openingOffer(s);
     return s;
@@ -596,8 +598,27 @@
         }
         break;
       }
+      case 'equipment-identify':
+        requireThat(!['talents', 'attributes'].includes(s.phase), '尚未入世，不能整理装备。');
+        s.equipment = equipmentEngine().identify(s.equipment, action.id); break;
+      case 'equipment-equip':
+        requireThat(!['talents', 'attributes'].includes(s.phase), '尚未入世，不能穿戴装备。');
+        s.equipment = equipmentEngine().equip(s.equipment, action.id); break;
+      case 'equipment-unequip':
+        requireThat(!['talents', 'attributes'].includes(s.phase), '尚未入世，不能调整装备。');
+        s.equipment = equipmentEngine().unequip(s.equipment, action.id); break;
+      case 'equipment-refine':
+        requireThat(!['talents', 'attributes'].includes(s.phase), '尚未入世，不能温养装备。');
+        s.equipment = equipmentEngine().refine(s.equipment, action.id); break;
+      case 'equipment-salvage':
+        requireThat(!['talents', 'attributes'].includes(s.phase), '尚未入世，不能归炉装备。');
+        s.equipment = equipmentEngine().salvage(s.equipment, action.id); break;
+      case 'equipment-evolve':
+        requireThat(!['talents', 'attributes'].includes(s.phase), '尚未入世，不能蜕变神兵。');
+        s.equipment = equipmentEngine().evolve(s.equipment, action.id); break;
       default: throw new Error('未识别的操作。');
     }
+    if (!action.type.startsWith('equipment-')) s.equipment = equipmentEngine().observe(s.equipment, state, s, action);
     nextRevision(s);
     validate(s);
     return s;
@@ -609,6 +630,7 @@
       requireThat(s.phase === 'complete' && s.flags?.ascended && s.immortal.mortalPower === s.ascendedPower, '仙界与凡界成就不一致。');
       immortalEngine().validate(s.immortal);
     }
+    equipmentEngine().validate(s.equipment);
     requireThat(s.defeats === undefined || s.defeats === null || (Number.isSafeInteger(s.defeats) && s.defeats >= 0), '败退记录损坏。');
     for (const key of ['seed', 'rng']) requireThat(Number.isInteger(s[key]) && s[key] > 0 && s[key] <= 4294967295, '随机种子损坏。');
     requireThat(Number.isSafeInteger(s.revision) && s.revision >= 0 || typeof s.revision === 'string' && s.revision.length <= 2048 && /^(0|[1-9]\d*)$/.test(s.revision), '操作版本损坏。');
@@ -690,7 +712,11 @@
     if (!s || s.version !== 4) return s;
     s.version = 5; s.immortal = null; return s;
   }
-  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); if (s?.version === VERSION && s.immortal) s.immortal = immortalEngine().migrate(s.immortal); validate(s); return s; }
+  function migrateV5(s) {
+    if (!s || s.version !== 5) return s;
+    s.version = 6; s.equipment = equipmentEngine().createState(); return s;
+  }
+  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); s = migrateV5(s); if (s?.version === VERSION && s.immortal) s.immortal = immortalEngine().migrate(s.immortal); validate(s); return s; }
   function synergies(s) {
     const list = [];
     if (s.sword && s.root === 'thunder' && s.talents.includes('swordbone')) list.push({ name: '雷剑体', text: '雷灵根 × 天生剑骨 × 青云剑诀：战力额外 +20%。' });

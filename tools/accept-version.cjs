@@ -17,7 +17,9 @@ assert.equal(qa.passed, true); assert.equal(qa.version, version);
 assert.equal(qa.testedZipSha256, build.zipSha256);
 assert.equal(qa.externalRequests, 0); assert.equal(qa.consoleErrors.length, 0); assert.equal(qa.failedRequests.length, 0);
 assert.ok(qa.mainFlow.ascended && qa.fileCases >= 21 && qa.reducedMotion);
+assert.deepEqual(qa.widths, [320,360,390,430,768,1280], 'Final six-width browser matrix incomplete');
 if (build.files.some(f => f.path === 'src/audio.js')) assert.ok(qa.extension?.audio?.startsLocked && qa.extension.audio.nineCues && qa.extension.audio.muteAndReload && qa.extension.audio.bands.length === 4, 'Audio acceptance missing');
+if (build.files.some(f => f.path === 'src/equipment.js')) assert.ok(qa.extension?.systems?.equipment?.passed && qa.extension.systems.equipment.capacity === 12 && qa.extension.systems.equipment.reloadPreserved && qa.extension.systems.equipment.mortalOnly, 'Equipment acceptance missing');
 if (build.files.some(f => f.path === 'src/immortal.js')) assert.ok(qa.extension?.immortal?.passed && qa.extension.immortal.mortalPreserved && qa.extension.immortal.fileCases.length === 3, 'Immortal acceptance missing');
 if (build.files.some(f => f.path === 'src/evolution.js')) assert.ok(qa.extension?.evolution?.passed && qa.extension.evolution.largeNumberFixture && qa.extension.evolution.endlessWorlds >= 2 && qa.extension.evolution.fileCases.length === 3, 'Evolution acceptance missing');
 let finalSimulation = JSON.parse(fs.readFileSync(`output/final-simulation-v${version}.json`, 'utf8'));
@@ -25,7 +27,6 @@ assert.ok(finalSimulation.passed && finalSimulation.simulations === 6000 && fina
 assert.ok(finalSimulation.guarantees.allAscended && finalSimulation.guarantees.allImmortalProloguesComplete && finalSimulation.guarantees.allWormRevengeComplete && finalSimulation.guarantees.memoryTalentSelected, 'Final simulation guarantee failed');
 assert.ok(finalSimulation.balanceRatio < 4, 'Final path balance regression');
 if (version === '1.0.0') {
-  assert.deepEqual(qa.widths, [320,360,390,430,768,1280], 'Final six-width browser matrix incomplete');
   assert.ok(qa.extension?.secondLife?.ledger?.ended === 2 && qa.extension.secondLife.ledger.ascended === 2 && qa.extension.secondLife.memoryTalent?.startsWith('memory-') && qa.extension.secondLife.immortalLaw, 'Second-life browser closure missing');
 }
 assert.ok(build.zipBytes < 3000000);

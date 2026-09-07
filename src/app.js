@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat, P = window.FSPresentation;
+  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat, P = window.FSPresentation, G = window.FSEquipment;
   const world = S.attach(document.getElementById('world'));
   const sound = window.FSAudio.create();
   window.FSSound = sound; // Readable audio diagnostics; no gameplay state is exposed.
@@ -108,7 +108,8 @@
     return `<aside class="story-rail"><div class="rail-heading"><span class="seal small-seal">道</span><span>一卷命册 · 万般道途</span></div><h1>我欲<br><em>飞升</em></h1><p class="rail-poem">山外有山，天外有天。<br>此刻不可撼动的庞然大物，<br>终有一日，只是你的一口修为。</p>${ornament()}<div class="road"><span class="${level >= 0 ? 'lit' : ''}">凡</span><i></i><span class="${level >= 2 ? 'lit' : ''}">筑基</span><i></i><span class="${level >= 3 ? 'lit' : ''}">金丹</span><i></i><span class="${level >= 5 ? 'lit' : ''}">化神</span><i></i><span class="${level >= 8 ? 'lit' : ''}">大乘</span><i></i><span class="${state?.flags?.ascended ? 'lit' : ''}">飞升</span></div><p class="rail-foot">凡界卷 · 直到天门洞开<br>飞升是终点，也是下一池塘的起点。</p>${mountain()}</aside>`;
   }
   function header() {
-    return `<header class="topbar">${button('home', '<span class="brand-mark">升</span><span>我欲飞升</span>', { ui: true, classes: 'brand', aria: '返回首页，不删除进度' })}<span class="chapter-badge">${state?.immortal && !home && !mortalSummary ? '仙界 · 进化篇' : '凡界 · 轮回篇'}</span><div class="topbar-actions">${button('audio-settings', '音景', { ui: true, classes: 'text-button', aria: '音乐、音效与音量设置' })}${button('codex', '图谱', { ui: true, classes: 'text-button' })}${button('journal', '命册', { ui: true, classes: 'text-button' })}</div></header>`;
+    const gear = state && !['talents','attributes'].includes(state.phase) ? button('equipment', `行囊 ${state.equipment.inventory.length}/${G.MAX_INVENTORY}`, { ui:true, classes:'text-button', aria:'本命神兵与四槽装备' }) : '';
+    return `<header class="topbar">${button('home', '<span class="brand-mark">升</span><span>我欲飞升</span>', { ui: true, classes: 'brand', aria: '返回首页，不删除进度' })}<span class="chapter-badge">${state?.immortal && !home && !mortalSummary ? '仙界 · 进化篇' : '凡界 · 轮回篇'}</span><div class="topbar-actions">${gear}${button('audio-settings', '音景', { ui: true, classes: 'text-button', aria: '音乐、音效与音量设置' })}${button('codex', '图谱', { ui: true, classes: 'text-button' })}${button('journal', '命册', { ui: true, classes: 'text-button' })}</div></header>`;
   }
   function metaStrip() {
     const summary = M.summary(meta), trace = summary.nextTrace;
@@ -385,8 +386,30 @@
     const profile = M.classifyPath(state), inherited = find(D.TRACES, state.carriedTrace);
     modal('此世命册', `<div class="journal-status"><strong>${D.REALMS[state.realm].name} · ${state.age} 岁</strong><span>${root?.name || '灵根未显'} / ${find(D.ORIGINS, state.origin)?.name || '尚未入世'}</span></div><div class="journal-stats">${D.STATS.map(stat => `<div><span>${stat.name}</span><b>${a[stat.id]}</b><small>基础 ${state.stats[stat.id]}</small></div>`).join('')}</div><h3>本世道途</h3><div class="journal-path"><b>${esc(profile.name)} · ${esc(profile.stage)}</b><span>${profile.signals.map(esc).join(' · ') || '倾向尚未形成'}</span><p>${esc(profile.next)}</p>${inherited ? `<small>前世所携：${esc(inherited.name)}。本世结束后不会自动继续继承。</small>` : ''}</div><h3>天命、异变与融合</h3><div class="journal-talents">${state.talents.map(id => { const t = find(D.TALENTS, id); return `<p><b class="rarity-${t.rarity}">${t.name}</b><span>${t.description}</span></p>`; }).join('') || '<p>尚未选择先天天命。</p>'}<p><b>基础吞灵诀</b><span>${state.flags.pythonSeen ? '已领悟。击败妖兽后可以吞噬，非稀有天赋专属。' : '将在黑风岭初遇后领悟。'}</span></p>${state.sword ? '<p><b>青云剑诀</b><span>基础战力 +12%，激活剑道天命与高阶事件路线。</span></p>' : ''}${state.mutations.map(id => { const m = find(D.MUTATIONS, id); return `<p><b>${m.name} · ${m.slot}</b><span>${m.description}</span></p>`; }).join('')}${(state.fusions || []).map(id => { const f = find(D.FUSIONS, id); return `<p><b class="gold-text">${f.name} · ${f.path}</b><span>${f.description}</span></p>`; }).join('')}${E.synergies(state).filter(s => !(state.fusions || []).some(id => find(D.FUSIONS, id)?.name === s.name)).map(s => `<p><b class="gold-text">${s.name} · 已共鸣</b><span>${s.text}</span></p>`).join('')}</div><h3>关键因果</h3><p class="intro">赤鳞妖蟒：${state.flags.pythonSlain ? '已吞噬' : state.flags.pythonSeen ? `已记因果，初见战力 ${fmt(state.firstPower)}` : '尚未相遇'}。<br>三眼妖王：${state.flags.bossSlain ? `已镇杀${state.bossRoute ? ` · ${esc(M.BOSS_ROUTES.find(route => route.id === state.bossRoute)?.name || state.bossRoute)}` : ''}` : state.flags.bossSeen ? '已经现世' : '尚未现世'}。</p>${state.realm >= 4 ? `<h3>天地印证与天劫</h3><p class="intro">已完成：${proofs}。${state.flags.ascended ? '<br>三重天劫：全部已渡。' : state.phase === 'tribulation' ? `<br>当前天劫：${state.tribulationStage + 1} / 3。` : ''}${state.tribulationRoutes?.length ? `<br>已用路线：${state.tribulationRoutes.map(id => esc(M.TRIBULATION_ROUTES.find(route => route.id === id)?.name || '旧版路线')).join('、')}` : ''}</p>` : ''}<h3>此世历程</h3><ol class="history">${state.log.slice().reverse().map(l => `<li><small>${l.age} 岁 · ${D.REALMS[l.realm]?.name || ''}</small><b>${esc(l.title)}</b><p>${esc(l.text)}</p></li>`).join('') || '<li>此世尚未入山。</li>'}</ol>${button('codex', '打开命途图谱', { ui: true, classes: 'secondary full' })}${button('settings', '存档、导入与玩法说明', { ui: true, classes: 'secondary full' })}`);
   }
+  function equipmentModal() {
+    if (!state?.equipment || ['talents','attributes'].includes(state.phase)) { modal('本命神兵', '<p class="intro">入世之后，历练、妖王、天地印证与天劫才会留下装备。</p>'); return; }
+    const eq=state.equipment, equippedUids=new Set(Object.values(eq.slots).filter(Boolean));
+    const slots=Object.entries(G.SLOTS).map(([slot,name])=>{
+      const entry=G.equipped(eq,slot), def=G.data(entry);
+      return `<div class="gear-slot"><span>${name}</span><div>${entry?`<b class="rarity-${def.rarity}">${esc(def.name)}</b><small>${G.REFINE_NAMES[entry.refinement]}${def.special?` · 本命神兵 ${def.stage+1}/3`:''}</small>`:'<b>空槽</b><small>从已鉴定行囊中穿戴</small>'}</div>${entry?button('equipment-unequip','卸下',{id:slot,classes:'text-button'}):''}</div>`;
+    }).join('');
+    const inventory=eq.inventory.map(entry=>{
+      const def=G.data(entry), worn=equippedUids.has(entry.uid), quality=window.FSPresentation.qualityFromRarity(def.rarity);
+      const actions=[];
+      if (!entry.identified) actions.push(button('equipment-identify','鉴定',{id:entry.uid,classes:'secondary'}));
+      else {
+        if (!worn) actions.push(button('equipment-equip',`穿戴 · ${G.SLOTS[def.slot]}`,{id:entry.uid,classes:'secondary'}));
+        if (entry.refinement<3) actions.push(button('equipment-refine',`${G.REFINE_NAMES[entry.refinement]} → ${G.REFINE_NAMES[entry.refinement+1]}`,{id:entry.uid,classes:'text-button',disabled:eq.essence<entry.refinement+1}));
+        if (def.special && def.next) actions.push(button('equipment-evolve',`神兵蜕变${small(`历练 ${entry.xp}/${def.stage===0?80:220}`)}`,{id:entry.uid,classes:'trace-route',disabled:entry.xp<(def.stage===0?80:220)}));
+        if (!worn) actions.push(button('equipment-salvage','归炉',{id:entry.uid,classes:'text-button'}));
+      }
+      return `<article class="gear-card rarity-${def.rarity}" data-gear="${esc(entry.uid)}"><div class="talent-meta"><span>${quality.name}品 · ${G.SLOTS[def.slot]}</span><span>${worn?'已穿戴':entry.identified?G.REFINE_NAMES[entry.refinement]:'未鉴定'}</span></div><h3>${entry.identified?esc(def.name):'封灵器匣'}</h3><p>${entry.identified?esc(def.description):'灵光被封，鉴定只揭示器物，不消耗资源。'}</p>${entry.identified&&def.special?`<div class="weapon-xp"><span>${esc(def.path)}路线 · ${def.stage+1}/3</span><b>${entry.xp} 神兵历练</b></div>`:''}<div class="gear-actions">${actions.join('')}</div></article>`;
+    }).join('');
+    const last=eq.lastDrop&&!eq.lastDrop.missed?`<p class="footnote">最近所得：${eq.lastDrop.full?`行囊已满，自动化为 ${eq.lastDrop.converted} 器蕴。`:`${esc(G.BY_ID[eq.lastDrop.id]?.name||'未知器物')} · 来源 ${esc(eq.lastDrop.kind)}`}</p>`:'';
+    modal('本命神兵', `<div class="gear-summary"><div><span>行囊</span><b>${eq.inventory.length} / ${G.MAX_INVENTORY}</b></div><div><span>器蕴</span><b>${eq.essence}</b></div><div><span>规则</span><b>无耐久 · 无失败</b></div></div><p class="intro">四槽装备只作用于凡界 Build，与仙界肉身 / 血脉 / 神魂 / 神通 / 法则五槽完全分离。历练与战斗可让已穿戴本命神兵获得历练；温养使用归炉所得器蕴，显示阶段名而不是“+N”。</p><div class="gear-slots">${slots}</div><h3>行囊</h3><div class="gear-grid">${inventory||'<p class="intro">行囊尚空。历练、妖王、天地印证与天劫会确定性生成掉落。</p>'}</div>${last}`);
+  }
   function settings() {
-    modal('存档与说明', `<p class="intro">游戏使用当前浏览器本地存储。本世存档与轮回册分开保存：前者记录凡界、仙界与无尽进化，后者记录图谱、称号、历世结果和下一世待继承道痕。同一网址下可续玩，不会自动跨浏览器或设备同步。</p><div class="settings-actions">${button('export', '导出当前存档 JSON', { ui: true, classes: 'secondary full', disabled: !state })}${button('export-meta', '导出轮回册 JSON', { ui: true, classes: 'secondary full' })}${button('export-raw', '导出浏览器原始存档', { ui: true, classes: 'text-button full' })}<label class="file-label secondary">导入本世存档<input id="import-save" type="file" accept=".json,application/json"></label><label class="file-label secondary">导入轮回册<input id="import-meta" type="file" accept=".json,application/json"></label></div><h3>怎么玩</h3><p class="intro">凡界以天命、异变、融合和天地印证形成六大道途；飞升后进入仙界，完成界压适应、法则选择和噬灵虫复仇，再以肉身、血脉、神魂、神通、法则五槽继续吞噬、替换、升级和融合。正式阶段结局之后可继续无尽诸天。</p><h3>轮回</h3><p class="intro">一世结束后可凝练一枚道痕。下一世八选三会固定加入一张对应的玄品前世天命，同时保留两段前世回声和一条天劫路线；这些影响只服务下一世，不永久累加基础战力。</p><p class="footnote">v${S.VERSION} · ${state ? `本世种子 ${state.seed} · ` : ''}存档格式 v${E.VERSION} · 轮回册格式 v${M.VERSION}<br>全部生产资源本地运行；没有付费抽取、广告或联网排行。</p>`);
+    modal('存档与说明', `<p class="intro">游戏使用当前浏览器本地存储。本世存档与轮回册分开保存：前者记录凡界装备、仙界与无尽进化，后者记录图谱、称号、历世结果和下一世待继承道痕。同一网址下可续玩，不会自动跨浏览器或设备同步。</p><div class="settings-actions">${button('export', '导出当前存档 JSON', { ui: true, classes: 'secondary full', disabled: !state })}${button('export-meta', '导出轮回册 JSON', { ui: true, classes: 'secondary full' })}${button('export-raw', '导出浏览器原始存档', { ui: true, classes: 'text-button full' })}<label class="file-label secondary">导入本世存档<input id="import-save" type="file" accept=".json,application/json"></label><label class="file-label secondary">导入轮回册<input id="import-meta" type="file" accept=".json,application/json"></label></div><h3>怎么玩</h3><p class="intro">凡界以天命、异变、融合、四槽装备和天地印证形成道途；本命神兵可在实战中积累历练并沿三条路线蜕变。飞升后进入仙界，肉身、血脉、神魂、神通、法则五槽是另一套独立系统，不继承凡界装备槽位。正式阶段结局之后可继续无尽诸天。</p><h3>轮回</h3><p class="intro">一世结束后可凝练一枚道痕。下一世八选三会固定加入一张对应的玄品前世天命，同时保留两段前世回声和一条天劫路线；这些影响只服务下一世，不永久累加基础战力。</p><p class="footnote">v${S.VERSION} · ${state ? `本世种子 ${state.seed} · ` : ''}存档格式 v${E.VERSION} · 轮回册格式 v${M.VERSION}<br>全部生产资源本地运行；没有付费抽取、广告或联网排行。</p>`);
   }
   function audioSettings() {
     const a = sound.settings(), status = sound.diagnostics();
@@ -451,6 +474,7 @@
           if (state?.immortal) modal('仙界命册', `<ol class="history">${state.immortal.journal.slice().reverse().map(j => `<li><small>仙界第 ${j.day} 日</small><p>${esc(j.text)}</p></li>`).join('')}</ol>${button('settings', '存档与说明', { ui: true, classes: 'secondary full' })}`);
           break;
         case 'audio-settings': audioSettings(); break;
+        case 'equipment': equipmentModal(); break;
         case 'audio-music': sound.update({ music: !sound.settings().music }); audioSettings(); break;
         case 'audio-effects': sound.update({ effects: !sound.settings().effects }); audioSettings(); break;
         case 'number-detail': modal('完整战力', `<p class="exact-number">${esc(F.full(Number(el.dataset.id)))}</p><p class="intro">主显示只改变排版，不改变战力计算或存档精度。</p>`); break;
@@ -513,7 +537,10 @@
       clearTimeout(noticeTimer); notice.classList.remove('visible'); notice.textContent = '';
       persist(); render();
       showFeedback(feedback);
-      if (['select', 'stat', 'preset'].includes(action.type)) {
+      if (action.type.startsWith('equipment-')) {
+        equipmentModal();
+        dialog.querySelector(`[data-action="${action.type}"]`)?.focus({ preventScroll:true });
+      } else if (['select', 'stat', 'preset'].includes(action.type)) {
         const target = [...document.querySelectorAll('[data-action]')].find(b => b.dataset.action === action.type && b.dataset.id === action.id && b.dataset.delta === el.dataset.delta);
         target?.focus({ preventScroll: true });
       } else document.getElementById('main').focus({ preventScroll: true });

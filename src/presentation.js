@@ -29,6 +29,7 @@
     if ((after.vitality || 0) > (before.vitality || 0) && action.type !== 'breakthrough') {
       out.push({ id: 'vitality', label: '元气', value: `+${after.vitality - before.vitality}`, tone: 'recovery' });
     }
+    if ((after.equipment?.inventory?.length || 0) > (before.equipment?.inventory?.length || 0)) out.push({ id:'equipment', label:'装备', value:'+1', tone:'rare' });
     return out.slice(0, 3);
   }
   function major(before, after, action) {
@@ -51,6 +52,9 @@
     }
     if (action.type === 'immortal-evolution-fuse') return {
       id: `evolution-fuse-${action.id || 'unknown'}`, kind: 'fusion', eyebrow: '五槽共鸣', title: '仙界融合', subtitle: '旧力熔尽 · 新法成形', duration: 2000
+    };
+    if (action.type === 'equipment-evolve') return {
+      id:`weapon-evolve-${action.id || 'unknown'}`, kind:'weapon', eyebrow:'器鸣入道', title:'本命神兵', subtitle:'旧形已尽 · 新锋初成', duration:2100
     };
     return null;
   }

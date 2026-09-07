@@ -1,7 +1,7 @@
 async (page, options = {}) => {
   const version = await page.evaluate(() => FSScenes.VERSION), baseURL = new URL(page.url()).origin;
   const out = options.out || `output/playwright/v${version}`;
-  const report = { version, passed: false, errors: [], requests: [], failedRequests: [], layouts: [], screenshots: [] };
+  const report = { version, passed: false, errors: [], requests: [], failedRequests: [], layouts: [], screenshots: [], systems:{} };
   const check = (ok, message) => { if (!ok) throw new Error(message); };
   page.on('pageerror', e => report.errors.push(e.message));
   page.on('console', e => { if (e.type() === 'error') report.errors.push(e.text()); });
@@ -82,6 +82,27 @@ async (page, options = {}) => {
   const diag = await page.evaluate(() => FSSound.diagnostics());
   check(Object.keys(diag.cueCounts).length === 9 && diag.voices <= 24, 'Cue synthesis or voice cleanup failed');
   report.audio.nineCues = true; report.audio.maxVoiceBudget = 24;
+  if (await page.evaluate(() => !!window.FSEquipment)) {
+    await restore('ascension--ascension');
+    const equipmentStart = await run();
+    check(equipmentStart.equipment?.inventory?.length > 0, 'Ascension fixture did not earn any mortal equipment');
+    const uid = equipmentStart.equipment.inventory[0].uid;
+    await ui('equipment').click();
+    check(await page.locator('dialog .gear-card').count() === equipmentStart.equipment.inventory.length, 'Equipment modal inventory count differs from save');
+    await layout('equipment-inventory');
+    if (await page.locator(`[data-action="equipment-identify"][data-id="${uid}"]`).count()) await page.locator(`[data-action="equipment-identify"][data-id="${uid}"]`).click();
+    const identified = await run();
+    check(identified.equipment.inventory.find(x => x.uid === uid)?.identified, 'Equipment identify did not persist');
+    await page.locator(`[data-action="equipment-equip"][data-id="${uid}"]`).click();
+    const equipped = await run(), def = await page.evaluate(id => FSEquipment.data(JSON.parse(localStorage.getItem('feisheng.run.v1')).equipment.inventory.find(x=>x.uid===id)), uid);
+    check(equipped.equipment.slots[def.slot] === uid, 'Equipment did not enter its matching mortal slot');
+    const equippedRaw = JSON.stringify(equipped);
+    await page.reload(); await ui('continue').click();
+    check(JSON.stringify(await run()) === equippedRaw, 'Mortal equipment changed after reload');
+    check((await run()).immortal === null, 'Equipment acceptance unexpectedly entered immortal state');
+    report.systems.equipment = { passed:true, inventory:equipmentStart.equipment.inventory.length, capacity:12, identified:true, equippedSlot:def.slot, reloadPreserved:true, mortalOnly:true };
+    await restore('ascension--ascension');
+  }
   await restore('ascension--ascension');
   const mortal = await run(), originalPower = mortal.ascendedPower;
   await action('immortal-enter').click();
