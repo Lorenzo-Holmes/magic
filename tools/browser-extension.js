@@ -11,7 +11,7 @@ async (page, options = {}) => {
   const ui = name => page.locator(`[data-ui="${name}"]`);
   const action = name => page.locator(`[data-action="${name}"]`);
   const run = () => page.evaluate(() => JSON.parse(localStorage.getItem('feisheng.run.v1')));
-  const widths = version === '1.0.0' ? [320, 360, 390, 430, 768, 1280] : [320, 390, 430, 1280];
+  const widths = [320, 360, 390, 430, 768, 1280];
   async function close() { if (await page.locator('dialog[open]').count()) await page.locator('dialog [data-ui="close-dialog"]').click(); }
   async function restore(name) {
     await close(); await ui('journal').first().click();

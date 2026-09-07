@@ -1,5 +1,5 @@
 'use strict';
-// v1.0 release stress: 1,000 deterministic seeds × six inherited paths.
+// Release stress: 1,000 deterministic seeds × six inherited paths.
 // Every sample is a legal second-life mortal run followed by the earned
 // immortal prologue. It does not mutate fixtures or skip state transitions.
 const fs = require('node:fs');
@@ -14,7 +14,7 @@ const root = path.resolve(__dirname, '..');
 const version = require('../package.json').version;
 function mean(values) { return values.reduce((a,b)=>a+b,0) / values.length; }
 function run() {
-  assert.equal(version, '1.0.0', 'Final stress is reserved for v1.0.0');
+  assert.match(version, /^(?:1\.(?:\d+)\.\d+|2\.0\.0)$/, 'Unsupported release version');
   const perPath = {}, allMortalTurns = [], allImmortalTurns = [];
   for (const strategy of PATHS) {
     const mortalTurns = [], immortalTurns = [], powers = [], ages = [];

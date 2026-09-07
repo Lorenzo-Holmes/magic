@@ -149,6 +149,12 @@
       cueCounts[id] = (cueCounts[id] || 0) + 1;
       const long = id === 'ascension';
       CUES[id].forEach((f, index) => tone(f, index * (long ? .24 : .10), long ? 2.8 : id === 'demon' ? 1.6 : .9, long ? .12 : .085, id === 'devour' ? 'triangle' : 'sine'));
+      // A short upper transient makes rare/major events read clearly on phone
+      // speakers without adding a recorded audio asset or another RNG stream.
+      if (['breakthrough', 'fusion', 'mutation', 'ascension'].includes(id)) {
+        const top = CUES[id][CUES[id].length - 1];
+        tone(top * 2, id === 'ascension' ? .58 : .22, id === 'ascension' ? 1.9 : .55, id === 'ascension' ? .055 : .04, 'triangle');
+      }
       if (id === 'thunder') {
         const buffer = context.createBuffer(1, Math.floor(context.sampleRate * .8), context.sampleRate), data = buffer.getChannelData(0);
         let x = 9631;

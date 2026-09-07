@@ -1,15 +1,19 @@
 (function () {
   'use strict';
-  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat;
+  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat, P = window.FSPresentation;
   const world = S.attach(document.getElementById('world'));
   const sound = window.FSAudio.create();
   window.FSSound = sound; // Readable audio diagnostics; no gameplay state is exposed.
   const KEY = 'feisheng.run.v1', BACKUP = 'feisheng.backup.v1', META_KEY = 'feisheng.meta.v1';
   const app = document.getElementById('app');
   const notice = document.getElementById('notice');
+  const feedbackLayer = document.createElement('div');
+  feedbackLayer.className = 'feedback-layer'; feedbackLayer.setAttribute('aria-hidden', 'true'); document.body.appendChild(feedbackLayer);
+  const majorLayer = document.createElement('div');
+  majorLayer.className = 'major-event-layer'; majorLayer.setAttribute('aria-hidden', 'true'); document.body.appendChild(majorLayer);
   const dialog = document.createElement('dialog');
   dialog.className = 'scroll-dialog'; dialog.setAttribute('aria-label', '命册与设置'); document.body.appendChild(dialog);
-  let state = null, meta = M.createMeta(), home = true, mortalSummary = false, runStorageWarning = '', metaStorageWarning = '', noticeTimer, previousView = '', pendingImport = null;
+  let state = null, meta = M.createMeta(), home = true, mortalSummary = false, runStorageWarning = '', metaStorageWarning = '', noticeTimer, majorTimer, previousView = '', pendingImport = null;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fmt = value => Number(value || 0).toLocaleString('zh-CN');
   const find = (items, id) => items.find(item => item.id === id);
@@ -19,6 +23,29 @@
     notice.textContent = text; notice.classList.toggle('visible', visible); clearTimeout(noticeTimer);
     noticeTimer = setTimeout(() => notice.classList.remove('visible'), 4500);
   }
+  function showFeedback(value) {
+    if (!value) return;
+    for (const item of value.rewards || []) {
+      const node = document.createElement('div');
+      node.className = `reward-toast reward-${item.tone || 'growth'}`;
+      node.innerHTML = `<span>${esc(item.label)}</span><b>${esc(item.value)}</b>`;
+      feedbackLayer.appendChild(node);
+      while (feedbackLayer.children.length > 4) feedbackLayer.firstElementChild?.remove();
+      setTimeout(() => node.remove(), 1350);
+    }
+    if (!value.major) return;
+    clearTimeout(majorTimer);
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const major = value.major;
+    majorLayer.dataset.kind = major.kind;
+    majorLayer.innerHTML = `<div class="major-event-card"><span>${esc(major.eyebrow)}</span><strong>${esc(major.title)}</strong><small>${esc(major.subtitle)}</small></div>`;
+    majorLayer.classList.add('visible');
+    const close = () => { majorLayer.classList.remove('visible'); majorLayer.replaceChildren(); delete majorLayer.dataset.kind; };
+    if (reduced) { close(); return; }
+    majorTimer = setTimeout(close, Math.max(1500, Math.min(3000, major.duration || 1900)));
+  }
+  // Browser QA can inspect the presentation shell without exposing gameplay mutation hooks.
+  window.FSPresentationUI = Object.freeze({ diagnostics: () => ({ rewardToasts: feedbackLayer.children.length, majorVisible: majorLayer.classList.contains('visible'), majorKind: majorLayer.dataset.kind || null }) });
   function save() {
     try { localStorage.setItem(KEY, E.serialize(state)); runStorageWarning = ''; }
     catch { runStorageWarning = '浏览器未允许保存。请在「命册」中导出存档，关闭页面后进度可能丢失。'; }
@@ -118,7 +145,7 @@
       : state.realm === 3 && !state.flags.bossSlain ? '金丹修为 · 为妖王一战蓄势'
       : proofMissing ? `${r.name}修为 · 尚欠一次天地印证`
       : state.realm >= 4 ? `${r.name}修为 · 天地印证已成` : '修为';
-    return `<section class="status-panel" aria-label="人物状态"><div class="realm-line"><div><span class="eyebrow">当前境界</span><h2>${r.name}<small>${stage}</small></h2></div><div class="power"><span>战力 · 点按看全数</span><strong id="power-value">${powerFigure(E.power(state))}</strong></div></div><div class="meter-label"><span>${meterTitle}</span><b>${fmt(state.xp)} / ${fmt(r.threshold)}</b></div><div class="meter" role="progressbar" aria-label="修为" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(xp)}"><i style="width:${xp}%"></i></div><div class="life-row"><span>寿元 <b>${state.age} / ${E.maxAge(state)}</b> 岁</span><span class="${state.vitality < 40 ? 'danger-text' : ''}">元气 <b>${state.vitality} / 100</b></span></div></section>`;
+    return `<section class="status-panel realm-focus" aria-label="人物状态"><div class="realm-line"><div><span class="eyebrow">当前境界</span><h2>${r.name}<small>${stage}</small></h2></div><div class="power"><span>此世战力</span><strong id="power-value">${powerFigure(E.power(state))}</strong></div></div><div class="meter-label"><span>${meterTitle}</span><b>${fmt(state.xp)} / ${fmt(r.threshold)}</b></div><div class="meter" role="progressbar" aria-label="修为" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(xp)}"><i style="width:${xp}%"></i></div><div class="life-row"><span>寿元 <b>${state.age} / ${E.maxAge(state)}</b> 岁</span><span class="${state.vitality < 40 ? 'danger-text' : ''}">元气 <b>${state.vitality} / 100</b></span></div></section>`;
   }
   function pathBanner() {
     const profile = M.classifyPath(state);
@@ -472,6 +499,11 @@
       if (el.dataset.delta) action.delta = Number(el.dataset.delta);
       const before = state.phase, beforeState = state;
       state = E.transition(state, action);
+      const feedback = P.enrich(P.feedback(beforeState, state, action), {
+        realm: D.REALMS[state.realm]?.name,
+        fusion: state.fusions?.length > beforeState.fusions?.length ? find(D.FUSIONS, state.fusions.at(-1))?.name : '',
+        mutation: state.mutations?.length > beforeState.mutations?.length ? find(D.MUTATIONS, state.mutations.at(-1))?.name : ''
+      });
       if (action.type.startsWith('immortal-')) mortalSummary = false;
       try { sound.cue(window.FSAudio.cueFor(beforeState, state, action)); } catch { /* Audio must never interrupt a game action. */ }
       const noteId = document.querySelector('.tutorial-note')?.dataset.note;
@@ -480,6 +512,7 @@
       }
       clearTimeout(noticeTimer); notice.classList.remove('visible'); notice.textContent = '';
       persist(); render();
+      showFeedback(feedback);
       if (['select', 'stat', 'preset'].includes(action.type)) {
         const target = [...document.querySelectorAll('[data-action]')].find(b => b.dataset.action === action.type && b.dataset.id === action.id && b.dataset.delta === el.dataset.delta);
         target?.focus({ preventScroll: true });

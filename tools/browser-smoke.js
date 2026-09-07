@@ -34,7 +34,7 @@ async (page, options = {}) => {
     if (current && !report.sceneStates[`${result.scene}--${result.atmosphere}`]) report.sceneStates[`${result.scene}--${result.atmosphere}`] = current;
     return result;
   }
-  const widths = version === '1.0.0' ? [320, 360, 390, 430, 768, 1280] : [320, 390, 430, 1280];
+  const widths = [320, 360, 390, 430, 768, 1280];
   async function layout(label) {
     await background(label);
     await page.waitForTimeout(1300);
@@ -136,7 +136,7 @@ async (page, options = {}) => {
   check(batch.event?.id === 'first-python', 'Batch cultivation did not stop at the forced serpent encounter');
   check(batch.batchCultivations === 1, 'Batch cultivation count was not recorded');
   report.batchCultivation = { cycles: batch.batchCultivations, stop: batch.event.id, age: batch.age, xp: batch.xp };
-  let iterations = 0, reloadedDraft = false, hunted = false;
+  let iterations = 0, reloadedDraft = false, hunted = false, presentationChecked = version === '1.0.0';
   const captured = new Set();
   while (iterations++ < 180) {
     const s = await state();
@@ -192,7 +192,15 @@ async (page, options = {}) => {
       const devour = action('resolve', '[data-choice="devour"]');
       if (await devour.count()) await devour.click();
       else await action('resolve', '[data-choice="flee"]').click();
-    } else if (await action('breakthrough').count()) await action('breakthrough').click();
+    } else if (await action('breakthrough').count()) {
+      await action('breakthrough').click();
+      if (!presentationChecked) {
+        const presentation = await page.evaluate(() => ({ module: !!window.FSPresentation, ...window.FSPresentationUI?.diagnostics() }));
+        check(presentation.module && presentation.majorVisible && presentation.majorKind === 'breakthrough', `Breakthrough presentation missing: ${JSON.stringify(presentation)}`);
+        report.presentation = { module: true, breakthroughOverlay: true };
+        presentationChecked = true;
+      }
+    }
     else if (s.realm >= 3 && s.vitality < 80) await action('act', '[data-kind="cultivate"]').click();
     else if (await action('challenge-boss').count()) {
       // If the UI offers the challenge, at least one route is viable. Prefer accumulating to a full bar first for stable smoke runs.
@@ -219,6 +227,7 @@ async (page, options = {}) => {
   check(finished.version === await page.evaluate(() => FSEngine.VERSION), 'Run save did not use the current save schema');
   check(typeof finished.bossRoute === 'string', 'Boss route was not recorded');
   check(finished.tribulationRoutes.length === 3, 'Tribulation route history is incomplete');
+  check(presentationChecked, 'Presentation layer was not exercised by the real playthrough');
   check(await page.locator('.immortal-preview').innerText().then(t => t.includes('仙界噬灵虫')), 'Ascension Easter egg missing');
   check(await page.locator('.revenge-comparison').innerText().then(t => t.includes('150')), 'Original enemy power contrast missing');
   check(finished.ascendedPower > 1000000000 && Math.ceil(finished.ascendedPower * 1.7) > finished.ascendedPower, 'Ascension power contrast changed');
