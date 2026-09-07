@@ -3,7 +3,7 @@
   else root.FSEngine = factory(root.FSData);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (D) {
   'use strict';
-  const VERSION = 11;
+  const VERSION = 12;
   const immortalEngine = () => typeof module === 'object' && module.exports ? require('./immortal.js') : globalThis.FSImmortal;
   const equipmentEngine = () => typeof module === 'object' && module.exports ? require('./equipment.js') : globalThis.FSEquipment;
   const buildEngine = () => typeof module === 'object' && module.exports ? require('./build.js') : globalThis.FSBuild;
@@ -12,6 +12,7 @@
   const sectEngine = () => typeof module === 'object' && module.exports ? require('./sect.js') : globalThis.FSSect;
   const lifeEngine = () => typeof module === 'object' && module.exports ? require('./life.js') : globalThis.FSLife;
   const spiritBeastEngine = () => typeof module === 'object' && module.exports ? require('./spirit-beast.js') : globalThis.FSSpiritBeast;
+  const craftingEngine = () => typeof module === 'object' && module.exports ? require('./crafting.js') : globalThis.FSCrafting;
   const PHASES = ['talents', 'attributes', 'playing', 'draft', 'mutation', 'fusion', 'tribulation', 'complete', 'dead'];
   const EVENT_IDS = ['arrival', 'quiet', 'herbs', 'ruin', 'swordsman', 'hunt', 'first-python', 'revenge', 'remains', 'advanced', 'boss', 'high', 'trace-echo', 'trace-resonance'];
   const BOSS_ROUTE_IDS = ['fight', 'see-through', 'sword-break', 'devour-eye', 'body-charge', 'fate'];
@@ -38,6 +39,7 @@
     if (s.sect) for (const [key,value] of Object.entries(sectEngine().effects(s.sect))) result[key]=(result[key]||0)+value;
     if (s.life) for (const [key,value] of Object.entries(lifeEngine().effects(s.life))) result[key]=(result[key]||0)+value;
     if (s.spiritBeast) for (const [key,value] of Object.entries(spiritBeastEngine().effects(s.spiritBeast))) result[key]=(result[key]||0)+value;
+    if (s.crafting) for (const [key,value] of Object.entries(craftingEngine().effects(s.crafting))) result[key]=(result[key]||0)+value;
     if (s.phase && !['talents','attributes'].includes(s.phase)) for (const [key,value] of Object.entries(buildEngine().effects(s))) result[key]=(result[key]||0)+value;
     if (s.talents.includes('taotie') && s.talents.includes('stomach')) { result.devour = (result.devour || 0) + 0.25; result.power = (result.power || 0) + 0.15; }
     if (s.root === 'thunder' && s.talents.includes('swordbone') && s.sword) result.power = (result.power || 0) + 0.20;
@@ -253,7 +255,7 @@
       highSeen: [], realmProofs: [], tribulationStage: 0, tribulationBase: null, ascendedPower: null,
       carriedTrace, traceSourceSeed, bossRoute: null, tribulationRoutes: [], batchCultivations: 0,
       event: null, draft: null, firstPower: null, revengePower: null, lastGain: 0,
-      ending: null, log: [], equipment: equipmentEngine().createState(), combatReplay: null, secretRealm: secretRealmEngine().createState(), sect: sectEngine().createState(), life: lifeEngine().createState(), spiritBeast: spiritBeastEngine().createState(), immortal: null
+      ending: null, log: [], equipment: equipmentEngine().createState(), combatReplay: null, secretRealm: secretRealmEngine().createState(), sect: sectEngine().createState(), life: lifeEngine().createState(), spiritBeast: spiritBeastEngine().createState(), crafting: craftingEngine().createState(), immortal: null
     };
     s.offer = openingOffer(s);
     return s;
@@ -719,6 +721,25 @@
         s.spiritBeast=P.evolve(s.spiritBeast,{realm:s.realm,ascended:s.flags.ascended,immortal:!!s.immortal},action.id||null);
         const after=P.summary(s.spiritBeast); log(s,'灵兽进化',`${before.name} → ${after.name} · ${after.stageName}。分支一旦形成便不可逆。`,'gold'); break;
       }
+      case 'craft-pill': {
+        requireThat(!['talents','attributes','dead'].includes(s.phase)&&!s.immortal,'当前无法炼丹。');
+        const C=craftingEngine(),result=C.craftPill(s.crafting,s.seed,action.id,action.kind);s.crafting=result.state;
+        log(s,'炼丹',`${result.method.name}炼成「${result.recipe.name}」${result.variant?'，丹纹异变。':'。'}材料已结算，丹药收入药匣。`,result.variant?'gold':'normal');break;
+      }
+      case 'craft-use': {
+        requireThat(!['talents','attributes','dead'].includes(s.phase)&&!s.immortal,'当前无法服用凡界丹药。');
+        const C=craftingEngine(),result=C.usePill(s.crafting,action.id);s.crafting=result.state;let actual=0;
+        if(result.reward.kind==='xp'){const threshold=D.REALMS[s.realm].threshold||D.REALMS[8].threshold;actual=gain(s,threshold*result.reward.amount,'cultivate');}
+        else if(result.reward.kind==='heal'){const before=s.vitality;s.vitality=Math.min(100,s.vitality+Math.round(result.reward.amount));actual=s.vitality-before;}
+        log(s,'服丹',`服下「${result.recipe.name}」。${result.reward.kind==='xp'?`修为 +${actual}。`:result.reward.kind==='heal'?`元气恢复 ${actual}。`:`临时 Build 已激活，共 ${s.crafting.buff?.charges||0} 次主线行动。`}`,result.reward.variant?'gold':'normal');break;
+      }
+      case 'craft-weapon': {
+        requireThat(!['talents','attributes','dead'].includes(s.phase)&&!s.immortal,'当前无法炼器。');
+        const C=craftingEngine(),entry=equipmentEngine().equipped(s.equipment,'weapon'),def=equipmentEngine().data(entry);
+        requireThat(entry&&entry.identified&&def?.special,'需要先穿戴一件已鉴定的本命兵器。');
+        const result=C.forgeWeapon(s.crafting,action.id,def.path);s.crafting=result.state;s.equipment=equipmentEngine().grantWeaponXp(s.equipment,result.weaponXp);
+        log(s,'炼器',`${result.recipe.name}完成，本命兵器历练 +${result.weaponXp}。没有强化失败或耐久损失。`,'gold');break;
+      }
       default: throw new Error('未识别的操作。');
     }
     if (!action.type.startsWith('equipment-')) {
@@ -736,6 +757,8 @@
     s.sect=sectEngine().observe(s.sect,state,s,action);
     s.life=lifeEngine().observe(s.life,s.origin,s.realm,s.phase==='playing'&&!isBlocking(s)&&!s.secretRealm.active);
     if (!action.type.startsWith('beast-')) s.spiritBeast=spiritBeastEngine().observe(s.spiritBeast,state,s,action);
+    s.crafting=craftingEngine().observe(s.crafting,state,s,action);
+    s.crafting=craftingEngine().afterAction(s.crafting,action);
     nextRevision(s);
     validate(s);
     return s;
@@ -753,6 +776,7 @@
     sectEngine().validate(s.sect);
     lifeEngine().validate(s.life);
     spiritBeastEngine().validate(s.spiritBeast);
+    craftingEngine().validate(s.crafting);
     requireThat(s.defeats === undefined || s.defeats === null || (Number.isSafeInteger(s.defeats) && s.defeats >= 0), '败退记录损坏。');
     for (const key of ['seed', 'rng']) requireThat(Number.isInteger(s[key]) && s[key] > 0 && s[key] <= 4294967295, '随机种子损坏。');
     requireThat(Number.isSafeInteger(s.revision) && s.revision >= 0 || typeof s.revision === 'string' && s.revision.length <= 2048 && /^(0|[1-9]\d*)$/.test(s.revision), '操作版本损坏。');
@@ -858,7 +882,11 @@
     if (!s || s.version !== 10) return s;
     s.version = 11; s.spiritBeast = spiritBeastEngine().createState(); return s;
   }
-  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); s = migrateV5(s); s = migrateV6(s); s = migrateV7(s); s = migrateV8(s); s = migrateV9(s); s = migrateV10(s); if (s?.version === VERSION && s.immortal) s.immortal = immortalEngine().migrate(s.immortal); validate(s); return s; }
+  function migrateV11(s) {
+    if (!s || s.version !== 11) return s;
+    s.version = 12; s.crafting = craftingEngine().createState(); return s;
+  }
+  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); s = migrateV5(s); s = migrateV6(s); s = migrateV7(s); s = migrateV8(s); s = migrateV9(s); s = migrateV10(s); s = migrateV11(s); if (s?.version === VERSION && s.immortal) s.immortal = immortalEngine().migrate(s.immortal); validate(s); return s; }
   function synergies(s) {
     const list = [];
     if (s.sword && s.root === 'thunder' && s.talents.includes('swordbone')) list.push({ name: '雷剑体', text: '雷灵根 × 天生剑骨 × 青云剑诀：战力额外 +20%。' });

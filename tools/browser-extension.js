@@ -252,6 +252,31 @@ async (page, options = {}) => {
     report.systems.spiritBeast={passed:true,choices:4,oneSlot:true,branch:'sacred',irreversible:true,materialSpent:true,reloadPreserved:true,buildSource:true,immortalGate:true};
     await restore('ascension--ascension');
   }
+  if (await page.evaluate(() => !!window.FSCrafting)) {
+    await restore('foundation--serpent-prey');
+    await page.locator('[data-action="resolve"][data-choice="devour"]').click();
+    await page.locator('[data-action="mutate"][data-id="serpenteye"]').click();
+    await page.evaluate(()=>{let s=JSON.parse(localStorage.getItem('feisheng.run.v1'));for(const m of FSCrafting.MATERIALS)s.crafting=FSCrafting.grantMaterial(s.crafting,m.id,12,'browser-fixture');localStorage.setItem('feisheng.run.v1',FSEngine.serialize(s));});
+    await page.reload(); await ui('continue').click(); await ui('crafting').click();
+    check(await page.locator('dialog .craft-card').count()===10,'Crafting UI does not expose exactly ten pill formulas');
+    check(await page.locator('dialog .forge-card').count()===4,'Crafting UI does not expose exactly four named-weapon recipes');
+    check(await page.locator('dialog .craft-material').count()===8,'Crafting UI does not expose exactly eight core materials');
+    check(await page.locator('dialog [data-action="craft-pill"][data-id="mind"]').count()===3,'Pill formula does not expose all three methods');
+    await layout('crafting-formulas');
+    const beforeCraft=await run(),beforeDust=beforeCraft.crafting.materials['void-dust'];
+    await page.locator('dialog [data-action="craft-pill"][data-id="mind"][data-kind="dao"]').click();
+    const crafted=await run();check(crafted.crafting.craftIndex===1&&crafted.crafting.pills.mind?.length===1,'Pill crafting did not create one deterministic inventory item');
+    check(crafted.crafting.materials['void-dust']===beforeDust-1,'Pill crafting did not consume declared materials');
+    await page.locator('dialog [data-action="craft-use"][data-id="mind"]').click();
+    const used=await run();check(used.crafting.buff?.id==='mind'&&used.crafting.buff.charges===2,'Temporary Build pill did not activate with bounded charges');
+    const build=await page.evaluate(()=>FSBuild.evaluateBuild(JSON.parse(localStorage.getItem('feisheng.run.v1'))));check(build.sources.some(x=>x.source==='crafting:mind'),'Active pill effect did not become an explainable Build source');
+    const saved=JSON.stringify(used);await close();await page.reload();await ui('continue').click();check(JSON.stringify(await run())===saved,'Reload changed crafted pills, material cost or temporary Build effect');
+    await page.evaluate(()=>{let s=JSON.parse(localStorage.getItem('feisheng.run.v1'));s.equipment=FSEquipment.addDrop(s.equipment,s.seed,'boss:craft-browser','boss',3,'sword-break');const e=s.equipment.inventory.at(-1);s.equipment=FSEquipment.identify(s.equipment,e.uid);s.equipment=FSEquipment.equip(s.equipment,e.uid);for(const m of FSCrafting.MATERIALS)s.crafting=FSCrafting.grantMaterial(s.crafting,m.id,8,'forge-fixture');localStorage.setItem('feisheng.run.v1',FSEngine.serialize(s));});
+    await page.reload();await ui('continue').click();const beforeForge=await run(),weapon=beforeForge.equipment.inventory.find(x=>x.uid===beforeForge.equipment.slots.weapon),xpBefore=weapon.xp;await ui('crafting').click();
+    await page.locator('dialog [data-action="craft-weapon"][data-id="sword-temper"]').click();const forged=await run(),forgedWeapon=forged.equipment.inventory.find(x=>x.uid===forged.equipment.slots.weapon);check(forgedWeapon.xp===xpBefore+65,'Named-weapon crafting did not grant the declared existing weapon XP');
+    report.systems.crafting={passed:true,pills:10,materials:8,methods:3,weaponRecipes:4,materialSpent:true,buffBounded:true,reloadPreserved:true,buildSource:true,weaponXp:true};
+    await restore('ascension--ascension');
+  }
   await restore('ascension--ascension');
   const mortal = await run(), originalPower = mortal.ascendedPower;
   await action('immortal-enter').click();

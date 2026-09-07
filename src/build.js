@@ -4,11 +4,12 @@
     typeof module === 'object' && module.exports ? require('./equipment.js') : root.FSEquipment,
     typeof module === 'object' && module.exports ? require('./sect.js') : root.FSSect,
     typeof module === 'object' && module.exports ? require('./life.js') : root.FSLife,
-    typeof module === 'object' && module.exports ? require('./spirit-beast.js') : root.FSSpiritBeast
+    typeof module === 'object' && module.exports ? require('./spirit-beast.js') : root.FSSpiritBeast,
+    typeof module === 'object' && module.exports ? require('./crafting.js') : root.FSCrafting
   );
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.FSBuild = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (D, G, X, L, P) {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (D, G, X, L, P, C) {
   'use strict';
   const VERSION = 1;
   const TAGS = Object.freeze({
@@ -74,6 +75,9 @@
     if (state.spiritBeast?.companion && P?.summary) {
       const beast=P.summary(state.spiritBeast);
       if (beast) addSource(list,`spirit-beast:${beast.species}`,`${beast.name} · ${beast.stageName}`,beast.tags,beast.stage>=2?2:1);
+    }
+    if (state.crafting && C?.buildSource) {
+      const source=C.buildSource(state.crafting); if(source)addSource(list,source.source,source.name,source.tags,source.weight);
     }
     return list;
   }

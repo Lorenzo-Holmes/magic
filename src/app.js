@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat, P = window.FSPresentation, G = window.FSEquipment, B = window.FSBuild, C = window.FSCombat, R = window.FSSecretRealm, X = window.FSSect, L = window.FSLife, Z = window.FSSpiritBeast;
+  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat, P = window.FSPresentation, G = window.FSEquipment, B = window.FSBuild, C = window.FSCombat, R = window.FSSecretRealm, X = window.FSSect, L = window.FSLife, Z = window.FSSpiritBeast, K = window.FSCrafting;
   const world = S.attach(document.getElementById('world'));
   const sound = window.FSAudio.create();
   window.FSSound = sound; // Readable audio diagnostics; no gameplay state is exposed.
@@ -275,7 +275,7 @@
       : state.realm === 3 ? (state.flags.bossSlain ? '妖眼已闭 · 向元婴迈进' : `金丹炼道 · 已历 ${state.advancedResolved} 处机缘`)
       : state.realm >= 4 && state.realm <= 8 ? `${D.REALMS[state.realm].name} · ${state.realmProofs.includes(state.realm) ? '天地印证已成' : '去看一眼更大的世界'}`
       : '渡劫将至';
-    return `<section>${hud()}<p class="quest"><span class="quest-dot"></span>${quest}</p>${pathBanner()}${spiritBeastCall()}${eventView()}${actionsView()}<div class="play-bottom">${button('journal', '查看命格与历程', { ui: true, classes: 'text-button' })}<span>每次选择自动存档</span></div></section>`;
+    return `<section>${hud()}<p class="quest"><span class="quest-dot"></span>${quest}</p>${pathBanner()}${spiritBeastCall()}${eventView()}${actionsView()}<div class="play-bottom"><span>${button('crafting','丹器百艺',{ui:true,classes:'text-button'})}${button('journal', '查看命格与历程', { ui: true, classes: 'text-button' })}</span><span>每次选择自动存档</span></div></section>`;
   }
   function draftView() {
     const redraws = Math.max(0, 1 + (E.effects(state).redraw || 0) - state.redrawUsed);
@@ -485,6 +485,22 @@
     const history=state.spiritBeast.history.slice().reverse().map(row=>`<li><span>${esc(row.type)}</span><b>${row.type==='essence'?`精华 +${row.amount}`:`阶段 ${row.stage??0}`}</b><small>${esc(row.source||row.branch||'')}</small></li>`).join('');
     modal(`灵兽仙缘 · ${summary.name}`, `<div class="beast-head"><span>${esc(summary.stageName)} · ${summary.branchName?esc(summary.branchName):'分支未定'}</span><b>${esc(summary.name)}</b><small>灵兽精华 ${state.spiritBeast.essence} · ${summary.tags.map(id=>esc(B.TAGS[id]||id)).join(' / ')}</small></div><p class="intro">${esc(fx)}。进化不可逆；最终「仙兽」阶段要求本世已经飞升并真正踏入仙界。</p>${evolve}${history?`<h3>最近灵兽历程</h3><ul class="beast-history">${history}</ul>`:''}<p class="footnote">换世规则：主灵兽属于本世，不写入轮回册，也不产生永久战力继承。后续百世回响只允许留下传说摘要。</p>`);
   }
+  function craftingModal() {
+    if (!state || ['talents','attributes'].includes(state.phase) || state.immortal) { modal('丹器百艺','<p class="intro">丹器百艺服务凡界本世。真正踏入仙界后，使用仙元与五槽规则，不继续套用凡界丹药。</p>'); return; }
+    const craft=state.crafting, materialRows=K.MATERIALS.map(item=>`<span class="craft-material"><b>${esc(item.name)}</b><small>${craft.materials[item.id]}</small></span>`).join('');
+    const buff=craft.buff?K.PILL_BY_ID[craft.buff.id]:null;
+    const pillCards=K.PILLS.map(recipe=>{
+      const needs=Object.entries(recipe.needs).map(([id,n])=>`${K.MATERIAL_BY_ID[id].name}×${n}`).join(' · '), owned=craft.pills[recipe.id]?.length||0;
+      const methods=K.METHODS.map(method=>button('craft-pill',`${esc(method.name)}${small(`${method.variant}% 异丹`)}`,{id:recipe.id,kind:method.id,classes:'text-button',disabled:!Object.entries(recipe.needs).every(([id,n])=>craft.materials[id]>=n)||owned>=K.MAX_PILL})).join('');
+      return `<article class="craft-card" data-pill="${recipe.id}"><span>${recipe.tags.map(id=>esc(B.TAGS[id]||id)).join(' / ')}</span><h3>${esc(recipe.name)} <small>持有 ${owned}</small></h3><p>${esc(recipe.text)}</p><b>${esc(needs)}</b><div class="craft-methods">${methods}</div>${owned?button('craft-use','服用一枚',{id:recipe.id,classes:'secondary full'}):''}</article>`;
+    }).join('');
+    const weapon=G.equipped(state.equipment,'weapon'),weaponDef=G.data(weapon);
+    const weaponCards=K.WEAPON_RECIPES.map(recipe=>{
+      const needs=Object.entries(recipe.needs).map(([id,n])=>`${K.MATERIAL_BY_ID[id].name}×${n}`).join(' · '), fit=weaponDef?.special&&(recipe.path==='any'||recipe.path===weaponDef.path), enough=Object.entries(recipe.needs).every(([id,n])=>craft.materials[id]>=n);
+      return `<article class="forge-card"><span>${recipe.path==='any'?'通用本命':recipe.path==='sword'?'剑道':recipe.path==='devour'?'吞噬':'肉身'} · 历练 +${recipe.xp}</span><h3>${esc(recipe.name)}</h3><p>${esc(recipe.text)}</p><small>${esc(needs)}</small>${button('craft-weapon',fit?'炼入当前本命兵器':'当前兵器不契合',{id:recipe.id,classes:'secondary full',disabled:!fit||!enough})}</article>`;
+    }).join('');
+    modal('丹器百艺', `<div class="craft-head"><div><span>核心材料</span><b>8 类 · 每类上限 ${K.MAX_MATERIAL}</b></div><div><span>当前丹效</span><b>${buff?`${esc(buff.name)} · 余 ${craft.buff.charges} 次`:'无'}</b></div><div><span>当前本命兵器</span><b>${weaponDef?.special?esc(weaponDef.name):'未穿戴本命兵器'}</b></div></div><div class="craft-materials">${materialRows}</div><p class="intro">固定丹方避免自由组合爆炸。三种炼法都必定成丹，只影响由本世 seed + 炼制序号决定的异丹概率；刷新不会改变已经得到的结果。</p><h3>炼丹 · ${K.PILLS.length} 方</h3><div class="craft-grid">${pillCards}</div><h3>本命炼器 · ${K.WEAPON_RECIPES.length} 法</h3><div class="forge-grid">${weaponCards}</div><p class="footnote">炼器只为现有本命兵器增加历练，不建立第二套装备强化、耐久或失败系统。材料来源来自真实历练、狩猎、秘境、妖王与天地印证。</p>`);
+  }
   function lifeModal() {
     if (!state || ['talents','attributes'].includes(state.phase)) { modal('天命人生','<p class="intro">入世以后，出身才会在后续境界留下真正回响。</p>'); return; }
     const chain=L.chain(state.origin), pending=L.event(state.life?.pending), fx=L.effects(state.life);
@@ -603,6 +619,7 @@
         case 'skip-combat': finishCombatReplay(); break;
         case 'secret-realm': secretRealmModal(); break;
         case 'spirit-beast': spiritBeastModal(); break;
+        case 'crafting': craftingModal(); break;
         case 'sect': sectModal(); break;
         case 'life': lifeModal(); break;
         case 'equipment': equipmentModal(); break;
@@ -669,7 +686,10 @@
       clearTimeout(noticeTimer); notice.classList.remove('visible'); notice.textContent = '';
       persist(); render();
       showFeedback(feedback);
-      if (action.type.startsWith('beast-')) {
+      if (action.type.startsWith('craft-')) {
+        craftingModal();
+        dialog.querySelector('[data-action^="craft-"]')?.focus({ preventScroll:true });
+      } else if (action.type.startsWith('beast-')) {
         spiritBeastModal();
         dialog.querySelector('[data-action^="beast-"]')?.focus({ preventScroll:true });
       } else if (action.type.startsWith('life-')) {
