@@ -50,6 +50,7 @@
     return { ratio, label, chance };
   }
   function log(s, title, text, tone = 'normal') {
+    if (/^败退|· 受创$/.test(title) && s.defeats !== null) s.defeats = (s.defeats || 0) + 1;
     s.log.push({ title, text, tone, age: s.age, realm: s.realm });
     if (s.log.length > 100) s.log.shift();
   }
@@ -231,7 +232,7 @@
       phase: 'talents', realm: 0, xp: 0, age: 16, vitality: 100,
       stats: { bone: 5, insight: 5, luck: 5, mind: 5 }, root: null, origin: null,
       talents: [], innate: [], selected: [], offer: [], mutations: [], fusions: [], fusionOffer: [], sword: false,
-      openingRerolls: 2, redrawUsed: 0, rebirthUsed: 0, actions: 0, devours: 0,
+      openingRerolls: 2, redrawUsed: 0, rebirthUsed: 0, actions: 0, devours: 0, defeats: 0,
       flags: { pythonSeen: false, pythonSlain: false, swordEvent: false, bossSeen: false, bossSlain: false, ascended: false, traceEchoSeen: false, traceResonanceSeen: false },
       advancedSeen: [], advancedResolved: 0,
       highSeen: [], realmProofs: [], tribulationStage: 0, tribulationBase: null, ascendedPower: null,
@@ -262,9 +263,9 @@
     if (!threshold || s.xp >= threshold) return false;
     // The forced first-python encounter is a valid automatic stop even when the
     // next requested action will not actually cultivate.
-    if (!s.flags.pythonSeen && s.actions >= 1) return true;
+    if (!s.flags.pythonSeen && s.actions >= 1) return s.age + Math.ceil(1 + (effects(s).ageCost || 0)) < maxAge(s);
     const preview = actionPreview(s, 'cultivate');
-    return s.age + preview.years < maxAge(s);
+    return s.age + preview.years + Math.max(2, preview.years) < maxAge(s);
   }
   function cultivateToReady(s) {
     requireThat(canCultivateToReady(s), '当前无法安全连续闭关。');
@@ -273,7 +274,7 @@
     while (cycles < 64 && s.phase === 'playing' && !isBlocking(s) && s.xp < threshold) {
       const beforeXp = s.xp, preview = actionPreview(s, 'cultivate');
       if (s.flags.pythonSeen || s.actions < 1) {
-        if (s.age + preview.years >= maxAge(s)) break;
+        if (s.age + preview.years + Math.max(2, preview.years) >= maxAge(s)) break;
       }
       act(s, 'cultivate');
       if (s.event?.id === 'quiet' && s.xp > beforeXp) cycles++;
@@ -344,6 +345,10 @@
         : D.ENEMIES.slice(20, 22);
       const enemy = choose(s, pool); s.event = { id: 'hunt', enemy: enemy.id };
     }
+  }
+  function canSeekProof(s) {
+    return !!(s && s.phase === 'playing' && s.realm >= 4 && s.realm <= 8 && !isBlocking(s)
+      && !s.realmProofs.includes(s.realm) && s.age + actionPreview(s, 'explore').years < maxAge(s));
   }
   function resolve(s, choice) {
     requireThat(s.phase === 'playing' && isBlocking(s), '当前没有待处理的遭遇。');
@@ -505,6 +510,9 @@
         s.event = { id: 'arrival', title: '此生，从黑风岭起', text: `${byId(D.ORIGINS, s.origin).text}十六岁这一年，你带着一卷残书走入黑风岭。${s.carriedTrace ? `识海深处还留着一道「${byId(D.TRACES, s.carriedTrace).name}」，仿佛某个并不存在的前世仍在注视这条山路。` : ''}先做一次行动，去看一眼这座山。` };
         log(s, '入世', `${byId(D.ROOTS, s.root).name}，${byId(D.ORIGINS, s.origin).name}。这一世，你不甘止于凡人。`); break;
       case 'act': act(s, action.kind); break;
+      case 'seek-proof':
+        requireThat(canSeekProof(s), '当前没有可以安全寻找的天地印证。');
+        act(s, 'explore'); break;
       case 'cultivate-to-ready': cultivateToReady(s); break;
       case 'resolve': resolve(s, action.choice); break;
       case 'breakthrough': {
@@ -582,6 +590,7 @@
   function validate(s) {
     requireThat(s && typeof s === 'object' && !Array.isArray(s) && s.version === VERSION, '存档版本不兼容。');
     requireThat(PHASES.includes(s.phase), '存档阶段无效。');
+    requireThat(s.defeats === undefined || s.defeats === null || (Number.isSafeInteger(s.defeats) && s.defeats >= 0), '败退记录损坏。');
     for (const key of ['seed', 'rng']) requireThat(Number.isInteger(s[key]) && s[key] > 0 && s[key] <= 4294967295, '随机种子损坏。');
     for (const key of ['revision', 'age', 'realm', 'vitality', 'openingRerolls', 'redrawUsed', 'rebirthUsed', 'actions', 'devours', 'tribulationStage', 'batchCultivations']) requireThat(Number.isInteger(s[key]) && s[key] >= 0 && s[key] <= 1000000, '存档数值损坏。');
     requireThat(Number.isInteger(s.xp) && s.xp >= 0 && s.xp <= 100000000, '修为数据损坏。');
@@ -652,6 +661,8 @@
     if (!s || s.version !== 4 || !s.flags) return s;
     if (s.flags.traceEchoSeen === undefined) s.flags.traceEchoSeen = false;
     if (s.flags.traceResonanceSeen === undefined) s.flags.traceResonanceSeen = false;
+    // Old logs are capped at 100 entries; absence of a loss is not proof of a flawless run.
+    if (s.defeats === undefined) s.defeats = null;
     return s;
   }
   function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); validate(s); return s; }
@@ -662,5 +673,5 @@
     for (const id of s.fusions || []) { const f = byId(D.FUSIONS, id); if (f) list.push({ name: f.name, text: `${f.path}：${f.description}` }); }
     return list;
   }
-  return { VERSION, createRun, transition, validate, serialize, deserialize, effects, stats, power, maxAge, threat, canBreak, isBlocking, actionPreview, canCultivateToReady, synergies, availableFusions, advancedChoices, bossChoices, canChallengeBoss, highChoices, tribulationChoices };
+  return { VERSION, createRun, transition, validate, serialize, deserialize, effects, stats, power, maxAge, threat, canBreak, isBlocking, actionPreview, canCultivateToReady, canSeekProof, synergies, availableFusions, advancedChoices, bossChoices, canChallengeBoss, highChoices, tribulationChoices };
 });

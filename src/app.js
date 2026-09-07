@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta;
+  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat;
   const world = S.attach(document.getElementById('world'));
   const KEY = 'feisheng.run.v1', BACKUP = 'feisheng.backup.v1', META_KEY = 'feisheng.meta.v1';
   const app = document.getElementById('app');
@@ -41,6 +41,24 @@
     return `<button type="button" class="${classes}" data-${ui ? 'ui' : 'action'}="${action}"${attrs}${state ? ` data-revision="${state.revision}"` : ''}${aria ? ` aria-label="${esc(aria)}"` : ''}${pressed !== undefined ? ` aria-pressed="${pressed}"` : ''}${disabled ? ' disabled' : ''}>${label}</button>`;
   }
   const small = text => `<span class="button-note">${esc(text)}</span>`;
+  function powerFigure(value) {
+    return button('number-detail', esc(F.short(value)), { ui: true, id: String(value), classes: 'number-button', aria: `战力 ${F.full(value)}，查看完整数字` });
+  }
+  function tutorialNote() {
+    if (home || !state || meta.tutorialHidden || meta.totals.ascended > 0) return '';
+    const id = state.phase === 'talents' ? 'talents' : state.event?.id === 'first-python' ? 'python'
+      : state.phase === 'fusion' ? 'fusion' : state.phase === 'tribulation' ? 'tribulation'
+      : state.phase === 'playing' && state.flags.pythonSeen ? 'path' : null;
+    if (!id || (meta.tutorialSeen || []).includes(id)) return '';
+    const notes = {
+      talents: '高品质不一定适合这一世。天命、属性、异变与融合之间能否相互成就，比单张品质更重要。',
+      python: '现在的你不可能赢。先活下来；筑基以后它仍然是 150 战力，变强的会是你。',
+      path: '「本世道途」不是锁定的职业。它解释你的真实选择；连续闭关只修炼，突破与事件仍由你决定。',
+      fusion: '融合会保留这次异变对应的进化方向。选择后继续经历机缘，再用这一世的能力面对三眼妖王。',
+      tribulation: '三重天劫逐一选择。融合路线最稳定；专属路线可以留下不同称号。先看当前胜率，不必硬渡。'
+    };
+    return `<aside class="tutorial-note" data-note="${id}" aria-label="命册批注"><span>命册批注</span><p>${notes[id]}</p><div>${button('dismiss-note', '记下了', { ui: true, id, classes: 'text-button' })}${button('tutorial-off', '关闭批注', { ui: true, classes: 'text-button' })}</div></aside>`;
+  }
   function ornament() {
     return `<div class="dao-art" aria-hidden="true"><div class="dao-ring"></div><div class="dao-ring second"></div><span class="dao-glyph">升</span><i class="star s1"></i><i class="star s2"></i><i class="star s3"></i><span class="seal">逆天<br>而行</span></div>`;
   }
@@ -89,7 +107,7 @@
       : state.realm === 3 && !state.flags.bossSlain ? '金丹修为 · 为妖王一战蓄势'
       : proofMissing ? `${r.name}修为 · 尚欠一次天地印证`
       : state.realm >= 4 ? `${r.name}修为 · 天地印证已成` : '修为';
-    return `<section class="status-panel" aria-label="人物状态"><div class="realm-line"><div><span class="eyebrow">当前境界</span><h2>${r.name}<small>${stage}</small></h2></div><div class="power"><span>战力</span><strong id="power-value">${fmt(E.power(state))}</strong></div></div><div class="meter-label"><span>${meterTitle}</span><b>${fmt(state.xp)} / ${fmt(r.threshold)}</b></div><div class="meter" role="progressbar" aria-label="修为" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(xp)}"><i style="width:${xp}%"></i></div><div class="life-row"><span>寿元 <b>${state.age} / ${E.maxAge(state)}</b> 岁</span><span class="${state.vitality < 40 ? 'danger-text' : ''}">元气 <b>${state.vitality} / 100</b></span></div></section>`;
+    return `<section class="status-panel" aria-label="人物状态"><div class="realm-line"><div><span class="eyebrow">当前境界</span><h2>${r.name}<small>${stage}</small></h2></div><div class="power"><span>战力 · 点按看全数</span><strong id="power-value">${powerFigure(E.power(state))}</strong></div></div><div class="meter-label"><span>${meterTitle}</span><b>${fmt(state.xp)} / ${fmt(r.threshold)}</b></div><div class="meter" role="progressbar" aria-label="修为" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(xp)}"><i style="width:${xp}%"></i></div><div class="life-row"><span>寿元 <b>${state.age} / ${E.maxAge(state)}</b> 岁</span><span class="${state.vitality < 40 ? 'danger-text' : ''}">元气 <b>${state.vitality} / 100</b></span></div></section>`;
   }
   function pathBanner() {
     const profile = M.classifyPath(state);
@@ -162,7 +180,7 @@
     if (E.canBreak(state)) return `<div class="break-call"><p>修为已满，桎梏将破。</p>${button('breakthrough', `破境 · ${D.REALMS[state.realm + 1].name}${small('必获三选一天命 · 元气恢复')}`, { classes: 'primary large full' })}</div>`;
     const boss = E.canChallengeBoss(state) ? `<div class="boss-call"><p>两处金丹机缘已足以锁定妖王踪迹。</p>${button('challenge-boss', `寻三眼妖王${small('金丹关 · 让 Build 决定破局方式')}`, { classes: 'primary large full' })}</div>` : '';
     const proof = state.realm >= 4 && state.realm <= 8 && !state.realmProofs.includes(state.realm)
-      ? `<div class="proof-call"><span>破境还缺一步</span><b>至少完成一次「历练」中的天地印证</b></div>` : '';
+      ? `<div class="proof-call"><span>破境还缺一步</span><b>下一次历练必遇天地印证，事件由你亲自选择</b>${button('seek-proof', '寻天地印证', { classes: 'secondary full', disabled: !E.canSeekProof(state) })}</div>` : '';
     const batch = state.realm < 9 ? button('cultivate-to-ready', `闭关至当前桎梏${small('自动停在强制遭遇、修为圆满或寿元警戒之前')}`, { classes: 'secondary full batch-cultivate', disabled: !E.canCultivateToReady(state) }) : '';
     return `${boss}${proof}<div class="action-trio">${[['cultivate', '闭关', '稳定修为'], ['explore', '历练', state.realm >= 4 ? '天地印证' : state.realm >= 2 ? 'Build 条件机缘' : '奇遇与功法'], ['hunt', '狩猎', '吞噬与风险']].map(([kind, name, text]) => { const p = E.actionPreview(state, kind); return button('act', `<strong>${name}</strong><span>${text}</span><small>${p.xp ? `修为 +${p.xp} · ` : ''}${p.years} 年</small>`, { kind, classes: `action-tile ${kind === 'cultivate' ? 'quiet-action' : ''}` }); }).join('')}</div>${batch}`;
   }
@@ -219,10 +237,11 @@
     const warning = warningText();
     const vista = home ? '' : `<div class="world-vista" aria-hidden="true"><span>${esc(scene.title)}</span><small>${esc(scene.subtitle)}</small></div>`;
     const body = home ? homeView() : state.phase === 'talents' ? talentsView() : state.phase === 'attributes' ? attributesView() : state.phase === 'playing' ? playingView() : state.phase === 'draft' ? draftView() : state.phase === 'mutation' ? mutationView() : state.phase === 'fusion' ? fusionView() : state.phase === 'tribulation' ? tribulationView() : endingView();
-    app.innerHTML = `<div class="shell">${rail()}<div class="content-shell">${header()}<main id="main" tabindex="-1" data-view="${view}">${vista}${body}</main><footer class="app-footer"><span>我欲飞升 · v${S.VERSION} 轮回道痕</span><span>本地运行 / 无付费抽取</span></footer>${warning ? `<div class="storage-warning" role="alert">${esc(warning)}</div>` : ''}</div></div>`;
+    app.innerHTML = `<div class="shell">${rail()}<div class="content-shell">${header()}<main id="main" tabindex="-1" data-view="${view}">${vista}${tutorialNote()}${body}</main><footer class="app-footer"><span>我欲飞升 · v${S.VERSION}</span><span>本地运行 / 无付费抽取</span></footer>${warning ? `<div class="storage-warning" role="alert">${esc(warning)}</div>` : ''}</div></div>`;
     if (view !== previousView) { window.scrollTo({ top: 0, behavior: 'instant' }); previousView = view; }
   }
   function modal(title, body) {
+    if (title === '存档与说明') body = `<div class="settings-extra"><h3>命册批注</h3><p class="intro">首次飞升后自动关闭；也可以提前关闭。战力主显示使用万、亿，点按数字查看完整值。</p>${button('tutorial-reset', '重新阅读批注', { ui: true, classes: 'secondary full', disabled: meta.totals.ascended > 0 })}</div>${body}`;
     dialog.innerHTML = `<div class="dialog-head"><h2>${title}</h2>${button('close-dialog', '×', { ui: true, classes: 'icon-button', aria: '关闭窗口' })}</div>${body}`;
     if (!dialog.open) dialog.showModal();
   }
@@ -289,6 +308,11 @@
     const el = event.target.closest('button'); if (!el || el.disabled) return;
     if (el.dataset.ui) {
       switch (el.dataset.ui) {
+        case 'number-detail': modal('完整战力', `<p class="exact-number">${esc(F.full(Number(el.dataset.id)))}</p><p class="intro">主显示只改变排版，不改变战力计算或存档精度。</p>`); break;
+        case 'dismiss-note':
+          meta.tutorialSeen = [...new Set([...(meta.tutorialSeen || []), el.dataset.id])]; saveMeta(); render(); break;
+        case 'tutorial-off': meta.tutorialHidden = true; saveMeta(); render(); break;
+        case 'tutorial-reset': meta.tutorialHidden = false; meta.tutorialSeen = []; saveMeta(); dialog.close(); render(); break;
         case 'home': home = true; render(); break;
         case 'new': confirmNew(); break;
         case 'confirm-new':
@@ -329,6 +353,10 @@
       if (el.dataset.delta) action.delta = Number(el.dataset.delta);
       const before = state.phase;
       state = E.transition(state, action);
+      const noteId = document.querySelector('.tutorial-note')?.dataset.note;
+      if (noteId && !['select', 'stat', 'preset', 'reroll-opening'].includes(action.type)) {
+        meta.tutorialSeen = [...new Set([...(meta.tutorialSeen || []), noteId])];
+      }
       clearTimeout(noticeTimer); notice.classList.remove('visible'); notice.textContent = '';
       persist(); render();
       if (['select', 'stat', 'preset'].includes(action.type)) {

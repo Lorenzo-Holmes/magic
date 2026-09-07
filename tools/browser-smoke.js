@@ -110,6 +110,9 @@ async (page, options = {}) => {
   await ui('new').click();
   await layout('talents'); await shot('02-talents-mobile');
   check(await action('select').count() === 8, 'Opening must have eight options');
+  check(await page.locator('[data-note="talents"]').count() === 1, 'First-life talent annotation missing');
+  await page.locator('[data-ui="dismiss-note"][data-id="talents"]').click();
+  check((await meta()).tutorialSeen.includes('talents'), 'Annotation dismissal did not persist');
   check(await action('confirm-talents').isDisabled(), 'Cannot confirm zero selections');
   const firstIds = (await state()).offer.slice(0, 3);
   for (const id of firstIds) await action('select', `[data-id="${id}"]`).click();
@@ -121,6 +124,10 @@ async (page, options = {}) => {
   await action('preset', '[data-id="balanced"]').click();
   await action('enter').click();
   await layout('arrival'); await shot('04-arrival-mobile');
+  const expectedPower = await page.evaluate(() => FSEngine.power(JSON.parse(localStorage.getItem('feisheng.run.v1'))).toLocaleString('zh-CN'));
+  await ui('number-detail').click();
+  check((await page.locator('.exact-number').innerText()) === expectedPower, 'Full numeric detail differs from engine');
+  await ui('close-dialog').click();
   check(await action('cultivate-to-ready').count() === 1, 'Batch cultivation action is missing');
   check(!(await action('cultivate-to-ready').isDisabled()), 'Batch cultivation should be available after entering the world');
   await action('cultivate-to-ready').click();
@@ -192,12 +199,14 @@ async (page, options = {}) => {
       else await action('challenge-boss').click();
     }
     else if (s.realm === 3 && s.advancedResolved < 2) await action('act', '[data-kind="explore"]').click();
-    else if (s.realm >= 4 && s.realm <= 8 && !s.realmProofs.includes(s.realm)) await action('act', '[data-kind="explore"]').click();
+    else if (s.realm >= 4 && s.realm <= 8 && !s.realmProofs.includes(s.realm)) await action('seek-proof').click();
     else if (s.realm === 1 && !s.flags.swordEvent) await action('act', '[data-kind="explore"]').click();
     else if (s.realm === 1 && !hunted) { hunted = true; await action('act', '[data-kind="hunt"]').click(); }
+    else if (await action('cultivate-to-ready').isEnabled()) await action('cultivate-to-ready').click();
     else await action('act', '[data-kind="cultivate"]').click();
   }
   const finished = await state();
+  check((await meta()).tutorialHidden === true, 'First ascension did not disable tutorial annotations');
   check(finished.phase === 'complete', 'Run failed to reach ascension within 180 UI steps');
   check(finished.mutations[0] === 'serpenteye', 'Chosen mutation was not saved');
   check(finished.fusions.length === 1, 'Gold-core fusion was not saved');

@@ -121,8 +121,8 @@
     { id: 'clear-all-delusions', name: '照破诸妄', hint: '看破三眼妖王，并以神魂路线渡过心魔。', description: '妖眼、心魔与虚妄皆无所遁形。', test: s => ascended(s) && s.bossRoute === 'see-through' && routeUsed(s, 'mind', 'trace-soul') },
     { id: 'favored-by-fate', name: '天命所归', hint: '以气运融合或命数路线完成飞升。', description: '一路偶然，最终汇成无法回避的命数。', test: s => ascended(s) && (hasFusion(s, 'fate-veil') || routeUsed(s, 'fate', 'fate-gate', 'trace-fortune')) },
     { id: 'dao-at-dawn', name: '朝闻大道', hint: '以高悟性、五行归一或明心见道完成飞升。', description: '此生所求不是活得最久，而是终于想通。', test: s => ascended(s) && (effectiveStats(s).insight >= 13 || hasFusion(s, 'five-unity') || routeUsed(s, 'dao', 'trace-insight')) },
-    { id: 'flawless-ascension', name: '无暇飞升', hint: '全程不败退、不触发重生并完成飞升。', description: '自入山起，所有险阻都在第一次选择中被跨过。', test: s => ascended(s) && s.rebirthUsed === 0 && !(s.log || []).some(entry => /败退|受创|负伤而归/.test(`${entry.title}${entry.text}`)) },
-    { id: 'against-lifespan', name: '逆寿成仙', hint: '在寿元接近尽头时完成飞升。', description: '最后一段寿元烧尽之前，天门终于洞开。', test: s => ascended(s) && s.age / E.maxAge(s) >= 0.82 },
+    { id: 'flawless-ascension', name: '无暇飞升', hint: '全程不败退、不触发重生并完成飞升；旧档缺完整败退记录时不补发。', description: '自入山起，所有险阻都在第一次选择中被跨过。', test: s => ascended(s) && s.defeats === 0 && s.rebirthUsed === 0 && !(s.log || []).some(entry => /败退|受创|负伤而归/.test(`${entry.title}${entry.text}`)) },
+    { id: 'against-lifespan', name: '逆寿成仙', hint: '在入劫前大乘寿元达到 82% 后完成飞升。', description: '最后一段寿元烧尽之前，天门终于洞开。', test: s => ascended(s) && s.age / E.maxAge({ ...s, realm: 8 }) >= 0.82 },
     { id: 'mortal-ascender', name: '凡界飞升者', hint: '完成三重天劫并飞升。', description: '从黑风岭起步，最终走出整个凡界。', test: s => ascended(s) }
   ]);
   function endingTitles(state) { return TITLE_RULES.filter(rule => rule.test(state)).map(({ test, ...rule }) => rule); }
@@ -137,7 +137,7 @@
     return { talents: [], mutations: [], fusions: [], highEvents: [], bossRoutes: [], tribulationRoutes: [], titles: [], traces: [] };
   }
   function createMeta() {
-    return { version: VERSION, nextTrace: null, nextTraceSource: null, totals: { ended: 0, ascended: 0 }, discovered: discoveries(), runHistory: [] };
+    return { version: VERSION, nextTrace: null, nextTraceSource: null, tutorialHidden: false, tutorialSeen: [], totals: { ended: 0, ascended: 0 }, discovered: discoveries(), runHistory: [] };
   }
   const validIds = Object.freeze({
     talents: D.TALENTS.map(x => x.id), mutations: D.MUTATIONS.map(x => x.id), fusions: D.FUSIONS.map(x => x.id),
@@ -145,6 +145,8 @@
     tribulationRoutes: TRIBULATION_ROUTES.map(x => x.id), titles: TITLE_RULES.map(x => x.id), traces: D.TRACES.map(x => x.id)
   });
   function validate(meta) {
+    if (meta?.tutorialHidden !== undefined && typeof meta.tutorialHidden !== 'boolean') throw new Error('批注设置损坏。');
+    if (meta?.tutorialSeen !== undefined && (!Array.isArray(meta.tutorialSeen) || meta.tutorialSeen.length > 6 || meta.tutorialSeen.some(id => !['talents', 'python', 'path', 'fusion', 'tribulation', 'reincarnation'].includes(id)))) throw new Error('批注记录损坏。');
     if (!meta || typeof meta !== 'object' || Array.isArray(meta) || meta.version !== VERSION) throw new Error('轮回册版本不兼容。');
     if (meta.nextTrace !== null && !traceById(meta.nextTrace)) throw new Error('待继承道痕损坏。');
     if (meta.nextTraceSource !== null && (!Number.isInteger(meta.nextTraceSource) || meta.nextTraceSource <= 0)) throw new Error('道痕来源损坏。');
@@ -175,7 +177,7 @@
       add(found, 'titles', titles.map(title => title.id)); add(found, 'traces', traces.map(trace => trace.id));
       if (!next.runHistory.some(run => run.seed === state.seed)) {
         next.totals.ended++;
-        if (ascended(state)) next.totals.ascended++;
+        if (ascended(state)) { next.totals.ascended++; next.tutorialHidden = true; }
         const profile = classifyPath(state);
         next.runHistory.unshift({ seed: state.seed, ending: state.ending || state.phase, ascended: ascended(state), realm: state.realm, age: state.age, power: ascended(state) ? state.ascendedPower : E.power(state), path: profile.id, title: titles[0]?.id || null });
         next.runHistory = next.runHistory.slice(0, 50);

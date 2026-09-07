@@ -1,4 +1,6 @@
-# 我欲飞升 · v0.6.0「轮回道痕」
+# 我欲飞升 · v0.6.1「节奏打磨」
+
+本版新增首局命册批注、安全连续闭关和「寻天地印证」入口；战力主显示改为万/亿并可点按查看全数。印证本来就首次历练保底，因此不会自动替玩家处理事件。无暇飞升使用持久败退记录，旧档缺记录不伪造称号；逆寿成仙按入劫前寿元判定。
 
 《我欲飞升》是一款手机竖屏优先的离线文字修仙 Roguelike。玩家从凡人起步，抽取天命、自由加点、修炼破境、吞噬旧敌、获得异变并完成能力融合，再让本世 Build 决定三眼妖王、天地印证与三重天劫的破局方式。
 
@@ -156,7 +158,7 @@ npm run verify:release
 npm run test:browser
 ```
 
-当前单元与状态机测试共 47 项，包含 800 局完整凡界保守路线仿真。浏览器验收使用生产 `dist/` 和实际 DOM 点击，覆盖：
+测试结果以当前 `npm test` 和对应 `docs/ACCEPTANCE-v版本.md` 为准；保留原有 800 局保守路线并增加六策略节奏对照。浏览器验收使用生产 `dist/` 和实际 DOM 点击，覆盖：
 
 - 从无存档开局到三重天劫和飞升；
 - 连续闭关在强制妖蟒事件前自动停止；
@@ -171,14 +173,14 @@ npm run test:browser
 最新隔离验收目录由 `npm run test:browser` 写入：
 
 ```text
-output/playwright/v0.6.0/runs/acceptance-*/
+output/playwright/v0.6.1/runs/acceptance-*/
 ```
 
-`output/playwright/v0.6.0/latest-isolated-run.json` 指向最近一次成功运行。自动测试证明流程、边界和状态闭环可执行，不等同于实体手机、iOS Safari 或真人长期留存测试。
+当前版本对应目录中的 `latest-isolated-run.json` 指向最近一次成功运行。自动测试证明流程、边界和状态闭环可执行，不等同于实体手机、iOS Safari 或真人长期留存测试。
 
 ## 打包
 
-构建与预览共用 `tools/production-files.cjs` 的 15 文件白名单：
+构建与预览共用 `tools/production-files.cjs` 的运行文件白名单：
 
 ```text
 index.html
@@ -186,6 +188,7 @@ src/style.css
 src/data.js
 src/engine.js
 src/scenes.js
+src/format.js
 src/meta.js
 src/app.js
 assets/seal.svg
@@ -201,7 +204,7 @@ assets/bg/realm-ascension.svg
 正式候选包：
 
 ```text
-release/wo-yu-fei-sheng-v0.6.0.zip
+release/wo-yu-fei-sheng-v0.6.1.zip
 ```
 
 `index.html` 位于 ZIP 根目录。构建脚本检查 3 MB 内部目标和 10 MB 外部上限。README、文档、测试、截图、缓存、字体和开发工具不进入生产包。`npm run verify:release` 校验文件清单、CRC32、SHA-256，以及源码、`dist/` 和 ZIP 三者的一致性。
@@ -223,4 +226,4 @@ release/wo-yu-fei-sheng-v0.6.0.zip
 
 仙界仍只有飞升后的反差彩蛋；正式仙界主线、无尽诸天和法则吞噬尚未实现。宗门经营、炼丹、炼器、道侣、宠物、PVP、每日任务、广告奖励和付费抽卡不进入当前核心范围。
 
-本目录不是独立 Git 仓库；本轮不初始化父目录 Git，不提交、不推送、不部署。
+本目录不是独立 Git 仓库。依用户授权，每个阶段通过验收后使用 GitHub API 向 `Lorenzo-Holmes/magic` 创建普通线性提交；不初始化或修改父目录 Git，不强推，不自动部署。

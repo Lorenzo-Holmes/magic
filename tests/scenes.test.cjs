@@ -78,7 +78,7 @@ test('全部正式背景存在、为轻量自包含 SVG 且进入生产白名单
   }
 });
 test('生产清单唯一且不携带截图、文档、字体或开发依赖', () => {
-  assert.equal(files.length, 15); assert.equal(new Set(files).size, files.length);
+  assert.equal(files.length, 16); assert.equal(new Set(files).size, files.length);
   for (const file of files) {
     assert.ok(fs.existsSync(path.join(root, file)), file);
     assert.doesNotMatch(file, /\.\.|^\/|output|tests|docs|README|node_modules|\.(png|gif|mp4|woff2?|ttf)$/i);
@@ -87,7 +87,7 @@ test('生产清单唯一且不携带截图、文档、字体或开发依赖', ()
 test('版本显示、轮回配置和存档版本统一', () => {
   const pkg = require('../package.json');
   assert.equal(S.VERSION, pkg.version);
-  assert.equal(pkg.version, '0.6.0');
+  assert.match(pkg.version, /^\d+\.\d+\.\d+$/);
   assert.equal(E.VERSION, 4);
   assert.equal(D.TRACES.length, 6);
   assert.ok(files.includes('src/meta.js'));
