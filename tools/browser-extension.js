@@ -24,6 +24,7 @@ async (page, options = {}) => {
       return w.dataset.scene === w.dataset.loadedScene && !w.dataset.sceneError && img.complete && img.naturalWidth > 0;
     });
     await page.waitForTimeout(1350);
+    await page.waitForFunction(() => !document.querySelector('#notice')?.classList.contains('visible'), null, {timeout:6000});
     for (const width of [320, 390, 430, 1280]) {
       await page.setViewportSize({ width, height: width > 720 ? 900 : 844 });
       const status = await page.evaluate(() => {
@@ -136,6 +137,70 @@ async (page, options = {}) => {
   report.immortal = { passed:true,seed:final.seed,steps:turns,initialPower:i.basePower,wormPower:i.wormPower,
     finalPower:await page.evaluate(()=>FSImmortal.power(JSON.parse(localStorage.getItem('feisheng.run.v1')).immortal)),
     law:i.law,level:i.level,devours:i.devours,lawReloaded,mortalPreserved:true,fileCases };
+  await page.goto(baseURL); await ui('continue').click();
+  await action('immortal-evolution-enter').click();
+  let evolutionTurns = 0, offerReloaded = false, upgraded = false, replaced = false, formalEnding = null;
+  const evolutionShots = new Set();
+  while (evolutionTurns++ < 400) {
+    const current = await run(), c = current.immortal, e = c.evolution;
+    const checkpoint = `${c.phase}-${e.world}${e.endless ? '-endless' : ''}`;
+    if (!evolutionShots.has(checkpoint) && (!e.endless || c.phase === 'world')) {
+      evolutionShots.add(checkpoint); await layout(`evolution-${checkpoint}`);
+    }
+    check(c.phase !== 'dead', 'Conservative evolution route died');
+    if (e.endless && BigInt(e.layer) >= 7n && c.phase === 'world') break;
+    if (c.phase === 'ending') {
+      formalEnding = { cleared:e.cleared,scale:e.scale,slots:e.slots,fusions:e.fusions,power:await page.evaluate(()=>FSEvolution.power(JSON.parse(localStorage.getItem('feisheng.run.v1')).immortal)) };
+      check(e.completed && e.cleared.length === 4, 'Formal evolution ending arrived before all worlds');
+    }
+    if (c.phase === 'evolve' && !offerReloaded) {
+      const saved = JSON.stringify(current); await page.reload(); await ui('continue').click();
+      check(JSON.stringify(await run()) === saved, 'Reload rerolled or consumed evolution candidates'); offerReloaded = true;
+    }
+    let a = options.evolutionAction(c);
+    if (!upgraded && c.phase === 'world' && e.fusions.length && c.fragments >= e.slots.law.level + 2 && e.slots.law.level < 5) { a={type:'upgrade',id:'law'};upgraded=true; }
+    if (!replaced && c.phase === 'evolve' && e.world >= 2) {
+      const candidate = await page.evaluate(() => {
+        const e=JSON.parse(localStorage.getItem('feisheng.run.v1')).immortal.evolution;
+        return e.offer.find(id=>{const t=FSEvolution.TRAITS.find(t=>t.id===id);return e.slots[t.slot]&&e.slots[t.slot].id!==id;});
+      });
+      if(candidate){a={type:'choose',id:candidate};replaced=true;}
+    }
+    if (['upgrade','fuse'].includes(a.type) && !(await page.locator('.evolution-build').getAttribute('open') !== null)) await page.locator('.evolution-build summary').click();
+    if(a.type==='fuse')await layout('evolution-fusion-ready');
+    await page.locator(`[data-action="immortal-evolution-${a.type}"]${a.id?`[data-id="${a.id}"]`:''}`).click();
+    if(a.type==='choose')check(Object.keys((await run()).immortal.evolution.slots).length===5,'Choosing an evolution grew an extra slot');
+  }
+  const evolved = await run(), evolvedRaw=JSON.stringify(evolved);
+  check(formalEnding && formalEnding.fusions.length > 0 && offerReloaded && upgraded && replaced, 'Evolution core features were not all exercised');
+  check(evolved.immortal.evolution.endless && BigInt(evolved.immortal.evolution.layer) >= 7n, 'Two endless worlds were not completed');
+  async function importRaw(text) {
+    await close();await ui('journal').first().click();
+    if(!(await page.locator('#import-save').count()))await page.locator('dialog [data-ui="settings"]').click();
+    await page.locator('#import-save').setInputFiles({name:'evolution-save.json',mimeType:'application/json',buffer:Buffer.from(text)});
+    await page.locator('[data-ui="confirm-import"]').click();
+  }
+  // Explicit stress fixture, not a claim of playing a thousand-digit realm count.
+  const extreme=JSON.parse(evolvedRaw);extreme.revision='90071992547409910000';
+  extreme.immortal.evolution.scale={m:4.35,e:'1000'};extreme.immortal.evolution.layer='100000000000000000001';
+  await importRaw(JSON.stringify(extreme));await layout('evolution-large-number-fixture');
+  await action('immortal-evolution-cultivate').click();
+  check((await run()).revision==='90071992547409910001','Large revision lost precision');
+  const cosmic = await page.evaluate(() => {
+    const power = FSEvolution.power(JSON.parse(localStorage.getItem('feisheng.run.v1')).immortal);
+    return {text:FSQuantity.format(power),exponent:power.e};
+  });
+  check((await page.locator('.cosmic-number').textContent())===cosmic.text && BigInt(cosmic.exponent)>=1000n,'Cosmic power fell back to Infinity or lost exponent');
+  await importRaw(evolvedRaw);
+  const evolutionFiles=[];
+  for(const [mode,url] of options.fileRoots){
+    await page.goto(url);await importRaw(evolvedRaw);
+    check((await run()).immortal.evolution.layer===evolved.immortal.evolution.layer,`${mode}: endless layer did not import`);
+    await action('immortal-evolution-cultivate').click();
+    check(await page.locator('.evolution-view').count()===1,`${mode}: evolution renderer failed`);evolutionFiles.push(mode);
+  }
+  report.evolution={passed:true,turns:evolutionTurns,formalEnding,offerReloaded,upgraded,replaced,
+    endlessLayer:evolved.immortal.evolution.layer,endlessWorlds:2,largeNumberFixture:true,fileCases:evolutionFiles,mortalPreserved:evolved.ascendedPower===originalPower};
   await page.goto(baseURL); await restore('ascension--ascension');
   report.externalRequests = report.requests.filter(url => /^https?:/.test(url) && !url.startsWith(`${baseURL}/`) && url !== baseURL).length;
   check(report.externalRequests === 0 && report.errors.length === 0 && report.failedRequests.length === 0, 'Extension produced network or browser errors');

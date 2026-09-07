@@ -19,6 +19,7 @@ assert.equal(qa.externalRequests, 0); assert.equal(qa.consoleErrors.length, 0); 
 assert.ok(qa.mainFlow.ascended && qa.fileCases >= 21 && qa.reducedMotion);
 if (build.files.some(f => f.path === 'src/audio.js')) assert.ok(qa.extension?.audio?.startsLocked && qa.extension.audio.nineCues && qa.extension.audio.muteAndReload && qa.extension.audio.bands.length === 4, 'Audio acceptance missing');
 if (build.files.some(f => f.path === 'src/immortal.js')) assert.ok(qa.extension?.immortal?.passed && qa.extension.immortal.mortalPreserved && qa.extension.immortal.fileCases.length === 3, 'Immortal acceptance missing');
+if (build.files.some(f => f.path === 'src/evolution.js')) assert.ok(qa.extension?.evolution?.passed && qa.extension.evolution.largeNumberFixture && qa.extension.evolution.endlessWorlds >= 2 && qa.extension.evolution.fileCases.length === 3, 'Evolution acceptance missing');
 assert.ok(build.zipBytes < 3000000);
 for (const f of build.files) assert.equal(crypto.createHash('sha256').update(fs.readFileSync(f.path)).digest('hex'), f.sha256, f.path);
 const reviewFile = `docs/REVIEW-v${version}.md`;

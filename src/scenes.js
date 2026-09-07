@@ -5,7 +5,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
   // Presentation only: never mutate the run, advance RNG, or add save fields.
-  const VERSION = '0.8.0';
+  const VERSION = '0.9.0';
   const STAGES = Object.freeze(Object.fromEntries([
     ['mortal', '黑风岭', '山野如墨 · 此身如尘'],
     ['foundation', '凌云之巅', '云海在下 · 初窥天地'],
@@ -30,6 +30,13 @@
   function resolve(state, home = false) {
     if (home || !state || ['talents', 'attributes'].includes(state.phase)) return { ...STAGES.mortal, atmosphere: 'calm' };
     if (state.immortal) {
+      if (state.immortal.evolution) {
+        const i = state.immortal, e = i.evolution, V = typeof module === 'object' && module.exports ? require('./evolution.js') : globalThis.FSEvolution;
+        const world = V.WORLDS[e.world];
+        return { ...STAGES[i.phase === 'ending' ? 'ascension' : world.scene], title: i.phase === 'ending' ? '世界吞噬者' : world.name,
+          subtitle: e.endless ? `无尽诸天 · 第 ${e.layer} 界` : `${world.rank} · 第一轮进化`,
+          atmosphere: i.phase === 'dead' ? 'still' : i.phase === 'ending' ? 'ascension' : i.phase === 'evolve' ? 'gold-fusion' : e.target === 'gate' || e.affix === 'fury' ? 'world-rift' : world.scene === 'void' ? 'world-star' : 'world-spirit' };
+      }
       const i = state.immortal, ended = i.phase === 'prologue-complete';
       return { ...STAGES[ended ? 'ascension' : 'nascent'], title: ended ? '仙界 · 初劫已过' : '仙界 · 下界仙域', subtitle: '凡力未失 · 仙躯新生',
         atmosphere: i.phase === 'dead' ? 'still' : ended ? 'ascension' : i.target === 'spirit-worm' ? 'world-rift' : 'world-spirit' };

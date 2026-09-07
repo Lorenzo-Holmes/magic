@@ -46,6 +46,9 @@
   function powerFigure(value) {
     return button('number-detail', esc(F.short(value)), { ui: true, id: String(value), classes: 'number-button', aria: `战力 ${F.full(value)}，查看完整数字` });
   }
+  function quantityFigure(q) {
+    return button('quantity-detail', esc(window.FSQuantity.format(q)), { ui: true, id: `${q.m}|${q.e}`, classes: 'number-button cosmic-number', aria: '查看势能的科学计数表示' });
+  }
   function tutorialNote() {
     if (home || !state || meta.tutorialHidden || meta.totals.ascended > 0) return '';
     const id = state.phase === 'talents' ? 'talents' : state.event?.id === 'first-python' ? 'python'
@@ -72,7 +75,7 @@
     return `<aside class="story-rail"><div class="rail-heading"><span class="seal small-seal">道</span><span>一卷命册 · 万般道途</span></div><h1>我欲<br><em>飞升</em></h1><p class="rail-poem">山外有山，天外有天。<br>此刻不可撼动的庞然大物，<br>终有一日，只是你的一口修为。</p>${ornament()}<div class="road"><span class="${level >= 0 ? 'lit' : ''}">凡</span><i></i><span class="${level >= 2 ? 'lit' : ''}">筑基</span><i></i><span class="${level >= 3 ? 'lit' : ''}">金丹</span><i></i><span class="${level >= 5 ? 'lit' : ''}">化神</span><i></i><span class="${level >= 8 ? 'lit' : ''}">大乘</span><i></i><span class="${state?.flags?.ascended ? 'lit' : ''}">飞升</span></div><p class="rail-foot">凡界卷 · 直到天门洞开<br>飞升是终点，也是下一池塘的起点。</p>${mountain()}</aside>`;
   }
   function header() {
-    return `<header class="topbar">${button('home', '<span class="brand-mark">升</span><span>我欲飞升</span>', { ui: true, classes: 'brand', aria: '返回首页，不删除进度' })}<span class="chapter-badge">凡界 · 轮回篇</span><div class="topbar-actions">${button('audio-settings', '音景', { ui: true, classes: 'text-button', aria: '音乐、音效与音量设置' })}${button('codex', '图谱', { ui: true, classes: 'text-button' })}${button('journal', '命册', { ui: true, classes: 'text-button' })}</div></header>`;
+    return `<header class="topbar">${button('home', '<span class="brand-mark">升</span><span>我欲飞升</span>', { ui: true, classes: 'brand', aria: '返回首页，不删除进度' })}<span class="chapter-badge">${state?.immortal && !home && !mortalSummary ? '仙界 · 进化篇' : '凡界 · 轮回篇'}</span><div class="topbar-actions">${button('audio-settings', '音景', { ui: true, classes: 'text-button', aria: '音乐、音效与音量设置' })}${button('codex', '图谱', { ui: true, classes: 'text-button' })}${button('journal', '命册', { ui: true, classes: 'text-button' })}</div></header>`;
   }
   function metaStrip() {
     const summary = M.summary(meta), trace = summary.nextTrace;
@@ -244,6 +247,7 @@
     return `<section class="ending-view"><p class="eyebrow">一世道途 · 到此为止</p><span class="ending-seal">此世终</span><h2>${esc(state.ending)}</h2><p class="intro">${esc(state.log[state.log.length - 1]?.text || '这一世没能走到天门之前。')}</p>${endingTitlePanel()}<div class="result-grid"><div><span>终止境界</span><b>${D.REALMS[state.realm].name}</b></div><div><span>最终战力</span><b>${fmt(E.power(state))}</b></div><div><span>此刻年龄</span><b>${state.age} 岁</b></div><div><span>吞噬次数</span><b>${state.devours}</b></div></div>${traceChoicePanel()}<div class="ending-actions">${button('share', '生成此世命格图', { ui: true, classes: 'primary full' })}${button('new', '再活一世 · 换一条道', { ui: true, classes: 'secondary full' })}${button('codex', '查看命途图谱', { ui: true, classes: 'secondary full' })}${button('journal', '翻阅此世命册', { ui: true, classes: 'text-button full' })}</div><p class="chapter-disclaimer">失败同样会形成道痕并保留完整历程。可以导出存档或直接重开。</p></section>`;
   }
   function immortalView() {
+    if (state.immortal.evolution) return evolutionView();
     const I = window.FSImmortal, i = state.immortal, law = I.LAWS.find(l => l.id === i.law);
     const titles = { arrival: '此界，重新学会弱小。', shelter: '凡力未失，仙躯未成。', field: '向仙气深处去。', encounter: '仙草之间，亦有生死。', law: '这一口，尝到了法则。', 'prologue-complete': '你又把它吞了。', dead: '仙躯崩散，道基犹存。' };
     const act = (type, label, opts = {}) => button(`immortal-${type}`, label, { classes: 'secondary full', ...opts });
@@ -264,7 +268,7 @@
     } else if (i.phase === 'law') {
       content = `<p class="intro">三道法则从碎片中浮现。耗费一枚碎片，选择一道。凡界道途让其中一道与你共鸣，但选择仍然自由。</p><div class="immortal-actions">${i.lawOffer.map(id => { const l = I.LAWS.find(l => l.id === id); return act('law', `<span class="eyebrow">${id === i.lineage ? '凡界道途共鸣' : '此界新路'}</span><h3>${esc(l.name)}</h3><p>${esc(l.description)}</p>`, { id, classes: 'secondary full law-card' }); }).join('')}</div>`;
     } else if (i.phase === 'prologue-complete') {
-      content = `<div class="revenge-comparison"><div><span>初临时的你</span><strong>${fmt(i.basePower)}</strong></div><i>→</i><div><span>吞虫时的你</span><strong>${fmt(I.power(i))}</strong></div></div><p class="story-lead">它仍然只有 ${fmt(i.wormPower)} 势能。那一刻你终于确认：飞升没有抹去过去，只让你的饥饿有了更远的方向。</p><p class="intro">仙界序章已完成。本世凡界结局与道痕选择仍然保留。</p>`;
+      content = `<div class="revenge-comparison"><div><span>初临时的你</span><strong>${fmt(i.basePower)}</strong></div><i>→</i><div><span>吞虫时的你</span><strong>${fmt(I.power(i))}</strong></div></div><p class="story-lead">它仍然只有 ${fmt(i.wormPower)} 势能。那一刻你终于确认：飞升没有抹去过去，只让你的饥饿有了更远的方向。</p><p class="intro">仙界序章已完成。接下来可以走出仙域，将凡界融合带入五槽进化。</p>${act('evolution-enter', `走出仙域 · 开始五槽进化${small('肉身、血脉、神魂、神通、法则 · 各留一种力量')}`, { classes: 'primary full' })}`;
     } else if (i.phase === 'dead') {
       content = `${act('retry', `从飞升落点重试${small('重置本次仙界探索 · 保留凡界成就')}`, { classes: 'primary full' })}`;
     }
@@ -273,6 +277,49 @@
       <div class="chosen-line"><span>凡界道途</span><b>${esc(M.PATHS[i.lineage].name)}</b>${law ? `<span>此界法则</span><b>${esc(law.name)}</b>` : ''}</div>
       <section class="event-sheet"><div class="event-kicker"><span>仙界第 ${i.days} 日</span><span>${i.devours} 次吞噬</span></div><p class="story-lead">${esc(i.note)}</p>${content}</section>
       <div class="immortal-actions">${button('immortal-journal', '翻阅仙界命册', { ui: true, classes: 'secondary full' })}${button('mortal-summary', '回看凡界结局 · 凝练道痕', { ui: true, classes: 'secondary full' })}${button('new', '另起一世', { ui: true, classes: 'text-button full' })}</div></section>`;
+  }
+  function evolutionView() {
+    const V = window.FSEvolution, Q = window.FSQuantity, i = state.immortal, e = i.evolution;
+    const world = V.WORLDS[e.world], affix = V.AFFIXES.find(a => a.id === e.affix);
+    const trait = id => V.TRAITS.find(t => t.id === id);
+    const act = (type, label, opts = {}) => button(`immortal-evolution-${type}`, label, { classes: 'secondary full', ...opts });
+    const bonusText = (t, level = 1) => [t.power ? `势能 +${Math.round(t.power * level * 100)}%` : '', t.guard ? `承伤减免 ${Math.round(t.guard * level * 100)}%` : '', t.devour ? `吞噬仙元 +${Math.round(t.devour * level * 100)}%` : '', t.illusion ? `对幻类势能 +${Math.round(t.illusion * level * 100)}%` : ''].filter(Boolean).join(' · ');
+    let content = '', title = world.name;
+    if (i.phase === 'world') {
+      content = `<div class="immortal-goal"><span>此界目标 · ${world.rank}</span><b>${e.proof ? '天地印证已成' : '尚缺天地印证'} · ${Math.min(e.hunts,2)}/2 次吞噬</b><p>完成印证与两次吞噬，才能锁定守界者。点击「五槽进化」可升级、替换与融合；本界炼化只增加当前界域的势能。</p></div>
+        <div class="immortal-actions">${act('explore', `${world.event}${small('亲自选择此界印证路线')}`, { classes:'primary full',disabled:e.proof })}
+        ${act('refine', `本界炼化 · ${e.refinement}/20${small(`需要 ${V.trainingCost(i)} 仙元 · 每重增加 20% 基础势能`)}`, { disabled:e.refinement>=20||i.essence<V.trainingCost(i) })}
+        ${act('rest', `藏身调息${small('元气恢复 35 · 不消耗仙元')}`, { disabled:i.health>=100 })}
+        ${act('cultivate', `缓炼仙气${small('无风险 · 仙元 +20')}`, { disabled:i.essence>=100000 })}${act('distill', `凝聚一枚碎片${small('消耗 60 仙元')}`, { disabled:i.essence<60||i.fragments>=10000 })}</div>
+        <h3 class="immortal-subtitle">可寻之物</h3><div class="immortal-actions">${V.CREATURES.filter(c=>c.world===e.world).map(c=>{const t=V.enemy(i,c.id),risk=V.threat(i,t);return act('hunt',`${esc(c.name)}${small(`${Q.format(t.power)} 势能 · ${risk.label} · 三种吞噬候选`)}`,{id:c.id});}).join('')}
+        ${act('hunt', `寻${world.gate}${small('守界者 · 胜利后开放下一界')}`, {id:'gate',classes:'trace-route full',disabled:!e.proof||e.hunts<2})}</div>`;
+    } else if (i.phase === 'world-event') {
+      title = world.event;
+      content = `<div class="immortal-actions">${V.eventChoices(i).map(c=>act('event',`${esc(c.name)}${small(`${c.note} · 仙元 +${c.essence} · 碎片 +${c.fragments}`)}`,{id:c.id,classes:c.id==='law'?'primary full':'secondary full'})).join('')}</div>`;
+    } else if (i.phase === 'world-encounter') {
+      const target = V.enemy(i,e.target), options = e.target==='gate' ? [['direct','正面镇压'],['resonate',`以${window.FSImmortal.LAWS.find(l=>l.id===i.law).name}破局`]] : [['direct','吞噬并夺取进化']];
+      title = target.name;
+      content = `<div class="enemy-card"><div class="cosmic-versus"><div><small>目标势能</small><b>${esc(Q.format(target.power))}</b></div><div><small>你的有效势能</small><b>${esc(Q.format(V.power(i,target)))}</b></div></div></div><div class="immortal-actions">${options.map(([id,name])=>{const t=V.threat(i,V.enemy(i,e.target,id));return act('devour',`${name}${small(`${id==='resonate'?`此法门削弱守界势能 ${e.enemyLaws.includes(i.law)?35:30}% · `:''}${t.label} · ${t.chance===1?'必胜无伤':`约 ${Math.round(t.chance*100)}% 胜率，可能死亡`}`)}`,{id,classes:id==='resonate'?'primary full':'secondary full',disabled:t.chance===0});}).join('')}${act('retreat','收敛锋芒，暂退')}</div>`;
+    } else if (i.phase === 'evolve') {
+      title = '它的力量，只留一道。';
+      content = `<div class="immortal-actions">${e.offer.map(id=>{const t=trait(id),old=e.slots[t.slot],same=old?.id===id;return act('choose',`<span class="eyebrow">${V.SLOTS[t.slot]} · ${same?'同类叠合':'替换此槽'}</span><h3>${esc(t.name)}</h3><p>${esc(t.text)}</p><p>${esc(bonusText(t,same?Math.min(5,old.level+1):1))}</p><small>${old?`当前：${esc(trait(old.id).name)} ${old.level} 阶`:'当前：空槽'}</small>${small(same?(old.level<5?`叠合至 ${old.level+1} 阶`:'已经五阶，化为 1 枚碎片'):old?`替换 ${trait(old.id).name}，旧效果不再叠加`:'将此力量留在空槽')}`,{id,classes:'secondary full law-card'});}).join('')}${act('dissolve',`全部化为两枚碎片${small('保留现有五槽，不选择新力量')}`)}</div>`;
+    } else if (i.phase === 'world-cleared') {
+      title = '界门，又开了一次。';
+      content = `${act('advance',`踏入下一界${small('已有尺度扩大四倍 · 开始下一次天地印证')}`,{classes:'primary full'})}`;
+    } else if (i.phase === 'ending') {
+      title = '世界吞噬者。';
+      content = `<p class="story-lead">你曾经不敢碰一条妖蟒。后来，你吞了它。<br>你飞升以后，连一只虫都难以面对。后来，你也吞了它。<br>如今站在世界之外，你终于知道，那份饥饿从来没有终点。</p><div class="ending-title"><span>第一轮仙界进化 · 正式完成</span><b>我欲飞升</b><p>从凡人到噬界者，这一轮主线在此收束。无尽是可选后续，不是未完成的结局。</p></div>${act('endless',`踏入无尽诸天${small('世界词条重组 · 数量级继续增长 · 保留五槽')}`,{classes:'primary full'})}`;
+    } else if (i.phase === 'dead') {
+      title = '这一界，还没有结束。';
+      content = act('recover',`在此界重整仙躯${small('保留层数和五槽 · 清空本界炼化 · 不倒退随机数')}`,{classes:'primary full'});
+    }
+    const slots = `<details class="evolution-build"><summary>五槽进化 · ${Object.values(e.slots).filter(Boolean).length}/5 <span>查看、升级与融合</span></summary><div class="slot-list">${Object.entries(V.SLOTS).map(([key,name])=>{const item=e.slots[key],t=item&&trait(item.id);return `<div class="slot-row"><span>${name}</span><div><b>${t?esc(t.name):'空槽'}${item?` · ${item.level} 阶`:''}</b><p>${t?esc(bonusText(t,item.level)):'可从下一次吞噬选择新的力量。'}</p></div>${act('upgrade',item&&item.level<5?`升级 · ${item.level+2} 碎片`:'无法升级',{id:key,disabled:i.phase!=='world'||!item||item.level>=5||i.fragments<item.level+2})}</div>`;}).join('')}</div><h3>融合线索</h3><div class="immortal-actions">${V.RECIPES.map(r=>{const available=V.recipes(i).some(x=>x.id===r.id);return act('fuse',`${esc(r.name)}${small(`${r.needs.map(id=>trait(id).name).join(' + ')} · ${r.cost} 碎片${r.catalyst?' · 法则引子保留':''}`)}`,{id:r.id,disabled:i.phase!=='world'||!available||i.fragments<r.cost});}).join('')}</div></details>`;
+    return `<section class="immortal-view evolution-view"><p class="eyebrow">${e.endless?'无尽诸天':'仙界进化'} · 第 ${esc(e.layer)} 界 · ${world.rank}</p><h2>${title}</h2>
+      <div class="world-road">${V.WORLDS.map((w,n)=>`<span class="${n===0||e.cleared.includes(n)?'lit':''}">${w.name}</span>`).join('')}</div>
+      <div class="immortal-stats"><div><span>当前势能 · 数量级</span><b>${quantityFigure(V.power(i))}</b></div><div><span>元气 · 本界炼化</span><b>${i.health}/100 · ${e.refinement} 重</b></div><div><span>仙元</span><b>${fmt(i.essence)}</b></div><div><span>碎片</span><b>${fmt(i.fragments)}</b></div></div>
+      <p class="world-affix">${esc(affix.name)} · ${esc(affix.text)}<br>仙兽法则：${e.enemyLaws.map(id=>window.FSImmortal.LAWS.find(l=>l.id===id).name).map(esc).join(' × ')}。锋芒使敌势能 +8%，不灭 +10%，破妄形成幻象；同源法则使你的守界破局更强。</p>${slots}
+      <section class="event-sheet"><p class="story-lead">${esc(i.note)}</p>${content}</section>
+      <div class="immortal-actions">${button('immortal-journal','翻阅仙界命册',{ui:true,classes:'secondary full'})}${button('mortal-summary','回看凡界 · 凝练道痕',{ui:true,classes:'secondary full'})}${button('new','另起一世',{ui:true,classes:'text-button full'})}</div></section>`;
   }
   function render() {
     const inImmortal = !!(state?.immortal && !mortalSummary);
@@ -297,6 +344,9 @@
     modal('命途图谱', `<div class="codex-summary"><div><span>已结束轮回</span><b>${summary.ended}</b></div><div><span>成功飞升</span><b>${summary.ascended}</b></div><div><span>已发现</span><b>${summary.discovered} / ${summary.total}</b></div></div>${summary.nextTrace ? `<div class="trace-banner"><span>等待下一世</span><b>${esc(summary.nextTrace.name)}</b><p>${esc(summary.nextTrace.description)}</p></div>` : ''}<p class="intro">图谱只记录你真正见过的天命、异变、融合、机缘、破局、称号与道痕。未发现条目保留线索，不提供付费解锁。</p><div class="codex-sections">${sections.map((section, index) => `<details class="codex-section"${index < 3 ? ' open' : ''}><summary><span>${esc(section.name)}</span><b>${section.discovered} / ${section.total}</b></summary><div class="codex-grid">${section.entries.map(item => `<article class="codex-entry${item.discovered ? ' discovered' : ' locked'}"><h4>${esc(item.name)}</h4>${item.detail ? `<p>${esc(item.detail)}</p>` : ''}<small>${esc(item.discovered ? item.hint : `线索：${item.hint}`)}</small></article>`).join('')}</div></details>`).join('')}</div>`);
   }
   function journal() {
+    if (state?.immortal && !home && !mortalSummary) {
+      modal('仙界命册', `<ol class="history">${state.immortal.journal.slice().reverse().map(j => `<li><small>仙界第 ${j.day} 日</small><p>${esc(j.text)}</p></li>`).join('')}</ol>${button('settings', '存档与说明', { ui: true, classes: 'secondary full' })}`); return;
+    }
     if (!state) { settings(); return; }
     const a = E.stats(state), root = find(D.ROOTS, state.root);
     const proofs = (state.realmProofs || []).map(r => D.REALMS[r].name).join('、') || '尚未开始';
@@ -359,6 +409,10 @@
     const el = event.target.closest('button'); if (!el || el.disabled) return;
     if (el.dataset.ui) {
       switch (el.dataset.ui) {
+        case 'quantity-detail': {
+          const [m,e] = el.dataset.id.split('|');
+          modal('势能的数量级', `<p class="exact-number">${esc(window.FSQuantity.format({m:Number(m),e},true))}</p><p class="intro">保留 12 位有效数字与精确的十进制指数。超出普通数值范围后继续使用科学计数，不把它转成 Infinity，也不宣称无限整数精度。</p>`); break;
+        }
         case 'immortal-continue': mortalSummary = false; home = false; render(); break;
         case 'mortal-summary': mortalSummary = true; render(); break;
         case 'immortal-journal':
@@ -409,7 +463,7 @@
     }
     if (!el.dataset.action || !state) return;
     try {
-      const action = { type: el.dataset.action, id: el.dataset.id, choice: el.dataset.choice, kind: el.dataset.kind, revision: Number(el.dataset.revision) };
+      const action = { type: el.dataset.action, id: el.dataset.id, choice: el.dataset.choice, kind: el.dataset.kind, revision: el.dataset.revision };
       if (el.dataset.delta) action.delta = Number(el.dataset.delta);
       const before = state.phase, beforeState = state;
       state = E.transition(state, action);

@@ -13,6 +13,7 @@
   const copy = value => JSON.parse(JSON.stringify(value));
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   function requireThat(condition, message) { if (!condition) throw new Error(message); }
+  function nextRevision(s) { s.revision = typeof s.revision === 'number' && s.revision < 999999 ? s.revision + 1 : (BigInt(s.revision) + 1n).toString(); }
   function random(s) {
     let x = s.rng >>> 0;
     x ^= x << 13; x ^= x >>> 17; x ^= x << 5;
@@ -477,7 +478,7 @@
   function transition(state, action) {
     validate(state);
     requireThat(action && typeof action.type === 'string', '无效操作。');
-    if (action.revision !== undefined) requireThat(action.revision === state.revision, '此选择已失效，请使用当前画面的选项。');
+    if (action.revision !== undefined) requireThat(String(action.revision) === String(state.revision), '此选择已失效，请使用当前画面的选项。');
     const s = copy(state);
     if (action.type.startsWith('immortal-')) {
       requireThat(s.phase === 'complete' && s.flags.ascended, '只有飞升后才能踏入仙界。');
@@ -489,7 +490,7 @@
         requireThat(s.immortal, '尚未进入仙界。');
         s.immortal = I.transition(s.immortal, { ...action, type: action.type.slice(9) });
       }
-      s.revision++; validate(s); return s;
+      nextRevision(s); validate(s); return s;
     }
     switch (action.type) {
       case 'select':
@@ -596,7 +597,7 @@
       }
       default: throw new Error('未识别的操作。');
     }
-    s.revision++;
+    nextRevision(s);
     validate(s);
     return s;
   }
@@ -609,7 +610,8 @@
     }
     requireThat(s.defeats === undefined || s.defeats === null || (Number.isSafeInteger(s.defeats) && s.defeats >= 0), '败退记录损坏。');
     for (const key of ['seed', 'rng']) requireThat(Number.isInteger(s[key]) && s[key] > 0 && s[key] <= 4294967295, '随机种子损坏。');
-    for (const key of ['revision', 'age', 'realm', 'vitality', 'openingRerolls', 'redrawUsed', 'rebirthUsed', 'actions', 'devours', 'tribulationStage', 'batchCultivations']) requireThat(Number.isInteger(s[key]) && s[key] >= 0 && s[key] <= 1000000, '存档数值损坏。');
+    requireThat(Number.isSafeInteger(s.revision) && s.revision >= 0 || typeof s.revision === 'string' && s.revision.length <= 2048 && /^(0|[1-9]\d*)$/.test(s.revision), '操作版本损坏。');
+    for (const key of ['age', 'realm', 'vitality', 'openingRerolls', 'redrawUsed', 'rebirthUsed', 'actions', 'devours', 'tribulationStage', 'batchCultivations']) requireThat(Number.isInteger(s[key]) && s[key] >= 0 && s[key] <= 1000000, '存档数值损坏。');
     requireThat(Number.isInteger(s.xp) && s.xp >= 0 && s.xp <= 100000000, '修为数据损坏。');
     requireThat(s.realm <= 9 && s.vitality <= 100 && s.openingRerolls <= 2 && s.age <= 200000 && s.tribulationStage <= 3, '存档数值超出范围。');
     requireThat(s.stats && D.STATS.every(a => Number.isInteger(s.stats[a.id]) && s.stats[a.id] >= 1 && s.stats[a.id] <= 10), '属性点损坏。');
@@ -686,7 +688,7 @@
     if (!s || s.version !== 4) return s;
     s.version = 5; s.immortal = null; return s;
   }
-  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); validate(s); return s; }
+  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); if (s?.version === VERSION && s.immortal) s.immortal = immortalEngine().migrate(s.immortal); validate(s); return s; }
   function synergies(s) {
     const list = [];
     if (s.sword && s.root === 'thunder' && s.talents.includes('swordbone')) list.push({ name: '雷剑体', text: '雷灵根 × 天生剑骨 × 青云剑诀：战力额外 +20%。' });

@@ -5,7 +5,8 @@
   else root.FSImmortal = factory(data, meta);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (D, M) {
   'use strict';
-  const VERSION = 1, PRESSURE = 1000000;
+  const VERSION = 2, PRESSURE = 1000000;
+  const evolutionEngine = () => typeof module === 'object' && module.exports ? require('./evolution.js') : globalThis.FSEvolution;
   const LAWS = Object.freeze([
     { id: 'devour', name: '吞噬法则', description: '吞噬获得的仙元 +20%。仙气不再只是流过你的身体，而会留下能被消化的纹路。' },
     { id: 'sword', name: '锋芒法则', description: '仙界有效战力 +15%。凡界那一剑的锋芒，终于找到新的落点。' },
@@ -38,7 +39,7 @@
       lineage: M.classifyPath(mortal).id || 'insight', mortalFusion: mortal.fusions[0],
       health: 100, level: 0, essence: 0, fragments: 0, law: null, lawOffer: [], target: null,
       devours: 0, losses: 0, days: 0, steps: 0, wormSlain: false,
-      note: '天門在背后闭合。你低头时，那只不起眼的噬灵虫正在啃食仙草。', journal: [] };
+      note: '天门在背后闭合。你低头时，那只不起眼的噬灵虫正在啃食仙草。', journal: [], evolution: null };
   }
   function power(i, enemy = null) {
     const lawBonus = i.law === 'sword' ? .15 : i.law === 'soul' && enemy?.kind === 'illusion' ? .25 : 0;
@@ -62,6 +63,9 @@
   }
   function transition(state, action) {
     validate(state); requireThat(action && typeof action.type === 'string', '无效仙界操作。');
+    if (action.type.startsWith('evolution-')) {
+      const next = evolutionEngine().transition(state, { ...action, type: action.type.slice(10) }); validate(next); return next;
+    }
     const i = copy(state), type = action.type;
     if (type === 'approach') {
       requireThat(i.phase === 'arrival' && ['hide', 'test'].includes(action.id), '当前不能试探界压。');
@@ -119,7 +123,8 @@
     i.steps++; validate(i); return i;
   }
   function validate(i) {
-    requireThat(i && typeof i === 'object' && !Array.isArray(i) && i.version === VERSION && PHASES.includes(i.phase), '仙界存档版本或阶段无效。');
+    requireThat(i && typeof i === 'object' && !Array.isArray(i) && i.version === VERSION && (PHASES.includes(i.phase) || i.evolution && evolutionEngine().PHASES.includes(i.phase)), '仙界存档版本或阶段无效。');
+    if (i.evolution) evolutionEngine().validate(i);
     for (const key of ['mortalPower','basePower','wormPower','rng']) requireThat(Number.isSafeInteger(i[key]) && i[key] > 0, '仙界力量数据损坏。');
     requireThat(i.rng <= 4294967295 && i.basePower === Math.max(1, Math.floor(i.mortalPower / PRESSURE)) && i.wormPower === Math.max(2, Math.ceil(i.mortalPower * 1.7 / PRESSURE)), '界压折算不一致。');
     for (const key of ['health','level','essence','fragments','devours','losses','days','steps']) requireThat(Number.isSafeInteger(i[key]) && i[key] >= 0 && i[key] <= 1000000000, '仙界状态损坏。');
@@ -134,5 +139,9 @@
     requireThat(typeof i.note === 'string' && i.note.length <= 1500 && Array.isArray(i.journal) && i.journal.length <= 40 && i.journal.every(j => j && Number.isSafeInteger(j.day) && j.day >= 0 && typeof j.text === 'string' && j.text.length <= 1500), '仙界历程损坏。');
     return true;
   }
-  return Object.freeze({ VERSION, PRESSURE, LAWS, CREATURES, create, validate, transition, power, enemy, threat, trainingCost, availableCreatures });
+  function migrate(i) {
+    if (i && i.version === 1) { i.version = 2; i.evolution = null; }
+    return i;
+  }
+  return Object.freeze({ VERSION, PRESSURE, LAWS, CREATURES, create, validate, transition, power, enemy, threat, trainingCost, availableCreatures, migrate });
 });

@@ -25,6 +25,9 @@
   }
   function cueFor(before, after, action) {
     if (!action) return null;
+    if (after?.immortal?.wormSlain && !before?.immortal?.wormSlain || after?.immortal?.phase === 'ending' && before?.immortal?.phase !== 'ending') return 'ascension';
+    if (action.type === 'immortal-evolution-fuse') return 'fusion';
+    if (action.type === 'immortal-evolution-choose' || action.type === 'immortal-evolution-upgrade') return 'mutation';
     if (after?.flags?.ascended && !before?.flags?.ascended) return 'ascension';
     if (action.type === 'confirm-talents' || action.type === 'pick') return 'talent';
     if (action.type === 'breakthrough') return 'breakthrough';

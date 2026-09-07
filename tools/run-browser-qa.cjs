@@ -58,7 +58,7 @@ async function suite(name, baseURL, build) {
   try {
     const source = fs.readFileSync(path.join(__dirname, `${name}.js`), 'utf8');
     const run = vm.runInThisContext(`(${source})`, { filename: `${name}.js` });
-    const result = await run(page, { out: relativeOut, fileRoots: [
+    const result = await run(page, { out: relativeOut, evolutionAction: require('./evolution-policy.cjs').next, fileRoots: [
       ['source', pathToFileURL(path.join(root, 'index.html')).href],
       ['dist', pathToFileURL(path.join(root, 'dist/index.html')).href],
       ['zip-extracted', pathToFileURL(path.join(out, 'package/index.html')).href]
@@ -170,7 +170,7 @@ async function main() {
     widths: [...new Set(smoke.layouts.map(x => x.width))],
     backgrounds: visual.backgrounds.length, highEventFixtures: visual.highEvents.length, traceEventFixtures: visual.traceEvents.length,
     fileCases: visual.fileCases.length, reducedMotion: true,
-    extension: { audio: extension.audio, immortal: extension.immortal },
+    extension: { audio: extension.audio, immortal: extension.immortal, evolution: extension.evolution },
     consoleErrors: [...smoke.errors, ...visual.errors, ...extension.errors, ...downloads.errors],
     failedRequests: [...smoke.failedRequests, ...visual.failedRequests, ...extension.failedRequests],
     externalRequests: smoke.externalRequests + visual.externalRequests + extension.externalRequests + downloads.externalRequests,
