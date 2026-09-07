@@ -175,6 +175,33 @@ async (page, options = {}) => {
     report.systems.secretRealm={passed:true,realmId:entered.secretRealm.active.realmId,reloadPreserved:true,advancedFloor:2,safeExit:true,history:exited.secretRealm.history.length,mainlinePreserved:true};
     await restore('ascension--ascension');
   }
+  if (await page.evaluate(() => !!window.FSSect)) {
+    await restore('foundation--serpent-prey');
+    await page.locator('[data-action="resolve"][data-choice="devour"]').click();
+    await page.locator('[data-action="mutate"][data-id="serpenteye"]').click();
+    const beforeSect=await run(); check(beforeSect.phase==='playing'&&!beforeSect.sect.membership,'Sect fixture is not a normal unaligned mortal state');
+    await ui('sect').click();
+    check(await page.locator('dialog .sect-card').count()===4,'Sect chooser does not expose exactly four sects');
+    await layout('sect-chooser');
+    await page.locator('dialog [data-action="sect-decline"][data-id="tianji"]').click();
+    check((await run()).sect.declined.includes('tianji'),'Sect decline was not recorded');
+    await page.locator('dialog [data-action="sect-join"][data-id="qingyun"]').click();
+    const joined=await run(); check(joined.sect.membership==='qingyun'&&joined.sect.pending==='qingyun-init','Joining sect did not open its first one-shot event');
+    check((await page.locator('dialog .sect-event').count())===1,'Pending sect event is not visible');
+    const buildWithSect=await page.evaluate(()=>FSBuild.evaluateBuild(JSON.parse(localStorage.getItem('feisheng.run.v1'))));
+    check(buildWithSect.sources.some(x=>x.source==='sect:qingyun'),'Joined sect did not become a Build source');
+    await page.locator('dialog [data-action="sect-resolve"][data-id="edge"]').click();
+    const resolved=await run(); check(resolved.sect.heritageUnlocked&&resolved.sect.completed.includes('qingyun-init'),'Sect inheritance did not unlock exactly once');
+    const saved=JSON.stringify(resolved); await close(); await page.reload(); await ui('continue').click();
+    check(JSON.stringify(await run())===saved,'Reload changed sect membership, event history or inheritance');
+    await ui('sect').click(); await layout('sect-membership');
+    await page.locator('dialog [data-action="sect-leave"]').click();
+    const left=await run(); check(left.sect.membership===null,'Manual sect leave did not clear current membership');
+    const buildAfterLeave=await page.evaluate(()=>FSBuild.evaluateBuild(JSON.parse(localStorage.getItem('feisheng.run.v1'))));
+    check(!buildAfterLeave.sources.some(x=>x.source==='sect:qingyun'),'Leaving sect left a hidden Build source');
+    report.systems.sect={passed:true,choices:4,declineReconsiderable:true,membership:'qingyun',inheritanceUnlocked:true,reloadPreserved:true,buildSource:true,leaveClearsEffects:true};
+    await restore('ascension--ascension');
+  }
   await restore('ascension--ascension');
   const mortal = await run(), originalPower = mortal.ascendedPower;
   await action('immortal-enter').click();

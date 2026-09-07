@@ -3,12 +3,13 @@
   else root.FSEngine = factory(root.FSData);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (D) {
   'use strict';
-  const VERSION = 8;
+  const VERSION = 9;
   const immortalEngine = () => typeof module === 'object' && module.exports ? require('./immortal.js') : globalThis.FSImmortal;
   const equipmentEngine = () => typeof module === 'object' && module.exports ? require('./equipment.js') : globalThis.FSEquipment;
   const buildEngine = () => typeof module === 'object' && module.exports ? require('./build.js') : globalThis.FSBuild;
   const combatEngine = () => typeof module === 'object' && module.exports ? require('./combat.js') : globalThis.FSCombat;
   const secretRealmEngine = () => typeof module === 'object' && module.exports ? require('./secret-realm.js') : globalThis.FSSecretRealm;
+  const sectEngine = () => typeof module === 'object' && module.exports ? require('./sect.js') : globalThis.FSSect;
   const PHASES = ['talents', 'attributes', 'playing', 'draft', 'mutation', 'fusion', 'tribulation', 'complete', 'dead'];
   const EVENT_IDS = ['arrival', 'quiet', 'herbs', 'ruin', 'swordsman', 'hunt', 'first-python', 'revenge', 'remains', 'advanced', 'boss', 'high', 'trace-echo', 'trace-resonance'];
   const BOSS_ROUTE_IDS = ['fight', 'see-through', 'sword-break', 'devour-eye', 'body-charge', 'fate'];
@@ -32,6 +33,7 @@
       ...(s.fusions || []).map(id => byId(D.FUSIONS, id))];
     for (const source of sources.filter(Boolean)) for (const [key, value] of Object.entries(source.effects)) result[key] = (result[key] || 0) + value;
     if (s.equipment) for (const [key, value] of Object.entries(equipmentEngine().effects(s.equipment))) result[key] = (result[key] || 0) + value;
+    if (s.sect) for (const [key,value] of Object.entries(sectEngine().effects(s.sect))) result[key]=(result[key]||0)+value;
     if (s.phase && !['talents','attributes'].includes(s.phase)) for (const [key,value] of Object.entries(buildEngine().effects(s))) result[key]=(result[key]||0)+value;
     if (s.talents.includes('taotie') && s.talents.includes('stomach')) { result.devour = (result.devour || 0) + 0.25; result.power = (result.power || 0) + 0.15; }
     if (s.root === 'thunder' && s.talents.includes('swordbone') && s.sword) result.power = (result.power || 0) + 0.20;
@@ -247,7 +249,7 @@
       highSeen: [], realmProofs: [], tribulationStage: 0, tribulationBase: null, ascendedPower: null,
       carriedTrace, traceSourceSeed, bossRoute: null, tribulationRoutes: [], batchCultivations: 0,
       event: null, draft: null, firstPower: null, revengePower: null, lastGain: 0,
-      ending: null, log: [], equipment: equipmentEngine().createState(), combatReplay: null, secretRealm: secretRealmEngine().createState(), immortal: null
+      ending: null, log: [], equipment: equipmentEngine().createState(), combatReplay: null, secretRealm: secretRealmEngine().createState(), sect: sectEngine().createState(), immortal: null
     };
     s.offer = openingOffer(s);
     return s;
@@ -665,6 +667,33 @@
         const actual=result.settlement.awardXp?gain(s,result.settlement.awardXp,'explore'):0;
         log(s,`秘境 · ${result.settlement.name}`,`你主动收束路线，安全带回修为 +${actual}。`,'gold'); break;
       }
+      case 'sect-decline': {
+        requireThat(s.phase==='playing'&&!isBlocking(s)&&!s.secretRealm.active,'当前无法处理宗门邀约。');
+        const X=sectEngine(); s.sect=X.decline(s.sect,action.id,s.realm);
+        log(s,'宗门邀约',`暂未拜入「${X.data(action.id).name}」。此世仍可重新考虑。`); break;
+      }
+      case 'sect-join': {
+        requireThat(s.phase==='playing'&&!isBlocking(s)&&!s.secretRealm.active,'当前无法拜入宗门。');
+        const X=sectEngine(); s.sect=X.join(s.sect,action.id,s.realm);
+        log(s,'拜入宗门',`你正式拜入「${X.data(action.id).name}」。宗门提供传承与事件，不要求每日贡献。`,'gold'); break;
+      }
+      case 'sect-resolve': {
+        requireThat(s.phase==='playing'&&!isBlocking(s)&&!s.secretRealm.active,'当前无法处理宗门事件。');
+        const X=sectEngine(), result=X.resolve(s.sect,action.id,s.realm); s.sect=result.state;
+        const threshold=D.REALMS[s.realm].threshold||D.REALMS[8].threshold;
+        const actual=result.reward.xpFactor?gain(s,threshold*result.reward.xpFactor,'explore'):0;
+        if(result.reward.heal) s.vitality=Math.min(100,s.vitality+result.reward.heal);
+        const event=X.EVENT_BY_ID[result.reward.event], sect=X.data(result.reward.sect);
+        const outcomeName=result.reward.outcome?X.MAJOR_CHOICES.find(x=>x.id===result.reward.outcome)?.name:'';
+        log(s,`宗门 · ${event.title}`,`${outcomeName?`选择「${outcomeName}」。`:'事件已结。'}修为 +${actual}。${result.reward.heal?`元气恢复 ${result.reward.heal}。`:''}`,result.reward.outcome==='betray'?'danger':'gold');
+        if(result.reward.outcome==='leave'||result.reward.outcome==='betray') s.event={id:'quiet',title:'山门在后',text:`你与「${sect.name}」的宗门关系已经结束。传承不再提供本世被动，但这次选择会被保留为后续因果依据。`};
+        break;
+      }
+      case 'sect-leave': {
+        requireThat(s.phase==='playing'&&!isBlocking(s)&&!s.secretRealm.active,'当前无法离宗。');
+        const X=sectEngine(), old=X.current(s.sect); s.sect=X.leave(s.sect,s.realm,'leave');
+        log(s,'离宗',`你向「${old.name}」辞别。没有贡献清算，也没有永久数值惩罚。`); break;
+      }
       default: throw new Error('未识别的操作。');
     }
     if (!action.type.startsWith('equipment-')) {
@@ -679,6 +708,7 @@
         }
       }
     }
+    s.sect=sectEngine().observe(s.sect,state,s,action);
     nextRevision(s);
     validate(s);
     return s;
@@ -693,6 +723,7 @@
     equipmentEngine().validate(s.equipment);
     combatEngine().validateReplay(s.combatReplay);
     secretRealmEngine().validate(s.secretRealm);
+    sectEngine().validate(s.sect);
     requireThat(s.defeats === undefined || s.defeats === null || (Number.isSafeInteger(s.defeats) && s.defeats >= 0), '败退记录损坏。');
     for (const key of ['seed', 'rng']) requireThat(Number.isInteger(s[key]) && s[key] > 0 && s[key] <= 4294967295, '随机种子损坏。');
     requireThat(Number.isSafeInteger(s.revision) && s.revision >= 0 || typeof s.revision === 'string' && s.revision.length <= 2048 && /^(0|[1-9]\d*)$/.test(s.revision), '操作版本损坏。');
@@ -786,7 +817,11 @@
     if (!s || s.version !== 7) return s;
     s.version = 8; s.secretRealm = secretRealmEngine().createState(); return s;
   }
-  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); s = migrateV5(s); s = migrateV6(s); s = migrateV7(s); if (s?.version === VERSION && s.immortal) s.immortal = immortalEngine().migrate(s.immortal); validate(s); return s; }
+  function migrateV8(s) {
+    if (!s || s.version !== 8) return s;
+    s.version = 9; s.sect = sectEngine().createState(); return s;
+  }
+  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); s = migrateV5(s); s = migrateV6(s); s = migrateV7(s); s = migrateV8(s); if (s?.version === VERSION && s.immortal) s.immortal = immortalEngine().migrate(s.immortal); validate(s); return s; }
   function synergies(s) {
     const list = [];
     if (s.sword && s.root === 'thunder' && s.talents.includes('swordbone')) list.push({ name: '雷剑体', text: '雷灵根 × 天生剑骨 × 青云剑诀：战力额外 +20%。' });

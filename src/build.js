@@ -1,11 +1,12 @@
 (function (root, factory) {
   const api = factory(
     typeof module === 'object' && module.exports ? require('./data.js') : root.FSData,
-    typeof module === 'object' && module.exports ? require('./equipment.js') : root.FSEquipment
+    typeof module === 'object' && module.exports ? require('./equipment.js') : root.FSEquipment,
+    typeof module === 'object' && module.exports ? require('./sect.js') : root.FSSect
   );
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.FSBuild = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (D, G) {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (D, G, X) {
   'use strict';
   const VERSION = 1;
   const TAGS = Object.freeze({
@@ -62,6 +63,10 @@
       const entry=uid&&state.equipment.inventory?.find(x=>x.uid===uid), def=G?.data(entry); if (!entry||!entry.identified||!def) continue;
       const tags=[]; if(def.special&&def.path) tags.push(def.path); if(def.effects.swordPower)tags.push('sword'); if(def.effects.devour)tags.push('devour'); if(def.effects.guard||def.effects.bone)tags.push('survival','body'); if(def.effects.mind)tags.push('soul'); if(def.effects.luck)tags.push('fortune'); if(def.effects.insight||def.effects.xp||def.effects.cultivate||def.effects.explore)tags.push('insight','growth'); if(def.effects.power||def.effects.bossPower)tags.push('burst');
       addSource(list,`equipment:${slot}:${def.id}`,def.name,tags,def.special?3:1);
+    }
+    if (state.sect?.membership && X?.data) {
+      const sect=X.data(state.sect.membership);
+      if (sect) addSource(list,`sect:${sect.id}`,sect.name,sect.tags,state.sect.heritageUnlocked?2:1);
     }
     return list;
   }

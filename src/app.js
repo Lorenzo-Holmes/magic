@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat, P = window.FSPresentation, G = window.FSEquipment, B = window.FSBuild, C = window.FSCombat, R = window.FSSecretRealm;
+  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat, P = window.FSPresentation, G = window.FSEquipment, B = window.FSBuild, C = window.FSCombat, R = window.FSSecretRealm, X = window.FSSect;
   const world = S.attach(document.getElementById('world'));
   const sound = window.FSAudio.create();
   window.FSSound = sound; // Readable audio diagnostics; no gameplay state is exposed.
@@ -184,7 +184,9 @@
     const profile = M.classifyPath(state);
     if (!profile.id) return '';
     const build=B.evaluateBuild(state), main=build.main?B.TAGS[build.main]:'未定', sub=build.sub?` · 辅 ${B.TAGS[build.sub]}`:'';
-    return `<section class="path-banner" aria-label="本世道途"><div><span>本世道途 · ${esc(profile.stage)}</span><b>${esc(profile.name)}</b></div><p>${profile.signals.map(esc).join(' · ') || '当前倾向仍在形成'}</p><small>${esc(profile.next)}<br>Build：主 ${esc(main)}${esc(sub)} · ${build.synergies.length} 条协同</small><div>${button('build', '查看协同', { ui:true, classes:'text-button' })}${button('codex', '查看图谱', { ui: true, classes: 'text-button' })}</div></section>`;
+    const sect=state.realm>=1&&state.sect?.membership?X.data(state.sect.membership):null;
+    const sectAction=state.realm>=1?button('sect',sect?`${esc(sect.name)}${state.sect.pending?' · 有事':''}`:'择宗门',{ui:true,classes:'text-button'}):'';
+    return `<section class="path-banner" aria-label="本世道途"><div><span>本世道途 · ${esc(profile.stage)}</span><b>${esc(profile.name)}</b></div><p>${profile.signals.map(esc).join(' · ') || '当前倾向仍在形成'}</p><small>${esc(profile.next)}<br>Build：主 ${esc(main)}${esc(sub)} · ${build.synergies.length} 条协同</small><div>${button('build', '查看协同', { ui:true, classes:'text-button' })}${sectAction}${button('codex', '查看图谱', { ui: true, classes: 'text-button' })}</div></section>`;
   }
   function enemyView(enemy, first = false, revenge = false) {
     const t = E.threat(state, enemy), p = E.power(state, enemy);
@@ -456,6 +458,27 @@
     const sourceRows=value.sources.map(src=>`<li><b>${esc(src.name)}</b><span>${src.tags.map(id=>esc(B.TAGS[id])).join(' / ')}</span></li>`).join('');
     modal('万法归一', `<div class="build-head"><div><span>主脉</span><b>${esc(value.main?B.TAGS[value.main]:'未显')}</b></div><div><span>辅脉</span><b>${esc(value.sub?B.TAGS[value.sub]:'未显')}</b></div><div><span>激活协同</span><b>${value.synergies.length}</b></div></div><p class="intro">${esc(value.explanation)} 标签只解释真实来源；打开或关闭命册不会推进 RNG，也不会写入存档。</p><div class="build-tags">${tags}</div><h3>来源 → 协同 → 当前效果</h3><div class="build-synergies">${synergies||'<p class="intro">当前尚没有满足两类标签的协同。继续让这一世的选择互相呼应。</p>'}</div><details class="build-sources"><summary>查看全部来源 · ${value.sources.length}</summary><ul>${sourceRows}</ul></details>`);
   }
+  function sectModal() {
+    if (!state || state.realm<1 || ['talents','attributes'].includes(state.phase)) { modal('宗门时代','<p class="intro">炼气以后，山门才会正式向你打开。宗门是传承与事件，不是贡献币和职位后台。</p>'); return; }
+    const sect=X.current(state.sect), pending=X.pendingEvent(state.sect);
+    if (!sect) {
+      const cards=X.SECTS.map(item=>{
+        const declined=state.sect.declined.includes(item.id), betrayed=state.sect.majorOutcomes.some(x=>x.sect===item.id&&x.outcome==='betray');
+        return `<article class="sect-card" data-sect="${item.id}"><span>${esc(B.TAGS[item.path]||item.path)}倾向 · 4 节事件</span><h3>${esc(item.name)}</h3><p>${esc(item.motto)}</p><dl><dt>宗门被动</dt><dd>${esc(item.passiveText)}</dd><dt>入门传承</dt><dd>${esc(item.heritageName)} · ${esc(item.heritageText)}</dd></dl><div class="sect-actions">${button('sect-join',betrayed?'今生不可再入':`拜入${declined?' · 重新考虑':''}`,{id:item.id,classes:'primary',disabled:betrayed})}${button('sect-decline',declined?'仍暂不拜入':'暂且谢绝',{id:item.id,classes:'text-button',disabled:betrayed})}</div></article>`;
+      }).join('');
+      modal('宗门时代', `<p class="intro">四宗各有一个流派偏好、一个轻量被动、一份传承、三节成长事件与一个宗门大事件。谢绝不会锁死路线；今生主动叛宗后才无法重新拜入同宗。</p><div class="sect-grid">${cards}</div>`); return;
+    }
+    const completed=new Set(state.sect.completed), fx=X.effects(state.sect);
+    const effectText=Object.entries(fx).map(([key,value])=>`${key} ${typeof value==='number'&&Math.abs(value)<1?`${value>0?'+':''}${Math.round(value*100)}%`:`${value>0?'+':''}${value}`}`).join(' · ')||'无';
+    const choices=pending?(pending.major?X.MAJOR_CHOICES:pending.choices):[];
+    const pendingBlock=pending?`<section class="sect-event${pending.major?' major':''}"><span>${pending.major?'宗门大事件':'宗门事件'} · ${D.REALMS[pending.minRealm].name}后</span><h3>${esc(pending.title)}</h3><p>${esc(pending.text)}</p><div class="sect-event-actions">${choices.map((choice,index)=>button('sect-resolve',`${esc(choice.name)}${small(choice.note)}`,{id:choice.id,classes:`${index===0?'primary':'secondary'} full`})).join('')}</div></section>`:'<p class="sect-clear">当前没有待处理的宗门事件。境界推进后，下一段传承会自然出现。</p>';
+    const progress=sect.events.map(event=>`<li class="${completed.has(event.id)?'done':state.sect.pending===event.id?'pending':''}"><span>${completed.has(event.id)?'已结':state.sect.pending===event.id?'当前':`需 ${D.REALMS[event.minRealm].name}`}</span><b>${esc(event.title)}</b></li>`).join('');
+    const history=state.sect.history.filter(row=>row.sect===sect.id).slice(-6).reverse().map(row=>{
+      const label=X.EVENT_BY_ID[row.event]?.title||(row.event==='join'?'拜入山门':row.event==='leave'?'离宗':row.event);
+      return `<li><span>${D.REALMS[row.realm]?.name||''}</span><b>${esc(label)}</b><small>${esc(row.choice)}</small></li>`;
+    }).join('');
+    modal(sect.name, `<div class="sect-head"><span>${esc(sect.motto)}</span><b>${state.sect.heritageUnlocked?esc(sect.heritageName):'传承尚未解锁'}</b><small>当前宗门效果：${esc(effectText)}</small></div>${pendingBlock}<h3>宗门历程</h3><ol class="sect-progress">${progress}</ol>${history?`<h3>最近记录</h3><ul class="sect-log">${history}</ul>`:''}${button('sect-leave','主动离宗',{classes:'text-button full'})}<p class="footnote">主动离宗会立刻失去宗门被动与传承，但不会扣除贡献或施加永久数值惩罚。宗门大事件另有护宗 / 离宗 / 叛宗三种明确选择。</p>`);
+  }
   function secretRealmModal() {
     if (!state || state.phase !== 'playing' || state.immortal) { modal('九州秘境','<p class="intro">秘境只在凡界正常游历阶段开放。处理完当前事件或回到凡界后再来。</p>'); return; }
     const realmState=state.secretRealm, active=realmState.active;
@@ -542,6 +565,7 @@
         case 'audio-settings': audioSettings(); break;
         case 'skip-combat': finishCombatReplay(); break;
         case 'secret-realm': secretRealmModal(); break;
+        case 'sect': sectModal(); break;
         case 'equipment': equipmentModal(); break;
         case 'build': buildModal(); break;
         case 'audio-music': sound.update({ music: !sound.settings().music }); audioSettings(); break;
@@ -606,7 +630,10 @@
       clearTimeout(noticeTimer); notice.classList.remove('visible'); notice.textContent = '';
       persist(); render();
       showFeedback(feedback);
-      if (action.type.startsWith('equipment-')) {
+      if (action.type.startsWith('sect-')) {
+        sectModal();
+        dialog.querySelector('[data-action^="sect-"]')?.focus({ preventScroll:true });
+      } else if (action.type.startsWith('equipment-')) {
         equipmentModal();
         dialog.querySelector(`[data-action="${action.type}"]`)?.focus({ preventScroll:true });
       } else if (action.type.startsWith('secret-')) {
