@@ -1,13 +1,15 @@
 (function (root, factory) {
   const meta = factory(
     typeof module === 'object' && module.exports ? require('./data.js') : root.FSData,
-    typeof module === 'object' && module.exports ? require('./engine.js') : root.FSEngine
+    typeof module === 'object' && module.exports ? require('./engine.js') : root.FSEngine,
+    typeof module === 'object' && module.exports ? require('./evolution.js') : root.FSEvolution
   );
   if (typeof module === 'object' && module.exports) module.exports = meta;
   else root.FSMeta = meta;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (D, E) {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (D, E, V) {
   'use strict';
-  const VERSION = 1;
+  const VERSION = 2;
+  const LAW_NAMES = Object.freeze({devour:'吞噬法则',sword:'锋芒法则',body:'不灭法则',soul:'破妄法则',fortune:'命线法则',insight:'归一法则'});
   const copy = value => JSON.parse(JSON.stringify(value));
   const traceById = id => D.TRACES.find(trace => trace.id === id);
   const unique = values => [...new Set(values.filter(Boolean))];
@@ -134,7 +136,8 @@
     });
   }
   function discoveries() {
-    return { talents: [], mutations: [], fusions: [], highEvents: [], bossRoutes: [], tribulationRoutes: [], titles: [], traces: [] };
+    return { talents: [], mutations: [], fusions: [], highEvents: [], bossRoutes: [], tribulationRoutes: [], titles: [], traces: [],
+      traceEvents: [], immortalLaws: [], evolutionTraits: [], evolutionFusions: [], worlds: [] };
   }
   function createMeta() {
     return { version: VERSION, nextTrace: null, nextTraceSource: null, tutorialHidden: false, tutorialSeen: [], totals: { ended: 0, ascended: 0 }, discovered: discoveries(), runHistory: [] };
@@ -142,28 +145,38 @@
   const validIds = Object.freeze({
     talents: D.TALENTS.map(x => x.id), mutations: D.MUTATIONS.map(x => x.id), fusions: D.FUSIONS.map(x => x.id),
     highEvents: D.HIGH_EVENTS.map(x => x.id), bossRoutes: BOSS_ROUTES.map(x => x.id),
-    tribulationRoutes: TRIBULATION_ROUTES.map(x => x.id), titles: TITLE_RULES.map(x => x.id), traces: D.TRACES.map(x => x.id)
+    tribulationRoutes: TRIBULATION_ROUTES.map(x => x.id), titles: TITLE_RULES.map(x => x.id), traces: D.TRACES.map(x => x.id),
+    traceEvents: D.TRACES.flatMap(t => [`${t.id}-echo`, `${t.id}-resonance`]), immortalLaws: Object.keys(LAW_NAMES),
+    evolutionTraits: V.TRAITS.map(t => t.id), evolutionFusions: V.RECIPES.map(r => r.id), worlds: ['1','2','3','4']
   });
   function validate(meta) {
     if (meta?.tutorialHidden !== undefined && typeof meta.tutorialHidden !== 'boolean') throw new Error('批注设置损坏。');
     if (meta?.tutorialSeen !== undefined && (!Array.isArray(meta.tutorialSeen) || meta.tutorialSeen.length > 6 || meta.tutorialSeen.some(id => !['talents', 'python', 'path', 'fusion', 'tribulation', 'reincarnation'].includes(id)))) throw new Error('批注记录损坏。');
     if (!meta || typeof meta !== 'object' || Array.isArray(meta) || meta.version !== VERSION) throw new Error('轮回册版本不兼容。');
     if (meta.nextTrace !== null && !traceById(meta.nextTrace)) throw new Error('待继承道痕损坏。');
-    if (meta.nextTraceSource !== null && (!Number.isInteger(meta.nextTraceSource) || meta.nextTraceSource <= 0)) throw new Error('道痕来源损坏。');
+    if (meta.nextTraceSource !== null && (!Number.isInteger(meta.nextTraceSource) || meta.nextTraceSource <= 0 || meta.nextTraceSource > 4294967295)) throw new Error('道痕来源损坏。');
     if ((meta.nextTrace === null) !== (meta.nextTraceSource === null)) throw new Error('待继承道痕与来源不一致。');
-    if (!meta.totals || !Number.isInteger(meta.totals.ended) || !Number.isInteger(meta.totals.ascended) || meta.totals.ended < 0 || meta.totals.ascended < 0 || meta.totals.ascended > meta.totals.ended) throw new Error('轮回统计损坏。');
+    if (!meta.totals || !Number.isSafeInteger(meta.totals.ended) || !Number.isSafeInteger(meta.totals.ascended) || meta.totals.ended < 0 || meta.totals.ascended < 0 || meta.totals.ascended > meta.totals.ended) throw new Error('轮回统计损坏。');
     if (!meta.discovered || typeof meta.discovered !== 'object') throw new Error('命途图谱损坏。');
     for (const [key, ids] of Object.entries(validIds)) {
       const list = meta.discovered[key];
       if (!Array.isArray(list) || list.length > ids.length || new Set(list).size !== list.length || list.some(id => !ids.includes(id))) throw new Error(`命途图谱损坏：${key}。`);
     }
-    if (!Array.isArray(meta.runHistory) || meta.runHistory.length > 50 || meta.runHistory.some(run => !run || !Number.isInteger(run.seed) || run.seed <= 0 || typeof run.ending !== 'string' || typeof run.ascended !== 'boolean')) throw new Error('轮回历程损坏。');
+    if (!Array.isArray(meta.runHistory) || meta.runHistory.length > 50 || new Set(meta.runHistory.map(r=>r?.seed)).size !== meta.runHistory.length || meta.runHistory.some(run => !run || !Number.isInteger(run.seed) || run.seed <= 0 || run.seed > 4294967295 || typeof run.ending !== 'string' || run.ending.length > 200 || typeof run.ascended !== 'boolean' || (run.trace !== undefined && run.trace !== null && !traceById(run.trace)) || (run.sourceSeed !== undefined && run.sourceSeed !== null && (!Number.isInteger(run.sourceSeed) || run.sourceSeed <= 0 || run.sourceSeed > 4294967295)))) throw new Error('轮回历程损坏。');
     return true;
   }
   function serialize(meta) { validate(meta); return JSON.stringify(meta); }
   function deserialize(text) {
     if (typeof text !== 'string' || text.length > 200000) throw new Error('轮回册文件无效。');
-    const meta = JSON.parse(text); validate(meta); return meta;
+    const meta = JSON.parse(text);
+    if (meta?.version === 1) {
+      meta.version = VERSION;
+      if (!meta.discovered || typeof meta.discovered !== 'object' || Array.isArray(meta.discovered)) throw new Error('旧轮回册图谱损坏。');
+      for (const key of ['traceEvents','immortalLaws','evolutionTraits','evolutionFusions','worlds']) meta.discovered[key] = [];
+      if (meta.tutorialHidden === undefined) meta.tutorialHidden = false;
+      if (meta.tutorialSeen === undefined) meta.tutorialSeen = [];
+    }
+    validate(meta); return meta;
   }
   function add(discovered, key, values) { discovered[key] = unique([...discovered[key], ...values]).filter(id => validIds[key].includes(id)); }
   function observe(meta, state) {
@@ -172,6 +185,19 @@
     add(found, 'talents', state.talents || []); add(found, 'mutations', state.mutations || []); add(found, 'fusions', state.fusions || []);
     add(found, 'highEvents', state.highSeen || []); add(found, 'bossRoutes', [state.bossRoute]); add(found, 'tribulationRoutes', state.tribulationRoutes || []);
     add(found, 'traces', [state.carriedTrace]);
+    if (state.carriedTrace) {
+      add(found, 'traceEvents', [state.flags?.traceEchoSeen ? `${state.carriedTrace}-echo` : null,
+        state.flags?.traceResonanceSeen ? `${state.carriedTrace}-resonance` : null]);
+    }
+    if (state.immortal) {
+      add(found, 'immortalLaws', [state.immortal.law]);
+      const evolution = state.immortal.evolution;
+      if (evolution) {
+        add(found, 'evolutionTraits', Object.values(evolution.slots).filter(Boolean).map(item => item.id));
+        add(found, 'evolutionFusions', evolution.fusions);
+        add(found, 'worlds', [String(evolution.world), ...evolution.cleared.map(String)]);
+      }
+    }
     if (['complete', 'dead'].includes(state.phase)) {
       const titles = endingTitles(state), traces = traceCandidates(state);
       add(found, 'titles', titles.map(title => title.id)); add(found, 'traces', traces.map(trace => trace.id));
@@ -179,7 +205,8 @@
         next.totals.ended++;
         if (ascended(state)) { next.totals.ascended++; next.tutorialHidden = true; }
         const profile = classifyPath(state);
-        next.runHistory.unshift({ seed: state.seed, ending: state.ending || state.phase, ascended: ascended(state), realm: state.realm, age: state.age, power: ascended(state) ? state.ascendedPower : E.power(state), path: profile.id, title: titles[0]?.id || null });
+        next.runHistory.unshift({ seed: state.seed, ending: state.ending || state.phase, ascended: ascended(state), realm: state.realm, age: state.age, power: ascended(state) ? state.ascendedPower : E.power(state), path: profile.id, title: titles[0]?.id || null,
+          trace: state.carriedTrace || null, sourceSeed: state.traceSourceSeed || null });
         next.runHistory = next.runHistory.slice(0, 50);
       }
     }
@@ -194,18 +221,31 @@
     validate(meta); const next = copy(meta), trace = next.nextTrace;
     next.nextTrace = null; next.nextTraceSource = null; validate(next); return { meta: next, trace };
   }
+  function reconcile(meta, state) {
+    validate(meta);
+    // A new run records the inherited mark's source before the ledger is saved.
+    // Retry that one pending consumption if writing the second key was interrupted.
+    if (state?.traceSourceSeed && state.seed !== state.traceSourceSeed && state.traceSourceSeed === meta.nextTraceSource && state.carriedTrace === meta.nextTrace) return consumeTrace(meta).meta;
+    return copy(meta);
+  }
   function entry(id, name, detail, hint, discovered) { return { id, name: discovered ? name : '？？？', detail: discovered ? detail : '', hint, discovered }; }
   function codexSections(meta) {
     validate(meta); const found = meta.discovered, has = (key, id) => found[key].includes(id);
     const sections = [
-      { id: 'talents', name: '天命', entries: D.TALENTS.map(item => entry(item.id, item.name, `${item.path} · ${D.RARITIES[item.rarity].name}品｜${item.description}`, `${item.path}天命 · ${D.RARITIES[item.rarity].name}品尚未显现`, has('talents', item.id))) },
+      { id: 'talents', name: '天命与前世天命', entries: D.TALENTS.map(item => entry(item.id, item.name, `${item.path} · ${D.RARITIES[item.rarity].name}品｜${item.description}`,
+        item.exclusiveTrace ? `携「${traceById(item.exclusiveTrace).name}」转世，在八选三中选择此命。` : `${item.path}天命 · ${D.RARITIES[item.rarity].name}品 · 需实际择入命格。`, has('talents', item.id))) },
       { id: 'mutations', name: '首次异变', entries: D.MUTATIONS.map(item => entry(item.id, item.name, `${item.slot}｜${item.description}`, '筑基后吞噬赤鳞妖蟒，在三种妖血方向中选择。', has('mutations', item.id))) },
       { id: 'fusions', name: '金丹融合', entries: D.FUSIONS.map(item => entry(item.id, item.name, `${item.path}｜${item.description}`, `成因：${item.requirement}`, has('fusions', item.id))) },
       { id: 'highEvents', name: '天地印证', entries: D.HIGH_EVENTS.map(item => entry(item.id, item.title, `${D.REALMS[item.realm].name}｜${item.text}`, `在${D.REALMS[item.realm].name}历练时可能遭遇。`, has('highEvents', item.id))) },
       { id: 'bossRoutes', name: '妖王破局', entries: BOSS_ROUTES.map(item => entry(item.id, item.name, item.hint, item.hint, has('bossRoutes', item.id))) },
       { id: 'tribulationRoutes', name: '渡劫法门', entries: TRIBULATION_ROUTES.map(item => entry(item.id, item.name, item.hint, item.hint, has('tribulationRoutes', item.id))) },
       { id: 'titles', name: '飞升称号', entries: TITLE_RULES.map(item => entry(item.id, item.name, item.description, item.hint, has('titles', item.id))) },
-      { id: 'traces', name: '轮回道痕', entries: D.TRACES.map(item => entry(item.id, item.name, `${item.path}｜${item.description}`, item.hint, has('traces', item.id))) }
+      { id: 'traces', name: '轮回道痕', entries: D.TRACES.map(item => entry(item.id, item.name, `${item.path}｜${item.description}`, item.hint, has('traces', item.id))) },
+      { id: 'traceEvents', name: '前世回声', entries: D.TRACES.flatMap(t => ['echo','resonance'].map(kind => entry(`${t.id}-${kind}`, t[kind].title, t[kind].text, `携「${t.name}」后，在${kind === 'echo' ? '赤鳞初遇之后' : '元婴初成之时'}亲自回应这段回声。`, has('traceEvents', `${t.id}-${kind}`)))) },
+      { id: 'immortalLaws', name: '仙界法则', entries: Object.entries(LAW_NAMES).map(([id,name]) => entry(id,name,`${traceById(id).talentPath}之道在仙界的延伸。`, '仙界第一次吞噬后，选择一道法则。', has('immortalLaws',id))) },
+      { id: 'evolutionTraits', name: '五槽进化', entries: V.TRAITS.map(t => entry(t.id,t.name,`${V.SLOTS[t.slot]}｜${t.text}`, '从凡界道基、仙兽吞噬或融合中实际留下这种力量。', has('evolutionTraits',t.id))) },
+      { id: 'evolutionFusions', name: '仙界融合', entries: V.RECIPES.map(r => entry(r.id,r.name,`碎片成本 ${r.cost}。${r.catalyst ? '法则引子保留。' : '材料归入新的槽位。'}`, r.needs.map(id=>V.TRAITS.find(t=>t.id===id).name).join(' + '), has('evolutionFusions',r.id))) },
+      { id: 'worlds', name: '界外见闻', entries: V.WORLDS.slice(1).map((w,n) => entry(String(n+1),w.name,`${w.rank}｜${w.text}`, '越过前一界的守界者，并亲自踏入此界。', has('worlds',String(n+1)))) }
     ];
     return sections.map(section => ({ ...section, discovered: section.entries.filter(item => item.discovered).length, total: section.entries.length }));
   }
@@ -213,5 +253,5 @@
     const sections = codexSections(meta);
     return { ended: meta.totals.ended, ascended: meta.totals.ascended, discovered: sections.reduce((n, section) => n + section.discovered, 0), total: sections.reduce((n, section) => n + section.total, 0), nextTrace: traceById(meta.nextTrace) || null };
   }
-  return Object.freeze({ VERSION, PATHS, TITLE_RULES, BOSS_ROUTES, TRIBULATION_ROUTES, createMeta, validate, serialize, deserialize, observe, classifyPath, pathScores, endingTitles, traceCandidates, selectTrace, consumeTrace, codexSections, summary });
+  return Object.freeze({ VERSION, PATHS, TITLE_RULES, BOSS_ROUTES, TRIBULATION_ROUTES, createMeta, validate, serialize, deserialize, observe, classifyPath, pathScores, endingTitles, traceCandidates, selectTrace, consumeTrace, reconcile, codexSections, summary });
 });

@@ -156,6 +156,13 @@ async function main() {
   const extensionPage = await suite('browser-extension', baseURL, build);
   const extension = JSON.parse(fs.readFileSync(path.join(out, 'browser-extension-report.json'), 'utf8'));
   const downloads = await verifyDownloads(extensionPage);
+  let v100 = null;
+  if (version === '1.0.0') {
+    await extensionPage.close();
+    const v100Page = await suite('browser-v100', baseURL, build);
+    await v100Page.close();
+    v100 = JSON.parse(fs.readFileSync(path.join(out, 'browser-v100-report.json'), 'utf8'));
+  }
   tool('verify-release.cjs', [], 'package-check.log');
   const currentBuild = JSON.parse(fs.readFileSync(path.join(root, 'release/build-report.json'), 'utf8'));
   assert.equal(currentBuild.zipSha256, build.zipSha256, 'Candidate changed during browser verification');
@@ -166,16 +173,16 @@ async function main() {
     testedZipSha256: build.zipSha256, zipBytes: build.zipBytes,
     mainFlow: smoke.completed, batchCultivation: smoke.batchCultivation,
     reincarnation: smoke.reincarnation, metaAfterEnding: smoke.metaAfterEnding,
-    layoutChecks: smoke.layouts.length + extension.layouts.length, dialogLayoutChecks: smoke.dialogLayouts.length,
-    widths: [...new Set(smoke.layouts.map(x => x.width))],
+    layoutChecks: smoke.layouts.length + extension.layouts.length + (v100?.layouts?.length || 0), dialogLayoutChecks: smoke.dialogLayouts.length,
+    widths: [...new Set([...smoke.layouts.map(x => x.width), ...extension.layouts.map(x => x.width), ...(v100?.layouts || []).map(x => x.width)])],
     backgrounds: visual.backgrounds.length, highEventFixtures: visual.highEvents.length, traceEventFixtures: visual.traceEvents.length,
     fileCases: visual.fileCases.length, reducedMotion: true,
-    extension: { audio: extension.audio, immortal: extension.immortal, evolution: extension.evolution },
-    consoleErrors: [...smoke.errors, ...visual.errors, ...extension.errors, ...downloads.errors],
-    failedRequests: [...smoke.failedRequests, ...visual.failedRequests, ...extension.failedRequests],
-    externalRequests: smoke.externalRequests + visual.externalRequests + extension.externalRequests + downloads.externalRequests,
+    extension: { audio: extension.audio, immortal: extension.immortal, evolution: extension.evolution, secondLife: v100?.secondLife || null },
+    consoleErrors: [...smoke.errors, ...visual.errors, ...extension.errors, ...(v100?.errors || []), ...downloads.errors],
+    failedRequests: [...smoke.failedRequests, ...visual.failedRequests, ...extension.failedRequests, ...(v100?.failedRequests || [])],
+    externalRequests: smoke.externalRequests + visual.externalRequests + extension.externalRequests + (v100?.externalRequests || 0) + downloads.externalRequests,
     downloadsVerified: downloads.passed,
-    scope: 'One real DOM-click mortal playthrough, plus its earned-save immortal continuation. Visual fixtures and file-mode imported checkpoints are not separate playthroughs. Desktop Chromium is not a physical iOS/Android device test.' };
+    scope: version === '1.0.0' ? 'Two real DOM-click mortal lives are exercised in sequence, including inherited memory talent and the second life law offer; the first life also continues through immortal evolution and endless mode. Desktop Chromium viewport checks are not physical iOS/Android hardware tests.' : 'One real DOM-click mortal playthrough, plus its earned-save immortal continuation. Visual fixtures and file-mode imported checkpoints are not separate playthroughs. Desktop Chromium is not a physical iOS/Android device test.' };
   writeJSON('final-qa-report.json', result);
   const evidence = fs.readdirSync(out, { withFileTypes: true }).filter(e => e.isFile()).map(e => {
     const bytes = fs.readFileSync(path.join(out, e.name));

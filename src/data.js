@@ -158,6 +158,18 @@
       route: { id: 'trace-insight', name: '翻开悟道残卷明心见道', note: '前世道痕路线 · 仅此一世', enemyFactor: 0.43 }
     }
   ];
+  const MEMORIES = {
+    devour: { name:'前世饥火', description:'前世吞噬之火未熄。吞噬修为 +12%；仍占用一个先天天命选择位。', effects:{devour:.12} },
+    sword: { name:'旧世剑意', description:'曾经斩开的天地，留下半缕剑意。习得剑诀后战力 +12%。', effects:{swordPower:.12} },
+    body: { name:'前尘道骨', description:'道骨在轮回中留下余温。战斗元气损失 -8%。', effects:{guard:.08} },
+    soul: { name:'前尘照心', description:'一线清明越过轮回。神识 +1；这一世仍由你亲自走成。', effects:{mind:1} },
+    fortune: { name:'旧命相随', description:'一缕未散的机缘随你入世。气运 +1。', effects:{luck:1} },
+    insight: { name:'一念前知', description:'曾经领悟的周天，仍有一念可循。闭关修为 +8%。', effects:{cultivate:.08} }
+  };
+  for (const trace of TRACES) {
+    trace.talentId = `memory-${trace.id}`;
+    TALENTS.push({ id:trace.talentId, rarity:2, path:trace.talentPath, exclusiveTrace:trace.id, ...MEMORIES[trace.id] });
+  }
   const ENEMIES = [
     { id: 'worm', name: '食气灵虫', power: 7, beast: true, text: '石缝里有灵虫啃食苔藓，腹中透出一点青光。', fraction: 0.17 },
     { id: 'wolf', name: '独眼山狼', power: 17, beast: true, text: '狼影伏在灌木后。它也把你当成猎物。', fraction: 0.23 },

@@ -84,7 +84,7 @@
     }
   }
   function rollOffer(s, count, minimumRarity = 0, opening = false) {
-    let pool = D.TALENTS.filter(t => !s.talents.includes(t.id));
+    let pool = D.TALENTS.filter(t => !t.exclusiveTrace && !s.talents.includes(t.id));
     const out = [], luck = opening ? 5 : stats(s).luck;
     for (let i = 0; i < count; i++) {
       const eligible = pool.filter(t => i === 0 ? t.rarity >= minimumRarity : true);
@@ -98,11 +98,10 @@
   }
   function openingOffer(s) {
     const offer = rollOffer(s, 8, 2, true), trace = byId(D.TRACES, s.carriedTrace);
-    if (!trace || offer.some(id => byId(D.TALENTS, id)?.path === trace.talentPath)) return offer;
-    const pool = D.TALENTS.filter(talent => talent.path === trace.talentPath && !offer.includes(talent.id));
-    if (!pool.length) return offer;
-    // Keep the guaranteed玄品 slot at index 0 intact; only replace the last ordinary card.
-    offer[offer.length - 1] = choose(s, pool).id;
+    if (!trace) return offer;
+    requireThat(byId(D.TALENTS, trace.talentId)?.exclusiveTrace === trace.id, '道痕天命配置不完整。');
+    // Keep the ordinary玄品 guarantee and exactly one exclusive memory card.
+    offer[offer.length - 1] = trace.talentId;
     return offer;
   }
   function availableFusions(s) {
@@ -228,7 +227,9 @@
   }
   function createRun(seed, inherited = null) {
     const carriedTrace = typeof inherited === 'string' ? inherited : inherited?.carriedTrace || null;
+    const traceSourceSeed = inherited && typeof inherited === 'object' ? inherited.sourceSeed ?? null : null;
     requireThat(carriedTrace === null || byId(D.TRACES, carriedTrace), '未知轮回道痕。');
+    requireThat(traceSourceSeed === null || carriedTrace && Number.isInteger(traceSourceSeed) && traceSourceSeed > 0 && traceSourceSeed <= 4294967295, '前世来源无效。');
     const s = {
       version: VERSION, seed: (seed >>> 0) || 1, rng: (seed >>> 0) || 1, revision: 0,
       phase: 'talents', realm: 0, xp: 0, age: 16, vitality: 100,
@@ -238,7 +239,7 @@
       flags: { pythonSeen: false, pythonSlain: false, swordEvent: false, bossSeen: false, bossSlain: false, ascended: false, traceEchoSeen: false, traceResonanceSeen: false },
       advancedSeen: [], advancedResolved: 0,
       highSeen: [], realmProofs: [], tribulationStage: 0, tribulationBase: null, ascendedPower: null,
-      carriedTrace, bossRoute: null, tribulationRoutes: [], batchCultivations: 0,
+      carriedTrace, traceSourceSeed, bossRoute: null, tribulationRoutes: [], batchCultivations: 0,
       event: null, draft: null, firstPower: null, revengePower: null, lastGain: 0,
       ending: null, log: [], immortal: null
     };
@@ -617,7 +618,7 @@
     requireThat(s.stats && D.STATS.every(a => Number.isInteger(s.stats[a.id]) && s.stats[a.id] >= 1 && s.stats[a.id] <= 10), '属性点损坏。');
     const total = D.STATS.reduce((n, a) => n + s.stats[a.id], 0);
     requireThat(total <= 20 && total >= 4 && (['talents', 'attributes'].includes(s.phase) || total === 20), '属性点总数不正确。');
-    for (const key of ['talents', 'innate', 'selected', 'offer']) requireThat(Array.isArray(s[key]) && s[key].length <= 24 && new Set(s[key]).size === s[key].length && s[key].every(id => typeof id === 'string' && byId(D.TALENTS, id)), '天命数据损坏。');
+    for (const key of ['talents', 'innate', 'selected', 'offer']) requireThat(Array.isArray(s[key]) && s[key].length <= D.TALENTS.length && new Set(s[key]).size === s[key].length && s[key].every(id => typeof id === 'string' && byId(D.TALENTS, id) && (!byId(D.TALENTS, id).exclusiveTrace || byId(D.TALENTS, id).exclusiveTrace === s.carriedTrace)), '天命数据损坏。');
     requireThat(s.selected.length <= 3 && s.innate.length <= 3, '先天天命数量不正确。');
     requireThat(Array.isArray(s.mutations) && s.mutations.length <= 1 && s.mutations.every(id => byId(D.MUTATIONS, id)), '异变数据损坏。');
     requireThat(Array.isArray(s.fusions) && s.fusions.length <= 1 && s.fusions.every(id => byId(D.FUSIONS, id)), '融合数据损坏。');
@@ -627,6 +628,7 @@
     requireThat(Array.isArray(s.highSeen) && s.highSeen.length <= D.HIGH_EVENTS.length && new Set(s.highSeen).size === s.highSeen.length && s.highSeen.every(id => byId(D.HIGH_EVENTS, id)), '高阶事件记录损坏。');
     requireThat(Array.isArray(s.realmProofs) && s.realmProofs.length <= 5 && new Set(s.realmProofs).size === s.realmProofs.length && s.realmProofs.every(n => Number.isInteger(n) && n >= 4 && n <= 8), '天地印证记录损坏。');
     requireThat(s.carriedTrace === null || byId(D.TRACES, s.carriedTrace), '轮回道痕损坏。');
+    requireThat(s.traceSourceSeed == null || s.carriedTrace && Number.isInteger(s.traceSourceSeed) && s.traceSourceSeed > 0 && s.traceSourceSeed <= 4294967295, '前世来源损坏。');
     requireThat(s.bossRoute === null || BOSS_ROUTE_IDS.includes(s.bossRoute), '妖王破局记录损坏。');
     requireThat(Array.isArray(s.tribulationRoutes) && s.tribulationRoutes.length <= 3 && s.tribulationRoutes.every(id => TRIBULATION_ROUTE_IDS.includes(id)), '渡劫路线记录损坏。');
     requireThat(s.tribulationBase === null || (Number.isInteger(s.tribulationBase) && s.tribulationBase > 0), '天劫基准损坏。');

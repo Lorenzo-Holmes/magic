@@ -9,7 +9,7 @@ const fusions = { devour: ['devour-body', 'dragon-blood'], sword: ['thunder-swor
 const routes = { devour: ['devour-eye', 'devour', 'drink', 'eat-gate'], sword: ['sword-break', 'sword', 'learn', 'cut-gate'], body: ['body-charge', 'body', 'step-gate'], soul: ['see-through', 'mind', 'see', 'probe'], fortune: ['fate', 'fortune', 'fate-gate'], insight: ['insight', 'dao', 'comprehend'] };
 function talentScore(id, strategy) {
   const t = D.TALENTS.find(t => t.id === id);
-  return (t.path === names[PATHS.indexOf(strategy)] ? 20 : 0) + t.rarity * 1.5 + (['study', 'seed', 'bright', 'vital'].includes(id) ? 4 : 0);
+  return (t.exclusiveTrace === strategy ? 60 : 0) + (t.path === names[PATHS.indexOf(strategy)] ? 20 : 0) + t.rarity * 1.5 + (['study', 'seed', 'bright', 'vital'].includes(id) ? 4 : 0);
 }
 function bestTalent(list, strategy) { return list.slice().sort((a, b) => talentScore(b, strategy) - talentScore(a, strategy))[0]; }
 function chooseAction(s, strategy = 'body', batch = true) {
@@ -49,6 +49,7 @@ function chooseAction(s, strategy = 'body', batch = true) {
     return resolve((options.find(o => routes[strategy].includes(o.id) && o.chance === 1) || best[0]).id);
   }
   if (E.canBreak(s)) return { type: 'breakthrough' };
+  if (s.realm >= 3 && s.vitality < 100) return { type:'act', kind:'cultivate' };
   if (E.canChallengeBoss(s) && s.xp >= D.REALMS[3].threshold) return { type: 'challenge-boss' };
   if (s.realm === 1 && !s.flags.swordEvent) return { type: 'act', kind: 'explore' };
   if (s.realm === 3 && s.advancedResolved < 2) return { type: 'act', kind: 'explore' };

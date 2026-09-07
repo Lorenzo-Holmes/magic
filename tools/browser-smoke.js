@@ -34,10 +34,11 @@ async (page, options = {}) => {
     if (current && !report.sceneStates[`${result.scene}--${result.atmosphere}`]) report.sceneStates[`${result.scene}--${result.atmosphere}`] = current;
     return result;
   }
+  const widths = version === '1.0.0' ? [320, 360, 390, 430, 768, 1280] : [320, 390, 430, 1280];
   async function layout(label) {
     await background(label);
     await page.waitForTimeout(1300);
-    for (const width of [320, 390, 430, 1280]) {
+    for (const width of widths) {
       await page.setViewportSize({ width, height: width > 720 ? 900 : 844 });
       const result = await page.evaluate(() => ({
         width: innerWidth,
@@ -73,7 +74,7 @@ async (page, options = {}) => {
     report.screenshots.push(filename);
   }
   async function dialogLayout(label) {
-    for (const width of [320, 390, 430, 1280]) {
+    for (const width of widths) {
       await page.setViewportSize({ width, height: width > 720 ? 900 : 844 });
       const result = await page.evaluate(() => {
         const dialog = document.querySelector('dialog[open]');
@@ -224,7 +225,7 @@ async (page, options = {}) => {
   report.completed = { phase: finished.phase, seed: finished.seed, realm: finished.realm, age: finished.age, firstPower: finished.firstPower, revengePower: finished.revengePower, mutation: finished.mutations[0], fusion: finished.fusions[0], bossRoute: finished.bossRoute, tribulationRoutes: finished.tribulationRoutes, batchCultivations: finished.batchCultivations, bossSlain: finished.flags.bossSlain, ascended: finished.flags.ascended, ascendedPower: finished.ascendedPower, proofs: finished.realmProofs, steps: iterations };
 
   const endingMeta = await meta();
-  check(endingMeta?.version === 1, 'Reincarnation ledger was not saved');
+  check(endingMeta?.version === await page.evaluate(() => FSMeta.VERSION), 'Reincarnation ledger was not saved');
   check(endingMeta.totals.ended === 1 && endingMeta.totals.ascended === 1, 'Completed run was not recorded exactly once');
   check(endingMeta.runHistory.length === 1 && endingMeta.runHistory[0].seed === finished.seed, 'Run history is missing or duplicated');
   check(await page.locator('.ending-title').count() === 1, 'Ending title panel is missing');
@@ -237,7 +238,8 @@ async (page, options = {}) => {
 
   await ui('codex').first().click();
   check(await page.locator('dialog').isVisible(), 'Fate codex did not open');
-  check(await page.locator('dialog .codex-section').count() === 8, 'Fate codex does not contain all eight sections');
+  const expectedCodexSections = await page.evaluate(() => FSMeta.codexSections(FSMeta.createMeta()).length);
+  check(await page.locator('dialog .codex-section').count() === expectedCodexSections, 'Fate codex section count is incomplete');
   check(await page.locator('dialog .codex-entry.discovered').count() > 0, 'Fate codex did not record discoveries');
   await dialogLayout('codex');
   await page.locator('dialog [data-ui="close-dialog"]').click();
@@ -263,15 +265,17 @@ async (page, options = {}) => {
   await ui('confirm-new').click();
   const inheritedRun = await state(), consumedMeta = await meta();
   check(inheritedRun.phase === 'talents' && inheritedRun.carriedTrace === selectedTrace, 'Next life did not inherit the selected trace');
+  check(inheritedRun.traceSourceSeed === finished.seed, 'Next life did not record which previous life supplied the trace');
   check(consumedMeta.nextTrace === null && consumedMeta.nextTraceSource === null, 'One-use trace was not consumed at reincarnation');
-  const guaranteed = await page.evaluate(path => {
+  const guaranteed = await page.evaluate(trace => {
     const run = JSON.parse(localStorage.getItem('feisheng.run.v1'));
-    return run.offer.some(id => FSData.TALENTS.find(talent => talent.id === id)?.path === path);
-  }, traceData.talentPath);
-  check(guaranteed, 'Inherited trace did not guarantee its talent path in the opening offer');
+    const memories = run.offer.filter(id => FSData.TALENTS.find(talent => talent.id === id)?.exclusiveTrace);
+    return { exact: run.offer.includes(trace.talentId), memories };
+  }, traceData);
+  check(guaranteed.exact && guaranteed.memories.length === 1 && guaranteed.memories[0] === traceData.talentId, 'Inherited trace did not guarantee exactly one matching memory talent');
   check((await page.locator('.trace-banner').innerText()).includes(traceData.name), 'Inherited trace banner is missing');
   await layout('inherited-talents');
-  const inheritedIds = inheritedRun.offer.slice(0, 3);
+  const inheritedIds = [traceData.talentId, ...inheritedRun.offer.filter(id => id !== traceData.talentId).slice(0, 2)];
   for (const id of inheritedIds) await action('select', `[data-id="${id}"]`).click();
   await action('confirm-talents').click();
   await action('preset', '[data-id="balanced"]').click();
@@ -287,7 +291,7 @@ async (page, options = {}) => {
   await layout('inherited-trace-echo');
   await action('resolve', '[data-choice="remember"]').click();
   check((await state()).flags.traceEchoSeen, 'Trace echo was not recorded after resolution');
-  report.reincarnation = { selectedTrace, traceName: traceData.name, guaranteedTalentPath: traceData.talentPath, consumed: true, echo: traceData.echo.title };
+  report.reincarnation = { selectedTrace, traceName: traceData.name, memoryTalent: traceData.talentId, traceSourceSeed: finished.seed, consumed: true, echo: traceData.echo.title };
 
   // Keep the completed first life available for export, file-mode and visual QA.
   await page.evaluate(({ run, ledger }) => {

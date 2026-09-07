@@ -20,12 +20,21 @@ assert.ok(qa.mainFlow.ascended && qa.fileCases >= 21 && qa.reducedMotion);
 if (build.files.some(f => f.path === 'src/audio.js')) assert.ok(qa.extension?.audio?.startsLocked && qa.extension.audio.nineCues && qa.extension.audio.muteAndReload && qa.extension.audio.bands.length === 4, 'Audio acceptance missing');
 if (build.files.some(f => f.path === 'src/immortal.js')) assert.ok(qa.extension?.immortal?.passed && qa.extension.immortal.mortalPreserved && qa.extension.immortal.fileCases.length === 3, 'Immortal acceptance missing');
 if (build.files.some(f => f.path === 'src/evolution.js')) assert.ok(qa.extension?.evolution?.passed && qa.extension.evolution.largeNumberFixture && qa.extension.evolution.endlessWorlds >= 2 && qa.extension.evolution.fileCases.length === 3, 'Evolution acceptance missing');
+let finalSimulation = null;
+if (version === '1.0.0') {
+  finalSimulation = JSON.parse(fs.readFileSync(`output/final-simulation-v${version}.json`, 'utf8'));
+  assert.ok(finalSimulation.passed && finalSimulation.simulations === 6000 && finalSimulation.paths.length === 6, 'Final 6000-run simulation missing');
+  assert.ok(finalSimulation.guarantees.allAscended && finalSimulation.guarantees.allImmortalProloguesComplete && finalSimulation.guarantees.allWormRevengeComplete && finalSimulation.guarantees.memoryTalentSelected, 'Final simulation guarantee failed');
+  assert.ok(finalSimulation.balanceRatio < 4, 'Final path balance regression');
+  assert.deepEqual(qa.widths, [320,360,390,430,768,1280], 'Final six-width browser matrix incomplete');
+  assert.ok(qa.extension?.secondLife?.ledger?.ended === 2 && qa.extension.secondLife.ledger.ascended === 2 && qa.extension.secondLife.memoryTalent?.startsWith('memory-') && qa.extension.secondLife.immortalLaw, 'Second-life browser closure missing');
+}
 assert.ok(build.zipBytes < 3000000);
 for (const f of build.files) assert.equal(crypto.createHash('sha256').update(fs.readFileSync(f.path)).digest('hex'), f.sha256, f.path);
 const reviewFile = `docs/REVIEW-v${version}.md`;
 assert.ok(fs.existsSync(reviewFile), 'Visual review not yet recorded');
-const result = { version, passed: true, zip: build.zip, zipBytes: build.zipBytes, zipSha256: build.zipSha256, unit: { tests, passed, failed }, browser: qa, review: reviewFile };
+const result = { version, passed: true, zip: build.zip, zipBytes: build.zipBytes, zipSha256: build.zipSha256, unit: { tests, passed, failed }, browser: qa, finalSimulation, review: reviewFile };
 fs.writeFileSync(`release/acceptance-v${version}.json`, JSON.stringify(result, null, 2));
 fs.writeFileSync(`release/build-report-v${version}.json`, JSON.stringify(build, null, 2));
-fs.writeFileSync(`docs/ACCEPTANCE-v${version}.md`, `# v${version} 验收\n\n- 单元测试 ${passed}/${tests}，失败 ${failed}。\n- 凡界完整 DOM 流程：${qa.mainFlow.steps} 次路线循环，seed ${qa.mainFlow.seed}，飞升战力 ${qa.mainFlow.ascendedPower}。\n- 布局检查 ${qa.layoutChecks}，视口 ${qa.widths.join(' / ')}。\n- 文件模式 ${qa.fileCases} 组；减少动态通过；控制台错误、资源失败、外部请求均为 0。\n- 后续专项：${JSON.stringify(qa.extension || null)}\n- ZIP：release/${build.zip}，${build.zipBytes} 字节。\n- SHA-256：${build.zipSha256}\n- 测试证据：${path.relative(process.cwd(), latest.evidenceDirectory).split(path.sep).join('/')}\n- 截图复核：[记录](REVIEW-v${version}.md)。\n\n以上为桌面 Chromium 验证，不替代真机、主观听感、游玩时长与留存评价。\n`);
+fs.writeFileSync(`docs/ACCEPTANCE-v${version}.md`, `# v${version} 验收\n\n- 单元测试 ${passed}/${tests}，失败 ${failed}。\n- 凡界完整 DOM 流程：${qa.mainFlow.steps} 次路线循环，seed ${qa.mainFlow.seed}，飞升战力 ${qa.mainFlow.ascendedPower}。\n- 布局检查 ${qa.layoutChecks}，视口 ${qa.widths.join(' / ')}。\n- 文件模式 ${qa.fileCases} 组；减少动态通过；控制台错误、资源失败、外部请求均为 0。\n${finalSimulation ? `- 最终压力仿真：${finalSimulation.simulations} 局，六大道途各 ${finalSimulation.seedsPerPath} 个种子；全部飞升并完成仙界序章与噬灵虫复仇。\n- 第二世真实 DOM：${JSON.stringify(qa.extension.secondLife)}\n` : ''}- 后续专项：${JSON.stringify(qa.extension || null)}\n- ZIP：release/${build.zip}，${build.zipBytes} 字节。\n- SHA-256：${build.zipSha256}\n- 测试证据：${path.relative(process.cwd(), latest.evidenceDirectory).split(path.sep).join('/')}\n- 截图复核：[记录](REVIEW-v${version}.md)。\n\n以上为桌面 Chromium 验证，不替代真机、主观听感、游玩时长与留存评价。\n`);
 console.log(JSON.stringify({ version, passed: true, tests, zipBytes: build.zipBytes, zipSha256: build.zipSha256, evidence: latest.evidenceDirectory }, null, 2));

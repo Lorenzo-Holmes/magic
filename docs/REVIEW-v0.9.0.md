@@ -8,4 +8,4 @@
 
 文字仍为主，沿用本地七张背景与既有气氛，不额外增加高清视频、字体或在线资源。
 
-最终重新打开 `acceptance-tZgzgv/extension-evolution-large-number-fixture-320.png`：科学计数与元气已经分行，巨大层数可换行，导入提示不再遮住正文。最终实际四界进化与两次无尽通关共 88 次循环；界瞳真实融合，槽位升级/替换均真实点击，268 组布局检查通过。
+最终证据以 `release/acceptance-v0.9.0.json` 的实际路径 `acceptance-Rgl864` 为准。继续 v1.0 时已重新打开该目录的 `extension-evolution-large-number-fixture-320.png`，确认科学计数与元气分行、巨大层数可换行。截图中导入提示仍有淡出残影，v1.0 将等待提示的淡出动画结束再截图。此前记入此处的另一个目录名与计数未获对应文件支持，已经撤回；自动检查数量与路线以实际 JSON 报告为准。
