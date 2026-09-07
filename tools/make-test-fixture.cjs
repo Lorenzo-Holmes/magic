@@ -1,0 +1,13 @@
+'use strict';
+const fs = require('node:fs');
+const path = require('node:path');
+const E = require('../src/engine.js');
+const M = require('../src/meta.js');
+const { out: directory } = require('./qa-paths.cjs');
+let s = E.createRun(4242);
+for (const id of s.offer.slice(0, 3)) s = E.transition(s, { type: 'select', id });
+s = E.transition(s, { type: 'confirm-talents' });
+s = E.transition(s, { type: 'enter' });
+fs.mkdirSync(directory, { recursive: true });
+fs.writeFileSync(path.join(directory, 'import-fixture.json'), E.serialize(s));
+fs.writeFileSync(path.join(directory, 'meta-import-fixture.json'), M.serialize(M.createMeta()));

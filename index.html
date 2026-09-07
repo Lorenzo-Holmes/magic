@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101c1d">
+  <meta name="description" content="我欲飞升 v0.6.0 轮回道痕：从黑风岭到天门，识别本世流派、收集命途图谱，并为下一世留下一枚道痕。离线文字修仙。">
+  <title>我欲飞升 · v0.6.0 轮回道痕</title>
+  <link rel="icon" href="./assets/seal.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./src/style.css">
+  <script defer src="./src/data.js"></script>
+  <script defer src="./src/engine.js"></script>
+  <script defer src="./src/scenes.js"></script>
+  <script defer src="./src/meta.js"></script>
+  <script defer src="./src/app.js"></script>
+</head>
+<body>
+  <div id="world" class="world" data-scene="mortal" data-loaded-scene="mortal" data-atmosphere="calm" aria-hidden="true">
+    <img class="world-image is-visible" src="./assets/bg/realm-mortal.svg" alt="" decoding="async" fetchpriority="high">
+    <img class="world-image" alt="" decoding="async">
+    <div class="world-fx world-mist"></div>
+    <div class="world-fx world-dust"></div>
+    <div class="world-fx world-rift"></div>
+    <div class="world-fx world-aura"></div>
+    <div class="world-fx world-eye"><i></i><i></i><i></i></div>
+    <div class="world-fx world-lightning"></div>
+    <div class="world-fx world-gate"></div>
+    <div class="world-wash"></div>
+  </div>
+  <div id="app"></div>
+  <div id="notice" class="notice" role="status" aria-live="polite"></div>
+  <noscript>此游戏需要启用 JavaScript。所有游戏内容均在本地运行，无需注册。</noscript>
+</body>
+</html>
