@@ -119,6 +119,34 @@ async (page, options = {}) => {
     report.systems.build={passed:true,main:evaluated.main,sub:evaluated.sub,sources:evaluated.sources.length,synergies:evaluated.synergies.length,readOnly:true};
     await restore('ascension--ascension');
   }
+  if (await page.evaluate(() => !!window.FSCombat)) {
+    await page.emulateMedia({ reducedMotion:'no-preference' });
+    await restore('goldcore--demon-eye');
+    const beforeCombat=JSON.stringify(await run());
+    const route=page.locator('[data-action="resolve"]:not(:disabled)').last();
+    check(await route.count()===1,'Gold-core combat fixture has no viable boss route');
+    await route.click();
+    const committed=JSON.stringify(await run()), committedState=JSON.parse(committed);
+    check(committed!==beforeCombat && committedState.flags.bossSlain && committedState.combatReplay?.events?.length>=4,'Boss result was not committed with a bounded replay');
+    await page.waitForFunction(() => FSPresentationUI.diagnostics().combatVisible);
+    const diagCombat=await page.evaluate(()=>FSPresentationUI.diagnostics());
+    check(diagCombat.combatReplay===committedState.combatReplay.id && diagCombat.combatEvents===committedState.combatReplay.events.length,'Combat overlay differs from committed replay');
+    const combatShot=`${out}/extension-combat-replay-390.png`; await page.screenshot({path:combatShot}); report.screenshots.push(combatShot);
+    await ui('skip-combat').click();
+    check(JSON.stringify(await run())===committed,'Skipping replay changed the committed save');
+    await page.reload(); await ui('continue').click();
+    await page.waitForFunction(id => FSPresentationUI.diagnostics().combatReplay===id, committedState.combatReplay.id);
+    check(JSON.stringify(await run())===committed,'Reload rerolled or repaid the combat result');
+    await ui('skip-combat').click();
+    await page.emulateMedia({ reducedMotion:'reduce' }); await page.reload(); await ui('continue').click();
+    await page.waitForFunction(() => FSPresentationUI.diagnostics().combatVisible);
+    check(await page.locator('.combat-event:not(.shown)').count()===0,'Reduced motion did not jump combat replay to the final frame');
+    check(JSON.stringify(await run())===committed,'Reduced-motion replay changed the committed save');
+    if (await ui('skip-combat').count()) await ui('skip-combat').click();
+    await page.emulateMedia({ reducedMotion:'no-preference' });
+    report.systems.combat={passed:true,replayId:committedState.combatReplay.id,events:committedState.combatReplay.events.length,skipReadOnly:true,reloadPreserved:true,reducedMotion:true,result:committedState.combatReplay.result};
+    await restore('ascension--ascension');
+  }
   await restore('ascension--ascension');
   const mortal = await run(), originalPower = mortal.ascendedPower;
   await action('immortal-enter').click();

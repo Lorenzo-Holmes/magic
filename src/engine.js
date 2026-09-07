@@ -3,10 +3,11 @@
   else root.FSEngine = factory(root.FSData);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (D) {
   'use strict';
-  const VERSION = 6;
+  const VERSION = 7;
   const immortalEngine = () => typeof module === 'object' && module.exports ? require('./immortal.js') : globalThis.FSImmortal;
   const equipmentEngine = () => typeof module === 'object' && module.exports ? require('./equipment.js') : globalThis.FSEquipment;
   const buildEngine = () => typeof module === 'object' && module.exports ? require('./build.js') : globalThis.FSBuild;
+  const combatEngine = () => typeof module === 'object' && module.exports ? require('./combat.js') : globalThis.FSCombat;
   const PHASES = ['talents', 'attributes', 'playing', 'draft', 'mutation', 'fusion', 'tribulation', 'complete', 'dead'];
   const EVENT_IDS = ['arrival', 'quiet', 'herbs', 'ruin', 'swordsman', 'hunt', 'first-python', 'revenge', 'remains', 'advanced', 'boss', 'high', 'trace-echo', 'trace-resonance'];
   const BOSS_ROUTE_IDS = ['fight', 'see-through', 'sword-break', 'devour-eye', 'body-charge', 'fate'];
@@ -245,7 +246,7 @@
       highSeen: [], realmProofs: [], tribulationStage: 0, tribulationBase: null, ascendedPower: null,
       carriedTrace, traceSourceSeed, bossRoute: null, tribulationRoutes: [], batchCultivations: 0,
       event: null, draft: null, firstPower: null, revengePower: null, lastGain: 0,
-      ending: null, log: [], equipment: equipmentEngine().createState(), immortal: null
+      ending: null, log: [], equipment: equipmentEngine().createState(), combatReplay: null, immortal: null
     };
     s.offer = openingOffer(s);
     return s;
@@ -407,17 +408,30 @@
       if (choice === 'flee') { s.event = { id: 'quiet', title: '收敛锋芒', text: '你绕过这场厮杀。退让不是终点，只是还没到时候。' }; log(s, '避战', `离开${enemy.name}的领地。`); return; }
       requireThat(t.ratio >= 0.55, '战力悬殊，不可贸然送死。');
       requireThat(choice !== 'devour' || (enemy.beast && s.flags.pythonSeen), '尚不可吞噬这个目标。');
-      const win = t.chance === 1 || random(s) < t.chance;
-      const loss = t.ratio >= 2 ? 0 : win ? Math.round(12 + 18 / t.ratio) : 45;
-      if (loss) hurt(s, loss);
-      if (s.phase === 'dead') return;
-      if (win) {
+      const C = combatEngine(), playerPower = power(s, enemy), roll = t.chance === 1 ? 0 : random(s);
+      const guardScale = Math.max(.25, 1 - (effects(s).guard || 0));
+      const rawWinDamage = t.ratio >= 2 ? 0 : Math.round(12 + 18 / t.ratio), rawLoseDamage = 45;
+      let combat = C.resolveCombat({ enemy, playerPower, action: choice, chance: t.chance, roll,
+        damageWin: Math.ceil(rawWinDamage * guardScale), damageLose: Math.ceil(rawLoseDamage * guardScale), reward: 0 });
+      if (combat.result.damage) hurt(s, combat.result.win ? rawWinDamage : rawLoseDamage);
+      if (s.phase === 'dead') {
+        s.combatReplay = C.createReplay(combat, `hunt-${s.revision}-${enemy.id}`, { enemy: enemy.name });
+        return;
+      }
+      if (combat.result.win) {
         const eat = choice === 'devour';
         const value = gain(s, D.REALMS[s.realm].threshold * enemy.fraction, eat ? 'devour' : 'combat');
         if (eat) { s.devours++; s.vitality = Math.min(100, s.vitality + (effects(s).devourHeal || 0)); }
+        combat = C.resolveCombat({ enemy, playerPower, action: choice, chance: t.chance, roll,
+          damageWin: Math.ceil(rawWinDamage * guardScale), damageLose: Math.ceil(rawLoseDamage * guardScale), reward: value });
+        s.combatReplay = C.createReplay(combat, `hunt-${s.revision}-${enemy.id}`, { enemy: enemy.name });
         s.event = { id: 'quiet', title: eat ? '化为一口修为' : '一战得胜', text: t.ratio >= 2 ? `你甚至不必认真出手。${enemy.name}已被镇压，曾经的危险如今不过是前路的养分。` : `你抓住破绽，击败了${enemy.name}。元气尚有损耗，闭关可以疗愈。`, gain: value };
         log(s, eat ? '吞噬' : '取胜', `${enemy.name}，修为 +${value}。`, eat ? 'gold' : 'normal');
-      } else { s.event = { id: 'quiet', title: '负伤而归', text: '这一战未能取胜。你付出元气的代价，终于甩开追兵。闭关可以恢复；不要带伤逞强。' }; log(s, '败退', `败于${enemy.name}，失去元气但成功逃生。`, 'danger'); }
+      } else {
+        s.combatReplay = C.createReplay(combat, `hunt-${s.revision}-${enemy.id}`, { enemy: enemy.name });
+        s.event = { id: 'quiet', title: '负伤而归', text: '这一战未能取胜。你付出元气的代价，终于甩开追兵。闭关可以恢复；不要带伤逞强。' };
+        log(s, '败退', `败于${enemy.name}，失去元气但成功逃生。`, 'danger');
+      }
     } else if (id === 'revenge' || id === 'remains') {
       requireThat(id === 'remains' ? choice === 'devour' : ['devour', 'kill'].includes(choice), '请选择如何了结这段因果。');
       if (choice === 'kill') {
@@ -453,9 +467,13 @@
       const effectiveEnemy = { ...enemy, power: Math.round(enemy.power * option.enemyFactor) };
       const t = threat(s, effectiveEnemy);
       requireThat(t.ratio >= .55, '即使找到破绽，你现在仍没有胜算。先继续修炼或寻找机缘。');
-      const win = t.chance === 1 || random(s) < t.chance;
-      if (!win) {
-        hurt(s, 42);
+      const C = combatEngine(), playerPower = power(s, effectiveEnemy), roll = t.chance === 1 ? 0 : random(s);
+      const guardScale = Math.max(.25, 1 - (effects(s).guard || 0)), rawLoseDamage = 42;
+      let combat = C.resolveCombat({ enemy: effectiveEnemy, playerPower, action: option.devour ? 'devour' : 'boss', chance: t.chance, roll,
+        damageWin: 0, damageLose: Math.ceil(rawLoseDamage * guardScale), reward: 0, route: option.name });
+      if (!combat.result.win) {
+        if (combat.result.damage) hurt(s, rawLoseDamage);
+        s.combatReplay = C.createReplay(combat, `boss-${s.revision}-${option.id}`, { enemy: enemy.name });
         if (s.phase === 'dead') return;
         s.event = { id: 'quiet', title: '妖眼未闭', text: '第三只眼重新合拢前，你抢回了自己的意识。此战未成，但你已经知道该如何破它。继续积累，再来。' };
         log(s, '败退 · 三眼妖王', `${option.name}未能一击奏效。你负伤退回山外。`, 'danger');
@@ -465,6 +483,9 @@
       s.bossRoute = option.id;
       if (option.devour) { s.devours++; s.vitality = Math.min(100, s.vitality + 20 + (effects(s).devourHeal || 0)); }
       const value = gain(s, D.REALMS[3].threshold * .30, option.devour ? 'devour' : 'combat');
+      combat = C.resolveCombat({ enemy: effectiveEnemy, playerPower, action: option.devour ? 'devour' : 'boss', chance: t.chance, roll,
+        damageWin: 0, damageLose: Math.ceil(rawLoseDamage * guardScale), reward: value, route: option.name });
+      s.combatReplay = C.createReplay(combat, `boss-${s.revision}-${option.id}`, { enemy: enemy.name });
       s.event = { id: 'quiet', title: '妖眼已闭，凡界未尽', text: `三眼妖王倒下，修为 +${value}。你已经证明这一世的 Build 能够破局。继续向元婴迈进。` };
       log(s, '镇杀三眼妖王', `${option.name}。第三只眼终于熄灭；金丹篇完成，但你的凡界道途还没有结束。`, 'gold');
     } else if (id === 'high') {
@@ -485,6 +506,9 @@
     requireThat(action && typeof action.type === 'string', '无效操作。');
     if (action.revision !== undefined) requireThat(String(action.revision) === String(state.revision), '此选择已失效，请使用当前画面的选项。');
     const s = copy(state);
+    // A replay is evidence of an already committed result. Any subsequent
+    // gameplay action dismisses it without rerolling or paying rewards again.
+    if (s.combatReplay) s.combatReplay = null;
     if (action.type.startsWith('immortal-')) {
       requireThat(s.phase === 'complete' && s.flags.ascended, '只有飞升后才能踏入仙界。');
       const I = immortalEngine();
@@ -620,7 +644,18 @@
         s.equipment = equipmentEngine().evolve(s.equipment, action.id); break;
       default: throw new Error('未识别的操作。');
     }
-    if (!action.type.startsWith('equipment-')) s.equipment = equipmentEngine().observe(s.equipment, state, s, action);
+    if (!action.type.startsWith('equipment-')) {
+      const previousDrop = JSON.stringify(s.equipment.lastDrop);
+      s.equipment = equipmentEngine().observe(s.equipment, state, s, action);
+      if (s.combatReplay && JSON.stringify(s.equipment.lastDrop) !== previousDrop) {
+        const drop = s.equipment.lastDrop;
+        if (drop?.id && s.combatReplay.events.length < 10) {
+          const def = equipmentEngine().BY_ID[drop.id];
+          const text = drop.full ? `行囊已满，「${def.name}」自动归炉为 ${drop.converted} 器蕴。` : `额外战利品：未鉴定「${def.name}」已收入行囊。`;
+          s.combatReplay.events.push({ type:'drop', text, tone:'rare' });
+        }
+      }
+    }
     nextRevision(s);
     validate(s);
     return s;
@@ -633,6 +668,7 @@
       immortalEngine().validate(s.immortal);
     }
     equipmentEngine().validate(s.equipment);
+    combatEngine().validateReplay(s.combatReplay);
     requireThat(s.defeats === undefined || s.defeats === null || (Number.isSafeInteger(s.defeats) && s.defeats >= 0), '败退记录损坏。');
     for (const key of ['seed', 'rng']) requireThat(Number.isInteger(s[key]) && s[key] > 0 && s[key] <= 4294967295, '随机种子损坏。');
     requireThat(Number.isSafeInteger(s.revision) && s.revision >= 0 || typeof s.revision === 'string' && s.revision.length <= 2048 && /^(0|[1-9]\d*)$/.test(s.revision), '操作版本损坏。');
@@ -718,7 +754,11 @@
     if (!s || s.version !== 5) return s;
     s.version = 6; s.equipment = equipmentEngine().createState(); return s;
   }
-  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); s = migrateV5(s); if (s?.version === VERSION && s.immortal) s.immortal = immortalEngine().migrate(s.immortal); validate(s); return s; }
+  function migrateV6(s) {
+    if (!s || s.version !== 6) return s;
+    s.version = 7; s.combatReplay = null; return s;
+  }
+  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); s = migrateV5(s); s = migrateV6(s); if (s?.version === VERSION && s.immortal) s.immortal = immortalEngine().migrate(s.immortal); validate(s); return s; }
   function synergies(s) {
     const list = [];
     if (s.sword && s.root === 'thunder' && s.talents.includes('swordbone')) list.push({ name: '雷剑体', text: '雷灵根 × 天生剑骨 × 青云剑诀：战力额外 +20%。' });

@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat, P = window.FSPresentation, G = window.FSEquipment, B = window.FSBuild;
+  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat, P = window.FSPresentation, G = window.FSEquipment, B = window.FSBuild, C = window.FSCombat;
   const world = S.attach(document.getElementById('world'));
   const sound = window.FSAudio.create();
   window.FSSound = sound; // Readable audio diagnostics; no gameplay state is exposed.
@@ -11,9 +11,12 @@
   feedbackLayer.className = 'feedback-layer'; feedbackLayer.setAttribute('aria-hidden', 'true'); document.body.appendChild(feedbackLayer);
   const majorLayer = document.createElement('div');
   majorLayer.className = 'major-event-layer'; majorLayer.setAttribute('aria-hidden', 'true'); document.body.appendChild(majorLayer);
+  const combatLayer = document.createElement('div');
+  combatLayer.className = 'combat-replay-layer'; combatLayer.setAttribute('aria-live', 'polite'); document.body.appendChild(combatLayer);
   const dialog = document.createElement('dialog');
   dialog.className = 'scroll-dialog'; dialog.setAttribute('aria-label', '命册与设置'); document.body.appendChild(dialog);
-  let state = null, meta = M.createMeta(), home = true, mortalSummary = false, runStorageWarning = '', metaStorageWarning = '', noticeTimer, majorTimer, previousView = '', pendingImport = null;
+  let state = null, meta = M.createMeta(), home = true, mortalSummary = false, runStorageWarning = '', metaStorageWarning = '', noticeTimer, majorTimer, previousView = '', pendingImport = null, lastCombatReplay = '';
+  let combatTimers = [];
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fmt = value => Number(value || 0).toLocaleString('zh-CN');
   const find = (items, id) => items.find(item => item.id === id);
@@ -44,8 +47,36 @@
     if (reduced) { close(); return; }
     majorTimer = setTimeout(close, Math.max(1500, Math.min(3000, major.duration || 1900)));
   }
+  function finishCombatReplay() {
+    for (const timer of combatTimers) clearTimeout(timer);
+    combatTimers = [];
+    combatLayer.classList.remove('visible');
+    combatLayer.replaceChildren();
+    delete combatLayer.dataset.replay;
+  }
+  function syncCombatReplay() {
+    const replay = !home && !state?.immortal ? state?.combatReplay : null;
+    if (!replay) { if (combatLayer.classList.contains('visible')) finishCombatReplay(); return; }
+    if (replay.id === lastCombatReplay) return;
+    lastCombatReplay = replay.id; finishCombatReplay();
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    combatLayer.dataset.replay = replay.id;
+    combatLayer.classList.toggle('reduced', reduced);
+    combatLayer.innerHTML = `<section class="combat-replay-card" data-result="${esc(replay.result)}"><header><span>九州战录 · 结果已结算</span><b>${esc(replay.enemy || '一场战斗')}</b>${button('skip-combat', '略过', { ui:true, classes:'text-button combat-skip', aria:'跳过战斗回放' })}</header><ol>${replay.events.map((item,index)=>`<li class="combat-event combat-${esc(item.type)} tone-${esc(item.tone)}" data-index="${index}"><i></i><span>${esc(item.text)}</span></li>`).join('')}</ol><small>表现层不会重新掷骰；刷新只会重播同一结果。</small></section>`;
+    combatLayer.classList.add('visible');
+    const events = [...combatLayer.querySelectorAll('.combat-event')];
+    if (reduced) {
+      events.forEach(node => node.classList.add('shown'));
+      combatTimers.push(setTimeout(finishCombatReplay, 1100));
+      return;
+    }
+    const step = Math.max(220, Math.min(420, 2600 / Math.max(1, events.length)));
+    events.forEach((node,index) => combatTimers.push(setTimeout(() => node.classList.add('shown'), 120 + index * step)));
+    combatTimers.push(setTimeout(finishCombatReplay, Math.max(1500, Math.min(4800, 650 + events.length * step))));
+  }
   // Browser QA can inspect the presentation shell without exposing gameplay mutation hooks.
-  window.FSPresentationUI = Object.freeze({ diagnostics: () => ({ rewardToasts: feedbackLayer.children.length, majorVisible: majorLayer.classList.contains('visible'), majorKind: majorLayer.dataset.kind || null }) });
+  window.FSPresentationUI = Object.freeze({ diagnostics: () => ({ rewardToasts: feedbackLayer.children.length, majorVisible: majorLayer.classList.contains('visible'), majorKind: majorLayer.dataset.kind || null,
+    combatVisible: combatLayer.classList.contains('visible'), combatReplay: combatLayer.dataset.replay || null, combatEvents: combatLayer.querySelectorAll('.combat-event').length }) });
   function save() {
     try { localStorage.setItem(KEY, E.serialize(state)); runStorageWarning = ''; }
     catch { runStorageWarning = '浏览器未允许保存。请在「命册」中导出存档，关闭页面后进度可能丢失。'; }
@@ -367,6 +398,7 @@
     const body = home ? homeView() : inImmortal ? immortalView() : state.phase === 'talents' ? talentsView() : state.phase === 'attributes' ? attributesView() : state.phase === 'playing' ? playingView() : state.phase === 'draft' ? draftView() : state.phase === 'mutation' ? mutationView() : state.phase === 'fusion' ? fusionView() : state.phase === 'tribulation' ? tribulationView() : endingView();
     app.innerHTML = `<div class="shell">${rail()}<div class="content-shell">${header()}<main id="main" tabindex="-1" data-view="${view}">${vista}${tutorialNote()}${body}</main><footer class="app-footer"><span>我欲飞升 · v${S.VERSION}</span><span>本地运行 / 无付费抽取</span></footer>${warning ? `<div class="storage-warning" role="alert">${esc(warning)}</div>` : ''}</div></div>`;
     if (view !== previousView) { window.scrollTo({ top: 0, behavior: 'instant' }); previousView = view; }
+    syncCombatReplay();
   }
   function modal(title, body) {
     if (title === '存档与说明') body = `<div class="settings-extra"><h3>命册批注</h3><p class="intro">首次飞升后自动关闭；也可以提前关闭。战力主显示使用万、亿，点按数字查看完整值。</p>${button('tutorial-reset', '重新阅读批注', { ui: true, classes: 'secondary full', disabled: meta.totals.ascended > 0 })}</div>${body}`;
@@ -485,6 +517,7 @@
           if (state?.immortal) modal('仙界命册', `<ol class="history">${state.immortal.journal.slice().reverse().map(j => `<li><small>仙界第 ${j.day} 日</small><p>${esc(j.text)}</p></li>`).join('')}</ol>${button('settings', '存档与说明', { ui: true, classes: 'secondary full' })}`);
           break;
         case 'audio-settings': audioSettings(); break;
+        case 'skip-combat': finishCombatReplay(); break;
         case 'equipment': equipmentModal(); break;
         case 'build': buildModal(); break;
         case 'audio-music': sound.update({ music: !sound.settings().music }); audioSettings(); break;
