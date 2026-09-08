@@ -1,15 +1,50 @@
+/* ═══════════════════════════════════════════════════
+   我欲飞升 · 仙侠修炼任务管理器
+   Xianxia-themed Task Manager – Visual Design v2
+   ═══════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap');
+
 :root {
-  --primary-color: #3498db;
-  --secondary-color: #2ecc71;
-  --background-color: #1a1a2e;
-  --panel-color: #16213e;
-  --text-color: #f0f0f0;
-  --accent-color: #4cd137;
-  --danger-color: #e74c3c;
-  --border-radius: 8px;
-  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  /* ── 水墨色阶 Ink Palette ── */
+  --ink-void:      #08090d;
+  --ink-deep:      #0d1117;
+  --ink-dark:      #141b26;
+  --ink-mid:       #1c2535;
+  --ink-panel:     #1a2237;
+  --ink-surface:   #202d40;
+  --ink-border:    rgba(180,210,255,0.08);
+
+  /* ── 仙气色彩 Celestial Colors ── */
+  --jade-glow:     #72e3c4;
+  --spirit-blue:   #5ba3f5;
+  --thunder-gold:  #f5c842;
+  --blood-red:     #e85050;
+  --void-purple:   #9b72f5;
+  --frost-white:   rgba(220, 240, 255, 0.92);
+  --mist-white:    rgba(200, 220, 255, 0.55);
+  --dim-white:     rgba(180, 200, 240, 0.30);
+
+  /* ── 语义色 Semantic (kept for JS compat) ── */
+  --primary-color:     var(--spirit-blue);
+  --secondary-color:   var(--jade-glow);
+  --background-color:  var(--ink-deep);
+  --panel-color:       var(--ink-panel);
+  --text-color:        var(--frost-white);
+  --accent-color:      var(--jade-glow);
+  --danger-color:      var(--blood-red);
+  --border-radius:     12px;
+  --box-shadow:        0 4px 32px rgba(0,0,0,0.55);
+
+  --radius-sm:     6px;
+  --radius-md:     12px;
+  --radius-lg:     20px;
+  --shadow-panel:  0 4px 32px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.04) inset;
+  --shadow-card:   0 2px 12px rgba(0,0,0,0.4), 0 0 0 1px var(--ink-border);
+  --transition:    0.25s cubic-bezier(0.4,0,0.2,1);
 }
 
+/* ══════════════ BASE ══════════════ */
 * {
   margin: 0;
   padding: 0;
@@ -17,99 +52,153 @@
 }
 
 body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background-color: var(--background-color);
-  color: var(--text-color);
-  line-height: 1.6;
+  font-family: 'Noto Sans SC', 'Segoe UI', sans-serif;
+  background-color: var(--ink-deep);
+  color: var(--frost-white);
+  line-height: 1.7;
+  background-image:
+    radial-gradient(ellipse 120% 60% at 20% 0%,  rgba(91,163,245,0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 80%  80% at 80% 100%, rgba(114,227,196,0.03) 0%, transparent 60%),
+    radial-gradient(ellipse 60%  40% at 50% 50%,  rgba(155,114,245,0.02) 0%, transparent 70%);
+  min-height: 100vh;
 }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(114,227,196,0.25); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(114,227,196,0.45); }
 
 .container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  max-width: 1400px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 24px 28px;
 }
 
+/* ══════════════ HEADER ══════════════ */
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 20px;
+  padding: 18px 0 22px;
+  border-bottom: 1px solid var(--ink-border);
+  margin-bottom: 22px;
+  position: relative;
+}
+
+header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0;
+  width: 180px; height: 1px;
+  background: linear-gradient(90deg, var(--jade-glow), transparent);
 }
 
 h1 {
-  font-size: 1.8rem;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.55rem;
   font-weight: 600;
-  color: var(--primary-color);
+  letter-spacing: 0.08em;
+  background: linear-gradient(135deg, var(--jade-glow) 0%, var(--spirit-blue) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 12px rgba(114,227,196,0.35));
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .status-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.9rem;
+  gap: 8px;
+  font-size: 0.78rem;
   font-weight: 500;
+  color: var(--mist-white);
+  letter-spacing: 0.06em;
 }
 
 .status-indicator {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background-color: var(--accent-color);
-  box-shadow: 0 0 8px var(--accent-color);
-  animation: pulse 2s infinite;
+  background-color: var(--jade-glow);
+  box-shadow: 0 0 0 3px rgba(114,227,196,0.15), 0 0 8px var(--jade-glow);
+  animation: breath 2.8s ease-in-out infinite;
 }
 
-@keyframes pulse {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-  100% {
-    opacity: 1;
-  }
+@keyframes breath {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(114,227,196,0.15), 0 0 6px var(--jade-glow); }
+  50%       { box-shadow: 0 0 0 5px rgba(114,227,196,0.08), 0 0 14px var(--jade-glow); opacity: 0.75; }
 }
 
+
+/* ══════════════ SELECT ══════════════ */
+select {
+  background-color: var(--ink-surface);
+  color: var(--mist-white);
+  border: 1px solid var(--ink-border);
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color var(--transition), color var(--transition);
+}
+
+select:hover, select:focus {
+  border-color: rgba(114,227,196,0.3);
+  color: var(--frost-white);
+}
+
+/* ══════════════ MAIN GRID ══════════════ */
 main {
   display: grid;
-  grid-template-rows: auto 1fr;
-  grid-template-areas:
-    "dependency"
-    "bottom";
+  grid-template-rows: 280px 1fr;
   gap: 20px;
-  flex-grow: 1;
+  flex: 1;
 }
 
+/* ══════════════ PANELS ══════════════ */
 .task-panel,
-.task-details {
-  background-color: var(--panel-color);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+.task-details,
+.dependency-view {
+  background: var(--ink-panel);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--ink-border);
+  box-shadow: var(--shadow-panel);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
-.dependency-view {
-  grid-area: dependency;
-  background-color: var(--panel-color);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+.dependency-view { grid-area: dependency; }
+
+/* Subtle corner accent */
+.dependency-view::before,
+.task-panel::before,
+.task-details::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, rgba(114,227,196,0.06) 0%, transparent 70%);
+  border-radius: var(--radius-md) 0 0 0;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .bottom-panels {
   grid-area: bottom;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1.2fr;
   gap: 20px;
   overflow: hidden;
 }
@@ -118,28 +207,40 @@ main {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
-  background-color: rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 13px 18px;
+  background: rgba(0,0,0,0.18);
+  border-bottom: 1px solid var(--ink-border);
+  position: relative;
+  z-index: 1;
+}
+
+h2 {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--mist-white);
 }
 
 .reset-view-btn {
   background: none;
   border: none;
-  color: var(--text-color);
+  color: var(--dim-white);
   cursor: pointer;
-  padding: 8px;
+  padding: 6px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all var(--transition);
 }
 
 .reset-view-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(114,227,196,0.1);
+  color: var(--jade-glow);
   transform: rotate(-30deg);
 }
+
 
 .reset-view-btn svg {
   transition: transform 0.3s ease;
@@ -149,365 +250,409 @@ main {
   transform: rotate(-360deg);
 }
 
-h2 {
-  font-size: 1.2rem;
-  font-weight: 500;
-}
 
-select {
-  background-color: rgba(0, 0, 0, 0.3);
-  color: var(--text-color);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 5px 10px;
-  border-radius: 4px;
-  outline: none;
-}
-
+/* ══════════════ TASK LIST ══════════════ */
 .task-list,
 .dependency-graph,
 #task-details-content {
-  padding: 15px;
-  flex-grow: 1;
+  padding: 14px 16px;
+  flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  z-index: 1;
 }
 
 .dependency-graph {
-  min-height: 300px;
+  min-height: 200px;
 }
 
+/* ── Task card ── */
 .task-item {
-  padding: 15px;
-  margin-bottom: 15px;
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: var(--border-radius);
+  padding: 13px 16px 11px 20px;
+  margin-bottom: 9px;
+  background: rgba(255,255,255,0.025);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
+  box-shadow: var(--shadow-card);
   position: relative;
   overflow: hidden;
 }
 
 .task-item::before {
-  content: "";
+  content: '';
   position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 4px;
-  background-color: transparent;
-  transition: background-color 0.3s;
+  left: 0; top: 0;
+  height: 100%; width: 3px;
+  background: transparent;
+  transition: background var(--transition), box-shadow var(--transition);
 }
 
 .task-item.status-pending::before {
-  background-color: #f1c40f;
+  background: var(--thunder-gold);
+  box-shadow: 0 0 12px rgba(245,200,66,0.4);
 }
 
 .task-item.status-in-progress::before {
-  background-color: var(--primary-color);
+  background: var(--spirit-blue);
+  box-shadow: 0 0 12px rgba(91,163,245,0.4);
 }
 
 .task-item.status-completed::before {
-  background-color: var(--secondary-color);
+  background: var(--jade-glow);
+  box-shadow: 0 0 12px rgba(114,227,196,0.35);
 }
 
 .task-item:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  transform: translateX(2px);
+  background: rgba(114,227,196,0.04);
+  box-shadow: var(--shadow-card), 0 0 0 1px rgba(114,227,196,0.12);
 }
 
 .task-item.selected {
-  background-color: rgba(52, 152, 219, 0.15);
-  box-shadow: 0 0 0 2px var(--primary-color);
+  background: rgba(91,163,245,0.08);
+  box-shadow: var(--shadow-card), 0 0 0 1px rgba(91,163,245,0.25);
 }
 
 .task-item h3 {
-  font-size: 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
   margin-bottom: 5px;
+  color: var(--frost-white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .task-meta {
   display: flex;
   justify-content: space-between;
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.7);
+  align-items: center;
+  font-size: 0.74rem;
+  color: var(--dim-white);
+  gap: 8px;
 }
 
+/* ── Status badges ── */
 .task-status {
-  padding: 2px 8px;
+  padding: 2px 9px;
   border-radius: 20px;
-  font-size: 0.7rem;
-  font-weight: 500;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .status-pending {
-  background-color: rgba(241, 196, 15, 0.2);
-  color: #f1c40f;
+  background: rgba(245,200,66,0.12);
+  color: var(--thunder-gold);
+  border: 1px solid rgba(245,200,66,0.2);
 }
 
 .status-in-progress {
-  background-color: rgba(52, 152, 219, 0.2);
-  color: #3498db;
+  background: rgba(91,163,245,0.12);
+  color: var(--spirit-blue);
+  border: 1px solid rgba(91,163,245,0.2);
 }
 
 .status-completed {
-  background-color: rgba(46, 204, 113, 0.2);
-  color: #2ecc71;
+  background: rgba(114,227,196,0.10);
+  color: var(--jade-glow);
+  border: 1px solid rgba(114,227,196,0.2);
 }
 
 .placeholder {
   text-align: center;
-  color: rgba(255, 255, 255, 0.5);
-  padding: 50px 0;
+  color: var(--dim-white);
+  padding: 48px 0;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
 }
 
 .loading {
   text-align: center;
-  padding: 20px;
-  color: rgba(255, 255, 255, 0.7);
-  animation: fadeInOut 1.5s infinite;
+  padding: 24px;
+  color: var(--dim-white);
+  font-size: 0.85rem;
+  animation: shimmer 1.8s ease-in-out infinite;
 }
 
-@keyframes fadeInOut {
-  0%,
-  100% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 1;
-  }
+@keyframes shimmer {
+  0%, 100% { opacity: 0.3; }
+  50%       { opacity: 0.8; }
 }
 
+/* ══════════════ TASK DETAILS ══════════════ */
 .task-details-header {
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ink-border);
 }
 
 .task-details-header h3 {
-  font-size: 1.3rem;
-  margin-bottom: 5px;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.02rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--frost-white);
+  line-height: 1.4;
 }
 
 .task-details-section {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .task-details-section h4 {
-  font-size: 1rem;
-  color: var(--primary-color);
-  margin-bottom: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--jade-glow);
+  margin-bottom: 8px;
+  opacity: 0.85;
 }
+
 
 .dependencies,
 .related-files {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 8px;
+  margin-top: 6px;
 }
 
 .dependency-tag,
 .file-tag {
-  background-color: rgba(0, 0, 0, 0.3);
-  border-radius: 4px;
-  padding: 5px 10px;
-  font-size: 0.8rem;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-sm);
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  color: var(--mist-white);
+  transition: border-color var(--transition), color var(--transition);
+}
+
+.dependency-tag:hover, .file-tag:hover {
+  border-color: rgba(114,227,196,0.2);
+  color: var(--frost-white);
 }
 
 pre {
-  background-color: rgba(0, 0, 0, 0.3);
-  padding: 15px;
-  border-radius: var(--border-radius);
+  background: rgba(0,0,0,0.35);
+  border: 1px solid var(--ink-border);
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
   overflow-x: auto;
-  margin: 10px 0;
-  font-family: "Consolas", "Monaco", monospace;
-  font-size: 0.9rem;
+  margin: 8px 0;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 0.82rem;
+  color: var(--mist-white);
+  line-height: 1.6;
 }
 
+/* ══════════════ FOOTER ══════════════ */
 footer {
   margin-top: 20px;
   text-align: center;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.5);
-  padding: 10px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.74rem;
+  color: var(--dim-white);
+  padding: 12px 0;
+  border-top: 1px solid var(--ink-border);
+  letter-spacing: 0.04em;
 }
 
-/* 進度指示器樣式 */
-/* Progress indicator styles */
+/* ══════════════ PROGRESS BAR ══════════════ */
 .progress-indicator {
-  margin-bottom: 20px;
-  padding: 15px;
-  background-color: var(--panel-color);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+  margin-bottom: 22px;
+  padding: 15px 20px;
+  background: var(--ink-panel);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--ink-border);
+  box-shadow: var(--shadow-panel);
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-indicator::before {
+  content: '修炼进程';
+  position: absolute;
+  right: 20px; top: 50%; transform: translateY(-50%);
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: var(--dim-white);
 }
 
 .progress-bar-container {
   display: flex;
-  height: 10px;
-  border-radius: 5px;
+  height: 6px;
+  border-radius: 3px;
   overflow: hidden;
-  background-color: rgba(0, 0, 0, 0.3);
+  background: rgba(0,0,0,0.35);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.4);
 }
 
 .progress-segment {
   height: 100%;
-  transition: width 0.5s ease-in-out;
+  transition: width 0.7s cubic-bezier(0.4,0,0.2,1);
 }
 
 .progress-completed {
-  background-color: var(--secondary-color);
+  background: linear-gradient(90deg, var(--jade-glow), #4ecda8);
+  box-shadow: 0 0 8px rgba(114,227,196,0.5);
 }
 
 .progress-in-progress {
-  background-color: var(--primary-color);
+  background: linear-gradient(90deg, var(--spirit-blue), #7bb8f8);
+  box-shadow: 0 0 8px rgba(91,163,245,0.4);
 }
 
 .progress-pending {
-  background-color: #f1c40f; /* 與status-pending一致 */
-                              /* Consistent with status-pending */
+  background: linear-gradient(90deg, rgba(245,200,66,0.5), rgba(245,200,66,0.3));
 }
 
 .progress-labels {
   display: flex;
-  justify-content: space-between;
+  gap: 18px;
   margin-top: 10px;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
 }
 
-.progress-labels span {
-  padding: 2px 5px;
-}
+.progress-labels span { padding: 0; }
+.label-completed   { color: var(--jade-glow); }
+.label-in-progress { color: var(--spirit-blue); }
+.label-pending     { color: var(--thunder-gold); }
 
-.label-completed {
-  color: var(--secondary-color);
-}
-
-.label-in-progress {
-  color: var(--primary-color);
-}
-
-.label-pending {
-  color: #f1c40f;
-}
-
-/* 依賴關係圖樣式 */
-/* Dependency graph styles */
+/* ══════════════ DEPENDENCY GRAPH ══════════════ */
 .dependency-graph svg {
-  display: block; /* 避免底部多餘空間 */
-                  /* Avoid extra space at the bottom */
+  display: block;
   width: 100%;
   height: 100%;
 }
 
 .nodes g.node-item circle {
-  transition: r 0.2s, stroke 0.2s;
-  /* 根據類型設置基礎顏色 */
-  /* Set base colors according to type */
-}
-.nodes g.type-current circle {
-  fill: var(--primary-color); /* 當前選中任務 */
-                               /* Currently selected task */
-}
-.nodes g.type-dependency circle {
-  fill: var(--danger-color); /* 前置依賴任務 */
-                              /* Pre-dependency task */
-}
-.nodes g.type-dependent circle {
-  fill: var(--secondary-color); /* 後置依賴任務 */
-                                /* Post-dependency task */
-}
-.nodes g.type-unknown circle {
-  fill: #7f8c8d; /* 未知任務 */
-                 /* Unknown task */
+  transition: r 0.2s, stroke 0.2s, filter 0.2s;
 }
 
-/* 根據狀態調整節點透明度或邊框 */
-/* Adjust node opacity or border based on status */
-.nodes g.status-completed circle {
-  opacity: 0.6;
+.nodes g.type-current circle {
+  fill: var(--spirit-blue);
+  filter: drop-shadow(0 0 6px rgba(91,163,245,0.5));
 }
+
+.nodes g.type-dependency circle {
+  fill: var(--blood-red);
+  filter: drop-shadow(0 0 4px rgba(232,80,80,0.4));
+}
+
+.nodes g.type-dependent circle {
+  fill: var(--jade-glow);
+  filter: drop-shadow(0 0 4px rgba(114,227,196,0.4));
+}
+
+.nodes g.type-unknown circle {
+  fill: #4a5568;
+}
+
+.nodes g.status-completed circle {
+  opacity: 0.55;
+}
+
 .nodes g.status-in-progress circle {
-  /* 可以添加特殊效果，如描邊動畫 */
-  /* Can add special effects, such as stroke animation */
-  stroke: var(--accent-color);
+  stroke: var(--jade-glow);
   stroke-width: 2px;
 }
 
 .nodes g.node-item:hover circle {
-  r: 14; /* 懸停時放大 */
-         /* Enlarge on hover */
-  stroke: #fff;
-  stroke-width: 2.5px;
+  r: 14;
+  stroke: rgba(255,255,255,0.9);
+  stroke-width: 2px;
+  filter: drop-shadow(0 0 10px rgba(114,227,196,0.6));
 }
 
 .nodes g.node-item text {
-  fill: var(--text-color);
+  fill: var(--mist-white);
   font-size: 10px;
-  pointer-events: none; /* 避免文本干擾點擊 */
-                        /* Avoid text interfering with clicks */
+  pointer-events: none;
 }
 
-/* 新增：高亮節點樣式 */
-/* New: Highlight node styles */
 g.node-item.highlighted circle {
-  stroke: var(--accent-color) !important; /* 使用重要標誌確保覆蓋 */
-                                           /* Use important flag to ensure override */
+  stroke: var(--jade-glow) !important;
   stroke-width: 3px !important;
 }
 
-@media (max-width: 768px) {
+/* ══════════════ MINIMAP ══════════════ */
+.minimap-viewport {
+  fill: rgba(114,227,196,0.03);
+  stroke: rgba(114,227,196,0.12);
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+/* ══════════════ FILTERS ══════════════ */
+.filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.filters input[type="text"],
+.filters select {
+  background: rgba(0,0,0,0.28);
+  color: var(--mist-white);
+  border: 1px solid var(--ink-border);
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  font-size: 0.82rem;
+  transition: border-color var(--transition), color var(--transition), box-shadow var(--transition);
+}
+
+.filters input[type="text"] {
+  flex: 1;
+  min-width: 120px;
+}
+
+.filters input[type="text"]::placeholder {
+  color: var(--dim-white);
+}
+
+.filters input[type="text"]:focus,
+.filters select:focus {
+  border-color: rgba(114,227,196,0.3);
+  box-shadow: 0 0 0 2px rgba(114,227,196,0.08);
+  color: var(--frost-white);
+}
+
+/* ══════════════ RESPONSIVE ══════════════ */
+@media (max-width: 900px) {
+  .container { padding: 16px; }
+
   main {
-    grid-template-rows: auto auto; /* Stack dependency and bottom panels */
-    grid-template-areas:
-      "dependency"
-      "bottom";
+    grid-template-rows: 240px 1fr;
+    gap: 14px;
   }
 
   .bottom-panels {
-    grid-template-columns: 1fr; /* Stack task list and details */
-    grid-template-rows: auto auto; /* Or let them take natural height */
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    gap: 14px;
   }
 
   .task-panel,
   .dependency-view,
   .task-details {
-    /* grid-column: 1 / -1; No longer needed */
-    min-height: 300px; /* Ensure panels have some height */
+    min-height: 280px;
   }
+
+  .filters { flex-wrap: wrap; }
+  .progress-indicator::before { display: none; }
 }
 
-/* 過濾器區域樣式 */
-/* Filter area styles */
-.filters {
-  display: flex;
-  gap: 10px;
+@media (max-width: 480px) {
+  h1 { font-size: 1.2rem; }
+  .header-controls { gap: 10px; }
+  .filters select:not(#status-filter) { display: none; }
 }
 
-.filters input[type="text"],
-.filters select {
-  background-color: rgba(0, 0, 0, 0.3);
-  color: var(--text-color);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 5px 10px;
-  border-radius: 4px;
-  outline: none;
-  font-size: 0.9rem;
-}
-
-.filters input[type="text"] {
-  flex-grow: 1; /* 讓搜索框佔據更多空間 */
-                 /* Let the search box occupy more space */
-  min-width: 150px;
-}
-
-/* 新增：缩略图视口指示器样式 */
-/* New: Minimap viewport indicator styles */
-.minimap-viewport {
-  fill: rgba(255, 255, 255, 0.025);
-  stroke: rgba(255, 255, 255, 0.1);
-  stroke-width: 1;
-  pointer-events: none;
-}
