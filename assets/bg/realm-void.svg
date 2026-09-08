@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="540" height="960" viewBox="0 0 540 960" fill="none">
+<defs>
+ <linearGradient id="sky" x2=".3" y2="1"><stop stop-color="#091a2a"/><stop offset=".36" stop-color="#183d48"/><stop offset=".65" stop-color="#253746"/><stop offset="1" stop-color="#081923"/></linearGradient>
+ <radialGradient id="nebula"><stop stop-color="#72998c" stop-opacity=".47"/><stop offset=".46" stop-color="#5c6b8c" stop-opacity=".21"/><stop offset="1" stop-color="#26354d" stop-opacity="0"/></radialGradient>
+ <radialGradient id="planet" cx=".28" cy=".2"><stop stop-color="#93a58a"/><stop offset=".35" stop-color="#345d5c"/><stop offset=".77" stop-color="#112b37"/><stop offset="1" stop-color="#0b2030"/></radialGradient>
+ <linearGradient id="land" x2=".8" y2="1"><stop stop-color="#71877b"/><stop offset=".2" stop-color="#3a615d"/><stop offset=".6" stop-color="#1b3a40"/><stop offset="1" stop-color="#0a202b"/></linearGradient>
+ <linearGradient id="rift" x2="0" y2="1"><stop stop-color="#b5c3a9" stop-opacity="0"/><stop offset=".5" stop-color="#abc9c0"/><stop offset="1" stop-color="#d6bc95" stop-opacity="0"/></linearGradient>
+ <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".52" numOctaves="3" seed="37"/><feColorMatrix type="saturate" values="0"/></filter>
+</defs>
+<path fill="url(#sky)" d="M0 0h540v960H0z"/>
+<ellipse cx="276" cy="360" rx="269" ry="340" fill="url(#nebula)" transform="rotate(32 276 360)"/>
+<g fill="#cbd2b5"><circle cx="49" cy="92" r="1.1"/><circle cx="107" cy="174" r=".8"/><circle cx="414" cy="116" r="1.3"/><circle cx="338" cy="74" r=".8"/><circle cx="214" cy="122" r="1"/><circle cx="479" cy="271" r="1"/><circle cx="49" cy="428" r=".8"/><circle cx="319" cy="482" r="1.1"/><circle cx="251" cy="592" r="1"/><circle cx="140" cy="535" r=".7"/><circle cx="482" cy="604" r=".9"/><circle cx="218" cy="820" r="1"/><circle cx="299" cy="746" r="1.1"/><circle cx="420" cy="851" r=".7"/><circle cx="26" cy="685" r="1"/></g>
+<g fill="#9fb9b1" opacity=".48"><circle cx="69" cy="186" r=".8"/><circle cx="239" cy="96" r=".6"/><circle cx="266" cy="184" r=".8"/><circle cx="396" cy="210" r=".6"/><circle cx="514" cy="184" r=".7"/><circle cx="82" cy="309" r=".6"/><circle cx="168" cy="401" r=".8"/><circle cx="403" cy="399" r=".6"/><circle cx="70" cy="578" r=".6"/><circle cx="370" cy="603" r=".7"/><circle cx="300" cy="688" r=".8"/><circle cx="150" cy="889" r=".6"/></g>
+<circle cx="348" cy="274" r="66" fill="url(#planet)"/><path d="M286 254a66 66 0 0 1 100-33" stroke="#b9c09b" stroke-opacity=".4"/>
+<ellipse cx="277" cy="379" rx="241" ry="106" stroke="#b5b88e" stroke-opacity=".28" transform="rotate(-37 277 379)"/>
+<ellipse cx="277" cy="379" rx="253" ry="115" stroke="#81b1a7" stroke-opacity=".16" transform="rotate(-37 277 379)"/>
+<path d="M71 504q-23-70 111-178t278-83" stroke="#c3c59d" stroke-opacity=".24" stroke-width="3"/>
+<path d="m67 139 51 103-21 43 45 69-31 36 21 76-41 67 32 58" stroke="url(#rift)" stroke-width="7" opacity=".13"/>
+<path d="m67 139 51 103-21 43 45 69-31 36 21 76-41 67 32 58" stroke="url(#rift)" stroke-width="1.3" opacity=".65"/>
+<path d="m110 391-40 15-13 35m72 16 41 14 21 29" stroke="url(#rift)" opacity=".4"/>
+<g fill="url(#land)">
+ <path d="m179 396 19-40 22 5 17-23 18 34 42 15-20 42-21 51-13-29-26-11-9-28Z"/>
+ <path d="m349 507 23-26 22 6 17-17 31 27-20 38-37 7-22-18Z"/>
+ <path d="m22 668 37-53 49 7 37-31 60 24 6 32 57 9-29 57-51 46-33 100-21-50-24 2-16-58-43-23Z"/>
+ <path d="m358 690 22-43 45-8 31-30 39 22 45-6v235l-37-21-30-40-48-4-11-51Z"/>
+</g>
+<g stroke="#a5b89a" stroke-opacity=".3"><path d="m198 357 15 48 21 8 9 37m-15-79 9-33 18 34 27 15m-229 240 72 23 18-22 61 19m-65 4 4 115-15-63-25-19m299-65 36 28 32-21 46 27m-69 15 13 68 30 40"/></g>
+<g fill="#557e75" opacity=".7"><path d="m302 506 10-9 14 5-8 14-9 1Z"/><path d="m278 638 15-15 14 10-9 25Z"/><path d="m218 779 14-13 16 8-12 31Z"/><path d="m342 249 8-9 11 8-7 17Z"/></g>
+<path d="M-40 798q206-49 328-10t299-66v185H-40Z" fill="url(#nebula)" opacity=".5"/>
+<path d="M0 905 79 876 111 902 170 886 222 920 304 901 350 926 397 889 460 905 540 871v89H0Z" fill="#0a2029"/>
+<path fill="#cdd3c1" opacity=".045" filter="url(#grain)" d="M0 0h540v960H0z"/>
+</svg>
