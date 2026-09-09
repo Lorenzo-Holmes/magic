@@ -3,7 +3,8 @@
   else root.FSEngine = factory(root.FSData);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (D) {
   'use strict';
-  const VERSION = 14;
+  const VERSION = 15;
+  const worldEngine = () => typeof module === 'object' && module.exports ? require('./world.js') : globalThis.FSWorld;
   const daoEngine = () => typeof module === 'object' && module.exports ? require('./dao.js') : globalThis.FSDao;
   const immortalEngine = () => typeof module === 'object' && module.exports ? require('./immortal.js') : globalThis.FSImmortal;
   const equipmentEngine = () => typeof module === 'object' && module.exports ? require('./equipment.js') : globalThis.FSEquipment;
@@ -257,7 +258,7 @@
       highSeen: [], realmProofs: [], tribulationStage: 0, tribulationBase: null, ascendedPower: null,
       carriedTrace, traceSourceSeed, bossRoute: null, tribulationRoutes: [], batchCultivations: 0,
       event: null, draft: null, firstPower: null, revengePower: null, lastGain: 0,
-      ending: null, log: [], equipment: equipmentEngine().createState(), combatReplay: null, secretRealm: secretRealmEngine().createState(), sect: sectEngine().createState(), life: lifeEngine().createState(), spiritBeast: spiritBeastEngine().createState(), crafting: craftingEngine().createState(), karma: karmaEngine().createState(), dao: daoEngine().createState(), immortal: null
+      ending: null, log: [], equipment: equipmentEngine().createState(), combatReplay: null, secretRealm: secretRealmEngine().createState(), sect: sectEngine().createState(), life: lifeEngine().createState(), spiritBeast: spiritBeastEngine().createState(), crafting: craftingEngine().createState(), karma: karmaEngine().createState(), dao: daoEngine().createState(), world: null, immortal: null
     };
     s.offer = openingOffer(s);
     return s;
@@ -517,6 +518,12 @@
     requireThat(action && typeof action.type === 'string', '无效操作。');
     if (action.revision !== undefined) requireThat(String(action.revision) === String(state.revision), '此选择已失效，请使用当前画面的选项。');
     const s = copy(state);
+    if(action.type.startsWith('world-')){
+      const W=worldEngine();
+      if(action.type==='world-create')s.world=W.create(s,action.config);
+      else {requireThat(s.world,'尚未建立自己的天地。');if(action.type==='world-resolve')s.world=W.resolve(s.world,action.id);else if(action.type==='world-continue')s.world=W.continueWorld(s.world);else throw new Error('未知的创世操作。');}
+      nextRevision(s);validate(s);return s;
+    }
     // A replay is evidence of an already committed result. Any subsequent
     // gameplay action dismisses it without rerolling or paying rewards again.
     if (s.combatReplay) s.combatReplay = null;
@@ -803,6 +810,8 @@
     karmaEngine().validate(s.karma);
     daoEngine().validate(s.dao);
     requireThat(!s.dao.formed||s.dao.formed.seed===s.seed,'大道不属于本世。');
+    requireThat(s.world===null||s.world&&typeof s.world==='object','创世字段损坏。');
+    if(s.world){worldEngine().validate(s.world);requireThat(s.flags.ascended&&s.immortal?.evolution?.completed&&s.dao.formed&&s.world.seed===s.seed&&s.world.projection.name===s.dao.formed.name&&JSON.stringify(s.world.rules)===JSON.stringify(s.dao.formed.rules),'创世来源与本世成就不一致。');}
     requireThat(s.defeats === undefined || s.defeats === null || (Number.isSafeInteger(s.defeats) && s.defeats >= 0), '败退记录损坏。');
     for (const key of ['seed', 'rng']) requireThat(Number.isInteger(s[key]) && s[key] > 0 && s[key] <= 4294967295, '随机种子损坏。');
     requireThat(Number.isSafeInteger(s.revision) && s.revision >= 0 || typeof s.revision === 'string' && s.revision.length <= 2048 && /^(0|[1-9]\d*)$/.test(s.revision), '操作版本损坏。');
@@ -917,7 +926,8 @@
     s.version = 13; s.karma = karmaEngine().createState(); return s;
   }
   function migrateV13(s){if(s?.version===13){s.version=14;s.dao=daoEngine().createState();}return s;}
-  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); s = migrateV5(s); s = migrateV6(s); s = migrateV7(s); s = migrateV8(s); s = migrateV9(s); s = migrateV10(s); s = migrateV11(s); s = migrateV12(s); s=migrateV13(s); if (s?.version === VERSION && s.immortal) s.immortal = immortalEngine().migrate(s.immortal); validate(s); return s; }
+  function migrateV14(s){if(s?.version===14){s.version=15;s.world=null;}return s;}
+  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); s = migrateV5(s); s = migrateV6(s); s = migrateV7(s); s = migrateV8(s); s = migrateV9(s); s = migrateV10(s); s = migrateV11(s); s = migrateV12(s); s=migrateV13(s); s=migrateV14(s); if (s?.version === VERSION && s.immortal) s.immortal = immortalEngine().migrate(s.immortal); validate(s); return s; }
   function synergies(s) {
     const list = [];
     if (s.sword && s.root === 'thunder' && s.talents.includes('swordbone')) list.push({ name: '雷剑体', text: '雷灵根 × 天生剑骨 × 青云剑诀：战力额外 +20%。' });

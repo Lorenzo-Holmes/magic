@@ -467,6 +467,36 @@ async (page, options = {}) => {
   const daoFiles=[];
   for(const [mode,url]of options.fileRoots){await page.goto(url);await importRaw(daoRaw);await page.locator('[data-ui="nav-panel"][data-id="build"]').click();await ui('dao').click();check((await page.locator('.dao-card').innerText()).includes(daoRun.dao.formed.name),mode+': Dao missing');await close();daoFiles.push(mode);}
   report.systems.dao={passed:true,name:daoRun.dao.formed.name,rules:daoRun.dao.formed.rules,samples:daoRun.dao.total,readOnly:true,reloadPreserved:true,fileCases:daoFiles,deterministic:true};
+  await page.goto(baseURL);await importRaw(daoRaw);
+  await ui('world-setup').click();
+  check(await page.locator('[data-world-config]').count()===5,'Creation must expose exactly five laws');
+  await page.locator('[data-world-config="aura"]').selectOption('abundant');
+  await page.locator('[data-world-config="system"]').selectOption('body');
+  await page.locator('[data-world-config="risk"]').selectOption('calamity');
+  await page.locator('[data-world-config="inheritance"]').selectOption('open');
+  await layout('world-setup');
+  await action('world-create').click();
+  let created=await run();check(created.world&&created.world.config.aura==='abundant'&&created.world.config.system==='body','Selected laws were not used');
+  const originalImmortal=JSON.stringify(created.immortal),originalRng=created.rng,worldTypes=[];
+  for(const type of ['cultivation','calamity','inheritance']){
+    check(await page.locator('[data-world-event="'+type+'"]').count()===1,'Missing world event '+type);
+    await layout('world-'+type);worldTypes.push(type);
+    await action('world-resolve').first().click();
+    await page.reload();await ui('continue').click();
+  }
+  const worldEnding=await run();
+  check(worldEnding.world.phase==='ending'&&worldEnding.world.history.length===3,'Creation ending did not complete');
+  check((await page.locator('.creation-ending').innerText()).includes('我即天道'),'Formal creation ending missing');
+  check(JSON.stringify(worldEnding.immortal)===originalImmortal&&worldEnding.rng===originalRng&&worldEnding.ascendedPower===daoRun.ascendedPower,'World choices altered the earlier journey');
+  check(worldEnding.world.projection.name===daoRun.dao.formed.name,'World history did not project the real Dao');
+  await layout('world-ending');
+  await ui('world-return').click();check(await page.locator('.evolution-view').count()===1,'Return to immortal journey failed');
+  await ui('world-open').click();await action('world-continue').click();
+  const continuingWorld=await run(),worldRaw=JSON.stringify(continuingWorld);check(continuingWorld.world.era==='2','Next era did not open');
+  await layout('world-next-era');
+  const worldFiles=[];
+  for(const [mode,url]of options.fileRoots){await page.goto(url);await importRaw(worldRaw);check(await page.locator('.creation-view').count()===1,mode+': world not restored');await action('world-resolve').first().click();check((await run()).world.cursor===1,mode+': next era event failed');worldFiles.push(mode);}
+  report.systems.world={passed:true,parameters:5,eventTypes:worldTypes,created:true,ending:true,continuation:true,projection:worldEnding.world.projection.name,reloadPreserved:true,mortalAndImmortalPreserved:true,fileCases:worldFiles,historyLimit:24};
   await page.goto(baseURL);await restore('mortal--world-spirit');
   check((await run()).phase==='playing','Navigation fixture must have entered the mortal world');
   const navRaw=JSON.stringify(await run()),navChecks=[];

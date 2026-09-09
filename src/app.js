@@ -17,6 +17,7 @@
   dialog.className = 'scroll-dialog'; dialog.setAttribute('aria-label', '命册与设置'); document.body.appendChild(dialog);
   let state = null, meta = M.createMeta(), home = true, mortalSummary = false, runStorageWarning = '', metaStorageWarning = '', noticeTimer, majorTimer, previousView = '', pendingImport = null, lastCombatReplay = '';
   let combatTimers = [];
+  let worldVisible=true;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fmt = value => Number(value || 0).toLocaleString('zh-CN');
   const find = (items, id) => items.find(item => item.id === id);
@@ -156,7 +157,7 @@
     return `<div class="meta-strip"><div><span>轮回已录</span><b>${summary.ended} 世 · ${summary.ascended} 次飞升</b></div><div><span>命途图谱</span><b>${summary.discovered} / ${summary.total}</b></div><div><span>下一世道痕</span><b>${trace ? esc(trace.name) : '尚未凝练'}</b></div></div>`;
   }
   function homeView() {
-    const text = state ? `${state.immortal ? `仙界 · 第 ${state.immortal.days} 日` : ['talents', 'attributes'].includes(state.phase) ? '命数未定' : `${D.REALMS[state.realm].name} · ${state.age} 岁`} · 本地存档` : '无需登录，即刻入山';
+    const text = state ? `${state.world ? `自创天地 · 第 ${state.world.era} 纪` : state.immortal ? `仙界 · 第 ${state.immortal.days} 日` : ['talents', 'attributes'].includes(state.phase) ? '命数未定' : `${D.REALMS[state.realm].name} · ${state.age} 岁`} · 本地存档` : '无需登录，即刻入山';
     const inherited = meta.nextTrace ? find(D.TRACES, meta.nextTrace) : null;
     const legacyAction=meta.runHistory.length?button('legacy','百世回响',{ui:true,classes:'text-button'}):'';
     return `<section class="home-view"><div class="home-chapter"><span>卷一 · 凡尘入道</span><i></i><span>单人 · 离线</span></div><div class="home-hero"><div class="mobile-art home-landscape">${landscape()}</div><div class="home-hero-copy"><p class="eyebrow">一卷命册 · 万般道途</p><h2 class="home-title">我欲<em>飞升</em></h2><p class="home-manifesto">以凡躯，叩天门。<br>把不可逾越的山海，炼成下一步。</p><span class="hero-seal" aria-hidden="true">逆天<br>而行</span></div></div><p class="home-copy">从黑风岭的一介凡人，到独闯诸天。<br>这一世的每次选择，都会留下回声。</p>${inherited ? `<div class="inheritance-call"><span>下一世将继承</span><b>${esc(inherited.name)}</b><p>${esc(inherited.description)}</p></div>` : ''}<div class="home-actions">${state ? button('continue', `续写此生${small(text)}`, { ui: true, classes: 'primary large', aria: '继续已有存档' }) : button('new', `执笔入世 <span aria-hidden="true">↗</span>${small(inherited ? `携「${inherited.name}」入世` : '择三道天命 · 开一段仙途')}`, { ui: true, classes: 'primary large' })}${state ? button('new', inherited ? `转世 · 携「${esc(inherited.name)}」再活一世` : '再活一世', { ui: true, classes: 'secondary' }) : ''}</div><div class="home-journey" aria-label="仙途三章"><div><span>壹</span><b>入山</b><small>择天命 · 炼凡躯</small></div><i></i><div><span>贰</span><b>问道</b><small>吞旧敌 · 破万法</small></div><i></i><div><span>叁</span><b>飞升</b><small>渡天劫 · 赴诸天</small></div></div>${metaStrip()}<div class="chapter-note"><span>轮 回</span><div><strong>一世一痕</strong><p>此生炼成的道，可为来世留下一枚道痕。重回山路时，故事会记得你。</p></div></div><div class="home-bottom"><span>${state ? esc(text) : '无广告 · 无付费抽取'}</span><span>${legacyAction}${button('codex', '命途图谱', { ui: true, classes: 'text-button' })}${button('settings', '存档与说明', { ui: true, classes: 'text-button' })}</span></div></section>`;
@@ -401,7 +402,8 @@
       content = act('recover',`在此界重整仙躯${small('保留层数和五槽 · 清空本界炼化 · 不倒退随机数')}`,{classes:'primary full'});
     }
     const slots = `<details class="evolution-build"><summary>五槽进化 · ${Object.values(e.slots).filter(Boolean).length}/5 <span>查看、升级与融合</span></summary><div class="slot-list">${Object.entries(V.SLOTS).map(([key,name])=>{const item=e.slots[key],t=item&&trait(item.id);return `<div class="slot-row"><span>${name}</span><div><b>${t?esc(t.name):'空槽'}${item?` · ${item.level} 阶`:''}</b><p>${t?esc(bonusText(t,item.level)):'可从下一次吞噬选择新的力量。'}</p></div>${act('upgrade',item&&item.level<5?`升级 · ${item.level+2} 碎片`:'无法升级',{id:key,disabled:i.phase!=='world'||!item||item.level>=5||i.fragments<item.level+2})}</div>`;}).join('')}</div><h3>融合线索</h3><div class="immortal-actions">${V.RECIPES.map(r=>{const available=V.recipes(i).some(x=>x.id===r.id);return act('fuse',`${esc(r.name)}${small(`${r.needs.map(id=>trait(id).name).join(' + ')} · ${r.cost} 碎片${r.catalyst?' · 法则引子保留':''}`)}`,{id:r.id,disabled:i.phase!=='world'||!available||i.fragments<r.cost});}).join('')}</div></details>`;
-    return `<section class="immortal-view evolution-view"><p class="eyebrow">${e.endless?'无尽诸天':'仙界进化'} · 第 ${esc(e.layer)} 界 · ${world.rank}</p><h2>${title}</h2>
+    const creationEntry=e.completed?`<div class="creation-entry">${button(state.world?'world-open':'world-setup',state.world?'返回自己创造的天地':'我即天道 · 开辟天地',{ui:true,classes:'primary full'})}</div>`:'';
+    return `<section class="immortal-view evolution-view">${creationEntry}<p class="eyebrow">${e.endless?'无尽诸天':'仙界进化'} · 第 ${esc(e.layer)} 界 · ${world.rank}</p><h2>${title}</h2>
       <div class="world-road">${V.WORLDS.map((w,n)=>`<span class="${n===0||e.cleared.includes(n)?'lit':''}">${w.name}</span>`).join('')}</div>
       <div class="immortal-stats"><div><span>当前势能 · 数量级</span><b>${quantityFigure(V.power(i))}</b></div><div><span>元气 · 本界炼化</span><b>${i.health}/100 · ${e.refinement} 重</b></div><div><span>仙元</span><b>${fmt(i.essence)}</b></div><div><span>碎片</span><b>${fmt(i.fragments)}</b></div></div>
       <p class="world-affix">${esc(affix.name)} · ${esc(affix.text)}<br>仙兽法则：${e.enemyLaws.map(id=>window.FSImmortal.LAWS.find(l=>l.id===id).name).map(esc).join(' × ')}。锋芒使敌势能 +8%，不灭 +10%，破妄形成幻象；同源法则使你的守界破局更强。</p>${slots}
@@ -410,14 +412,15 @@
   }
   function render() {
     const previousScroll=document.getElementById('main')?.scrollTop||0;
+    const inWorld=!!(state?.world&&worldVisible&&!mortalSummary&&!home);
     const inImmortal = !!(state?.immortal && !mortalSummary);
     const shown = mortalSummary && state?.immortal ? { ...state, immortal: null } : state;
     sound.scene(shown, home);
-    const view = home ? 'home' : inImmortal ? `immortal-${state.immortal.phase}` : state.phase;
+    const view = home ? 'home' : inWorld ? `creation-${state.world.phase}-${state.world.era}-${state.world.cursor}` : inImmortal ? `immortal-${state.immortal.phase}` : state.phase;
     const scene = world.update(shown, home);
     const warning = warningText();
     const vista = home ? '' : `<div class="world-vista" aria-hidden="true"><span>${esc(scene.title)}</span><small>${esc(scene.subtitle)}</small></div>`;
-    const body = home ? homeView() : inImmortal ? immortalView() : state.phase === 'talents' ? talentsView() : state.phase === 'attributes' ? attributesView() : state.phase === 'playing' ? playingView() : state.phase === 'draft' ? draftView() : state.phase === 'mutation' ? mutationView() : state.phase === 'fusion' ? fusionView() : state.phase === 'tribulation' ? tribulationView() : endingView();
+    const body = home ? homeView() : inWorld ? window.FSWorldUI.view(state.world,button) : inImmortal ? immortalView() : state.phase === 'talents' ? talentsView() : state.phase === 'attributes' ? attributesView() : state.phase === 'playing' ? playingView() : state.phase === 'draft' ? draftView() : state.phase === 'mutation' ? mutationView() : state.phase === 'fusion' ? fusionView() : state.phase === 'tribulation' ? tribulationView() : endingView();
     const workspace = !home && state && !['talents','attributes'].includes(state.phase);
     const note=tutorialNote(),content=state?.phase==='playing'&&!home&&!inImmortal?body.replace('</section>',`</section>${note}`):`${note}${body}`;
     const main = `<main id="main" tabindex="-1" data-view="${view}">${vista}${content}</main>`;
@@ -427,6 +430,7 @@
       const materials=Object.values(state.crafting?.materials||{}).reduce((a,b)=>a+b,0);
       const rows=i?[{glyph:'元',label:'仙元',value:F.short(i.essence),note:'修炼与重构'},{glyph:'则',label:'法则碎片',value:fmt(i.fragments),note:'凝法与进化'},{glyph:'气',label:'元气',value:`${i.health} / 100`,note:'仙躯状态'},{glyph:'界',label:'当前界层',value:i.evolution?.layer||'序章',note:`仙界第 ${i.days} 日`}]:[{glyph:'气',label:'元气',value:`${state.vitality} / 100`,note:'当前状态'},{glyph:'年',label:'寿元',value:`${state.age} / ${E.maxAge(state)}`,note:'一世修行'},{glyph:'灵',label:'灵兽精华',value:fmt(state.spiritBeast?.essence||0),note:'结契与进化'},{glyph:'丹',label:'丹器材料',value:fmt(materials),note:'八类材料合计'}];
       const identity={title:i?'仙界 · 诸天行旅':`${find(D.ROOTS,state.root)?.name||'凡人'} · ${find(D.ORIGINS,state.origin)?.name||'此生命途'}`,detail:i?`凡界道基长存 · ${D.REALMS[state.realm].name}`:`${D.REALMS[state.realm].name} · 此世第 ${state.actions||1} 段道途`};
+      if(inWorld){const w=state.world;rows.splice(0,rows.length,{glyph:'生',label:'生机',value:w.vitality,note:'天地兴衰'},{glyph:'序',label:'秩序',value:w.order,note:'众生共处'},{glyph:'纪',label:'纪元',value:w.era,note:'持续书写'},{glyph:'史',label:'史册',value:w.history.length,note:'最近二十四段'});Object.assign(identity,{title:'自创天地 · 我即天道',detail:w.projection.name});}
       app.innerHTML=`<div class="shell game-shell" data-screen="${esc(view)}"><div class="content-shell">${header()}${W.resources(rows,identity)}<div class="game-layout">${W.navigation('left',state,button)}${main}${W.navigation('right',state,button)}</div>${footer}</div></div>`;
     }else app.innerHTML = `<div class="shell" data-screen="${esc(view)}">${rail()}<div class="content-shell">${header()}${main}${footer}</div></div>`;
     if (view !== previousView) { window.scrollTo({ top: 0, behavior: 'instant' }); previousView = view; }
@@ -649,7 +653,10 @@
     const el = event.target.closest('button'); if (!el || el.disabled) return;
     if (el.dataset.ui) {
       switch (el.dataset.ui==='nav-panel'?el.dataset.id:el.dataset.ui) {
-        case 'practice': home=false;mortalSummary=false;dialog.close();render();document.getElementById('main').focus({preventScroll:true});break;
+        case 'practice': home=false;mortalSummary=false;worldVisible=false;dialog.close();render();document.getElementById('main').focus({preventScroll:true});break;
+        case 'world-setup':modal('执掌一方天地',window.FSWorldUI.setup(state,button));break;
+        case 'world-open':worldVisible=true;home=false;mortalSummary=false;render();break;
+        case 'world-return':worldVisible=false;render();break;
         case 'quantity-detail': {
           const [m,e] = el.dataset.id.split('|');
           modal('势能的数量级', `<p class="exact-number">${esc(window.FSQuantity.format({m:Number(m),e},true))}</p><p class="intro">保留 12 位有效数字与精确的十进制指数。超出普通数值范围后继续使用科学计数，不把它转成 Infinity，也不宣称无限整数精度。</p>`); break;
@@ -683,7 +690,7 @@
         case 'confirm-new':
           try { const old = localStorage.getItem(KEY); if (old) localStorage.setItem(BACKUP, old); } catch { /* Storage warning is surfaced by save(). */ }
           begin(); break;
-        case 'continue': if (state) { home = false; mortalSummary = false; render(); } break;
+        case 'continue': if (state) { home = false; mortalSummary = false; worldVisible=true;render(); } break;
         case 'journal': journal(); break;
         case 'codex': codex(); break;
         case 'settings': settings(); break;
@@ -700,7 +707,7 @@
           if (!pendingImport) { announce('没有待载入的数据。'); break; }
           if (pendingImport.type === 'run') {
             try { const old = localStorage.getItem(KEY); if (old) localStorage.setItem(BACKUP, old); } catch { /* Import can still work in memory. */ }
-            state = pendingImport.data; pendingImport = null; home = false; mortalSummary = false; dialog.close(); persist(); render(); announce('本世存档已载入。');
+            state = pendingImport.data; pendingImport = null; home = false; mortalSummary = false; worldVisible=true;dialog.close(); persist(); render(); announce('本世存档已载入。');
           } else {
             meta = pendingImport.data; pendingImport = null; dialog.close(); saveMeta(); render(); announce('轮回册已载入。');
           }
@@ -716,9 +723,11 @@
     if (!el.dataset.action || !state) return;
     try {
       const action = { type: el.dataset.action, id: el.dataset.id, choice: el.dataset.choice, kind: el.dataset.kind, revision: el.dataset.revision };
+      if(action.type==='world-create')action.config=Object.fromEntries([...dialog.querySelectorAll('[data-world-config]')].map(el=>[el.dataset.worldConfig,el.value]));
       if (el.dataset.delta) action.delta = Number(el.dataset.delta);
       const before = state.phase, beforeState = state;
       state = E.transition(state, action);
+      if(action.type.startsWith('world-')){worldVisible=true;dialog.close();}
       const feedback = P.enrich(P.feedback(beforeState, state, action), {
         realm: D.REALMS[state.realm]?.name,
         fusion: state.fusions?.length > beforeState.fusions?.length ? find(D.FUSIONS, state.fusions.at(-1))?.name : '',
