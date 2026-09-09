@@ -134,6 +134,13 @@
   function mountain() {
     return `<svg class="mountains" viewBox="0 0 560 210" aria-hidden="true"><path d="M0 175 52 137 75 148 150 37 201 96 240 76 290 131 337 94 383 143 445 66 516 149 560 123V210H0Z" fill="currentColor" opacity=".20"/><path d="M0 198 105 143 129 171 217 96 240 130 273 113 327 181 402 141 456 183 520 144 560 178V210H0Z" fill="currentColor" opacity=".33"/><path d="m106 112 44-75 19 86m48-27 19 56m166-41 43-45 21 59" fill="none" stroke="currentColor" opacity=".4"/></svg>`;
   }
+  function landscape() {
+    return '<img src="./assets/ink-landscape.svg" alt="" width="1536" height="1024" decoding="async">';
+  }
+  function actionIcon(kind) {
+    const paths={cultivate:'M12 3v3m-6 2 3 3m9-3-3 3M5 19c0-4 3-7 7-7s7 3 7 7M3 21h18M12 9v5',explore:'m3 20 6-13 4 8 3-5 5 10ZM8 20l4-6m4-11v4m-2-2h4',hunt:'m5 3 16 16-2 2L3 5Zm10 0 6 6m-9 8-7 4-2-2 4-7m8-1 6-8'};
+    return `<span class="action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><path d="${paths[kind]||paths.cultivate}"/></svg></span>`;
+  }
   function rail() {
     const level = state ? state.realm : 0;
     return `<aside class="story-rail"><div class="rail-heading"><span class="seal small-seal">道</span><span>一卷命册 · 万般道途</span></div><h1>我欲<br><em>飞升</em></h1><p class="rail-poem">山外有山，天外有天。<br>此刻不可撼动的庞然大物，<br>终有一日，只是你的一口修为。</p>${ornament()}<div class="road"><span class="${level >= 0 ? 'lit' : ''}">凡</span><i></i><span class="${level >= 2 ? 'lit' : ''}">筑基</span><i></i><span class="${level >= 3 ? 'lit' : ''}">金丹</span><i></i><span class="${level >= 5 ? 'lit' : ''}">化神</span><i></i><span class="${level >= 8 ? 'lit' : ''}">大乘</span><i></i><span class="${state?.flags?.ascended ? 'lit' : ''}">飞升</span></div><p class="rail-foot">凡界卷 · 直到天门洞开<br>飞升是终点，也是下一池塘的起点。</p>${mountain()}</aside>`;
@@ -149,9 +156,10 @@
     return `<div class="meta-strip"><div><span>轮回已录</span><b>${summary.ended} 世 · ${summary.ascended} 次飞升</b></div><div><span>命途图谱</span><b>${summary.discovered} / ${summary.total}</b></div><div><span>下一世道痕</span><b>${trace ? esc(trace.name) : '尚未凝练'}</b></div></div>`;
   }
   function homeView() {
-    const text = state ? `${state.immortal ? `仙界 · 第 ${state.immortal.days} 日` : ['talents', 'attributes'].includes(state.phase) ? '命数未定' : `${D.REALMS[state.realm].name} · ${state.age} 岁`} · 本地存档` : '无须登录 · 文字修仙 · 单人离线';
+    const text = state ? `${state.immortal ? `仙界 · 第 ${state.immortal.days} 日` : ['talents', 'attributes'].includes(state.phase) ? '命数未定' : `${D.REALMS[state.realm].name} · ${state.age} 岁`} · 本地存档` : '无需登录，即刻入山';
     const inherited = meta.nextTrace ? find(D.TRACES, meta.nextTrace) : null;
-    return `<section class="home-view"><p class="eyebrow">文字修仙 · 吞噬进化 · 轮回道痕</p><div class="mobile-art">${ornament()}</div><h2 class="home-title">命由天定。<br><em>道，由我吞。</em></h2><p class="home-copy">从凡人吞掉旧敌，再到仙界吞掉曾经不敢碰的虫。<br>飞升不是清空；走完一世，还能给下一世留下一道痕。</p>${inherited ? `<div class="inheritance-call"><span>下一世将继承</span><b>${esc(inherited.name)}</b><p>${esc(inherited.description)}</p></div>` : ''}<div class="home-actions">${state ? button('continue', `续写此生${small(text)}`, { ui: true, classes: 'primary large', aria: '继续已有存档' }) : button('new', `此生，从何而起？${small(inherited ? `携「${inherited.name}」入世` : '窥探天命 · 此世可至飞升')}`, { ui: true, classes: 'primary large' })}${state ? button('new', inherited ? `转世 · 携「${esc(inherited.name)}」再活一世` : '再活一世', { ui: true, classes: 'secondary' }) : ''}</div>${metaStrip()}<div class="chapter-note"><span>轮 回</span><div><strong>一世一痕</strong><p>飞升或陨落后，从这一世真实走成的道中凝练一枚道痕。它只服务下一世，不永久堆叠战力。</p></div></div><div class="home-bottom"><span>${state ? esc(text) : '不充值 · 无广告 · 无外部资源'}</span><span>${button('codex', '命途图谱', { ui: true, classes: 'text-button' })}${button('settings', '存档与说明', { ui: true, classes: 'text-button' })}</span></div></section>`;
+    const legacyAction=meta.runHistory.length?button('legacy','百世回响',{ui:true,classes:'text-button'}):'';
+    return `<section class="home-view"><div class="home-chapter"><span>卷一 · 凡尘入道</span><i></i><span>单人 · 离线</span></div><div class="home-hero"><div class="mobile-art home-landscape">${landscape()}</div><div class="home-hero-copy"><p class="eyebrow">一卷命册 · 万般道途</p><h2 class="home-title">我欲<em>飞升</em></h2><p class="home-manifesto">以凡躯，叩天门。<br>把不可逾越的山海，炼成下一步。</p><span class="hero-seal" aria-hidden="true">逆天<br>而行</span></div></div><p class="home-copy">从黑风岭的一介凡人，到独闯诸天。<br>这一世的每次选择，都会留下回声。</p>${inherited ? `<div class="inheritance-call"><span>下一世将继承</span><b>${esc(inherited.name)}</b><p>${esc(inherited.description)}</p></div>` : ''}<div class="home-actions">${state ? button('continue', `续写此生${small(text)}`, { ui: true, classes: 'primary large', aria: '继续已有存档' }) : button('new', `执笔入世 <span aria-hidden="true">↗</span>${small(inherited ? `携「${inherited.name}」入世` : '择三道天命 · 开一段仙途')}`, { ui: true, classes: 'primary large' })}${state ? button('new', inherited ? `转世 · 携「${esc(inherited.name)}」再活一世` : '再活一世', { ui: true, classes: 'secondary' }) : ''}</div><div class="home-journey" aria-label="仙途三章"><div><span>壹</span><b>入山</b><small>择天命 · 炼凡躯</small></div><i></i><div><span>贰</span><b>问道</b><small>吞旧敌 · 破万法</small></div><i></i><div><span>叁</span><b>飞升</b><small>渡天劫 · 赴诸天</small></div></div>${metaStrip()}<div class="chapter-note"><span>轮 回</span><div><strong>一世一痕</strong><p>此生炼成的道，可为来世留下一枚道痕。重回山路时，故事会记得你。</p></div></div><div class="home-bottom"><span>${state ? esc(text) : '无广告 · 无付费抽取'}</span><span>${legacyAction}${button('codex', '命途图谱', { ui: true, classes: 'text-button' })}${button('settings', '存档与说明', { ui: true, classes: 'text-button' })}</span></div></section>`;
   }
   function talentCard(t, mode) {
     const selected = mode === 'select' && state.selected.includes(t.id);
@@ -179,7 +187,7 @@
       : state.realm === 3 && !state.flags.bossSlain ? '金丹修为 · 为妖王一战蓄势'
       : proofMissing ? `${r.name}修为 · 尚欠一次天地印证`
       : state.realm >= 4 ? `${r.name}修为 · 天地印证已成` : '修为';
-    return `<section class="status-panel realm-focus" aria-label="人物状态"><div class="realm-line"><div><span class="eyebrow">当前境界</span><h2>${r.name}<small>${stage}</small></h2></div><div class="power"><span>此世战力</span><strong id="power-value">${powerFigure(E.power(state))}</strong></div></div><div class="meter-label"><span>${meterTitle}</span><b>${fmt(state.xp)} / ${fmt(r.threshold)}</b></div><div class="meter" role="progressbar" aria-label="修为" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(xp)}"><i style="width:${xp}%"></i></div><div class="life-row"><span>寿元 <b>${state.age} / ${E.maxAge(state)}</b> 岁</span><span class="${state.vitality < 40 ? 'danger-text' : ''}">元气 <b>${state.vitality} / 100</b></span></div></section>`;
+    return `<section class="status-panel realm-focus" aria-label="人物状态"><div class="realm-line"><div class="realm-sigil" aria-hidden="true"><i class="realm-orbit"></i><span>${esc(r.name.slice(0,2))}</span></div><div class="realm-heading"><span class="eyebrow">当前境界</span><h2>${r.name}<small>${stage}</small></h2></div><div class="power"><span>此世战力</span><strong id="power-value">${powerFigure(E.power(state))}</strong></div></div><div class="meter-label"><span>${meterTitle}</span><b>${fmt(state.xp)} / ${fmt(r.threshold)}</b></div><div class="meter" role="progressbar" aria-label="修为" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(xp)}"><i style="width:${xp}%"></i></div><div class="life-row"><span>寿元 <b>${state.age} / ${E.maxAge(state)}</b> 岁</span><span class="${state.vitality < 40 ? 'danger-text' : ''}">元气 <b>${state.vitality} / 100</b></span></div></section>`;
   }
   function pathBanner() {
     const profile = M.classifyPath(state);
@@ -198,7 +206,7 @@
     const event = state.event || { id: 'quiet', title: '道途未尽', text: '选择你的下一步。' }, python = find(D.ENEMIES, 'python');
     let title = event.title || '黑风岭', body = '', choices = '';
     if (event.id === 'first-python') {
-      title = '山路尽头，一身赤鳞。'; body = enemyView(python, true);
+      const memory=M.eventMemory(meta,state,'first-python'); title = '山路尽头，一身赤鳞。'; body = `${enemyView(python, true)}${memory?`<p class="legacy-echo">${esc(memory)}</p>`:''}`;
       choices = button('resolve', '藏入石隙，避其锋芒', { choice: 'flee', classes: 'secondary full' });
       if (E.stats(state).mind >= 8) choices += button('resolve', `辨识退路${small('神识 ≥ 8 · 从容离开')}`, { choice: 'observe', classes: 'primary full' });
     } else if (event.id === 'revenge') {
@@ -238,15 +246,15 @@
     } else if (event.id === 'boss') {
       const boss = find(D.ENEMIES, 'threeeye'), routes = E.bossChoices(state);
       title = '三眼妖王 · 第三眼开';
-      body = `<p class="story-lead">第三只眼睁开的瞬间，山林被分成真假两层。<br>这一次，战力只是底子。真正决定你如何破局的，是这一世已经长成的道。</p>${enemyView(boss)}<div class="build-hint"><span>可用破局路线</span><b>${routes.length} 条</b></div>`;
+      const memory=M.eventMemory(meta,state,'boss'); body = `<p class="story-lead">第三只眼睁开的瞬间，山林被分成真假两层。<br>这一次，战力只是底子。真正决定你如何破局的，是这一世已经长成的道。</p>${memory?`<p class="legacy-echo">${esc(memory)}</p>`:''}${enemyView(boss)}<div class="build-hint"><span>可用破局路线</span><b>${routes.length} 条</b></div>`;
       choices = routes.map((route, index) => {
         const effective = { ...boss, power: Math.round(boss.power * route.enemyFactor) }, t = E.threat(state, effective), viable = t.ratio >= .55;
-        const note = viable ? `${route.note} · 破局后威胁：${t.label}` : `${route.note} · 当前仍无胜算`;
+        const memory=M.routeMemory(meta,state,'boss',route.id),note = viable ? `${route.note} · 破局后威胁：${t.label}${memory?` · ${memory}`:''}` : `${route.note} · 当前仍无胜算${memory?` · ${memory}`:''}`;
         return button('resolve', `${esc(route.name)}${small(note)}`, { choice: route.id, classes: `${index ? 'secondary' : 'primary'} full`, disabled: !viable });
       }).join('');
     } else {
       body = `<p class="story-lead">${esc(event.text)}</p>${event.gain ? `<div class="gain-badge">修为 <strong>+${fmt(event.gain)}</strong></div>` : ''}`;
-      if (event.id === 'arrival') body += `<div class="identity"><span>${find(D.ROOTS, state.root).name}</span><span>${find(D.ORIGINS, state.origin).name}</span></div><p class="footnote">${find(D.ROOTS, state.root).text}</p>`;
+      if (event.id === 'arrival') { const memory=M.eventMemory(meta,state,'arrival'); body += `<div class="identity"><span>${find(D.ROOTS, state.root).name}</span><span>${find(D.ORIGINS, state.origin).name}</span></div><p class="footnote">${find(D.ROOTS, state.root).text}</p>${memory?`<p class="legacy-echo">${esc(memory)}</p>`:''}`; }
     }
     const place = state.realm >= 8 ? '凡界 · 天外' : state.realm >= 6 ? '凡界 · 虚空' : state.realm >= 4 ? '凡界 · 诸域' : '黑风岭';
     return `<section class="event-sheet" aria-label="当前事件"><div class="event-kicker"><span>第 ${state.actions || 1} 段道途</span><span>${state.age} 岁 · ${place}</span></div><h3 class="event-title">${esc(title)}</h3>${body}<div class="event-choices">${choices}</div></section>`;
@@ -262,7 +270,7 @@
     const proof = state.realm >= 4 && state.realm <= 8 && !state.realmProofs.includes(state.realm)
       ? `<div class="proof-call"><span>破境还缺一步</span><b>下一次历练必遇天地印证，事件由你亲自选择</b>${button('seek-proof', '寻天地印证', { classes: 'secondary full', disabled: !E.canSeekProof(state) })}</div>` : '';
     const batch = state.realm < 9 ? button('cultivate-to-ready', `闭关至当前桎梏${small('自动停在强制遭遇、修为圆满或寿元警戒之前')}`, { classes: 'secondary full batch-cultivate', disabled: !E.canCultivateToReady(state) }) : '';
-    return `${boss}${proof}<div class="action-trio">${[['cultivate', '闭关', '稳定修为'], ['explore', '历练', state.realm >= 4 ? '天地印证' : state.realm >= 2 ? 'Build 条件机缘' : '奇遇与功法'], ['hunt', '狩猎', '吞噬与风险']].map(([kind, name, text]) => { const p = E.actionPreview(state, kind); return button('act', `<strong>${name}</strong><span>${text}</span><small>${p.xp ? `修为 +${p.xp} · ` : ''}${p.years} 年</small>`, { kind, classes: `action-tile ${kind === 'cultivate' ? 'quiet-action' : ''}` }); }).join('')}</div>${batch}`;
+    return `${boss}${proof}<div class="action-trio">${[['cultivate', '闭关', '稳定修为'], ['explore', '历练', state.realm >= 4 ? '天地印证' : state.realm >= 2 ? 'Build 条件机缘' : '奇遇与功法'], ['hunt', '狩猎', '吞噬与风险']].map(([kind, name, text]) => { const p = E.actionPreview(state, kind); return button('act', `${actionIcon(kind)}<strong>${name}</strong><span>${text}</span><small>${p.xp ? `修为 +${p.xp} · ` : ''}${p.years} 年</small>`, { kind, classes: `action-tile ${kind === 'cultivate' ? 'quiet-action' : ''}` }); }).join('')}</div>${batch}`;
   }
   function spiritBeastCall() {
     const beast=state?.spiritBeast&&Z.summary(state.spiritBeast);
@@ -276,7 +284,7 @@
       : state.realm === 3 ? (state.flags.bossSlain ? '妖眼已闭 · 向元婴迈进' : `金丹炼道 · 已历 ${state.advancedResolved} 处机缘`)
       : state.realm >= 4 && state.realm <= 8 ? `${D.REALMS[state.realm].name} · ${state.realmProofs.includes(state.realm) ? '天地印证已成' : '去看一眼更大的世界'}`
       : '渡劫将至';
-    return `<section>${hud()}<p class="quest"><span class="quest-dot"></span>${quest}</p>${pathBanner()}${spiritBeastCall()}${eventView()}${actionsView()}<div class="play-bottom"><span>${button('crafting','丹器百艺',{ui:true,classes:'text-button'})}${button('journal', '查看命格与历程', { ui: true, classes: 'text-button' })}</span><span>每次选择自动存档</span></div></section>`;
+    return `<section class="cultivation-view">${hud()}<p class="quest"><span class="quest-dot"></span>${quest}</p>${eventView()}${actionsView()}<div class="cultivation-aside"><p class="aside-title"><span>此世因缘</span><i></i></p>${pathBanner()}${spiritBeastCall()}</div><div class="play-bottom"><span>${button('crafting','丹器百艺',{ui:true,classes:'text-button'})}${button('journal', '查看命格与历程', { ui: true, classes: 'text-button' })}</span><span>每次选择自动存档</span></div></section>`;
   }
   function draftView() {
     const redraws = Math.max(0, 1 + (E.effects(state).redraw || 0) - state.redrawUsed);
@@ -291,7 +299,7 @@
   function tribulationView() {
     const data = E.tribulationChoices(state), fusion = find(D.FUSIONS, state.fusions[0]), trace = find(D.TRACES, state.carriedTrace);
     const progress = ['第一劫', '第二劫', '第三劫'][state.tribulationStage];
-    return `<section class="tribulation-view"><p class="eyebrow">渡劫 · ${progress}</p><div class="tribulation-sky" aria-hidden="true"><span>劫</span><i></i><i></i><i></i></div><h2 class="tribulation-title">${data.name}</h2><p class="intro">修为已经没有下一格可以填。现在，凡界最后要检验的不是你积攒了多少数字，而是这一世究竟炼成了什么。</p><div class="tribulation-status"><span>本世核心</span><b>${fusion?.name || '未成融合'}</b><span>当前战力</span><b>${fmt(E.power(state))}</b>${trace ? `<span>前世道痕</span><b>${esc(trace.name)}</b>` : ''}</div>${pathBanner()}<div class="tribulation-options">${data.options.map((option, index) => { const obstacle = { power: Math.round(state.tribulationBase * [1, 1.08, 1.16][state.tribulationStage] * option.enemyFactor) }; const t = E.threat(state, obstacle); return button('tribulation-step', `${esc(option.name)}${small(`${option.note} · 此路：${t.label}${t.chance < 1 ? ` · 约 ${Math.round(t.chance * 100)}%` : ' · 必过'}`)}`, { id: option.id, classes: `${option.trace ? 'trace-route' : option.id === 'fusion' ? 'primary' : 'secondary'} full`, disabled: t.ratio < .55 }); }).join('')}</div><p class="footnote">失败不会重抽天劫；若仍有元气，会留在当前这一劫继续选择。前世道痕只在对应天劫开启一次额外路线，不直接增加当前战力。</p></section>`;
+    return `<section class="tribulation-view"><p class="eyebrow">渡劫 · ${progress}</p><div class="tribulation-sky" aria-hidden="true"><span>劫</span><i></i><i></i><i></i></div><h2 class="tribulation-title">${data.name}</h2><p class="intro">修为已经没有下一格可以填。现在，凡界最后要检验的不是你积攒了多少数字，而是这一世究竟炼成了什么。</p><div class="tribulation-status"><span>本世核心</span><b>${fusion?.name || '未成融合'}</b><span>当前战力</span><b>${fmt(E.power(state))}</b>${trace ? `<span>前世道痕</span><b>${esc(trace.name)}</b>` : ''}</div>${pathBanner()}<div class="tribulation-options">${data.options.map((option, index) => { const obstacle = { power: Math.round(state.tribulationBase * [1, 1.08, 1.16][state.tribulationStage] * option.enemyFactor) }; const t = E.threat(state, obstacle), memory=M.routeMemory(meta,state,'tribulation',option.id); return button('tribulation-step', `${esc(option.name)}${small(`${option.note} · 此路：${t.label}${t.chance < 1 ? ` · 约 ${Math.round(t.chance * 100)}%` : ' · 必过'}${memory?` · ${memory}`:''}`)}`, { id: option.id, classes: `${option.trace ? 'trace-route' : option.id === 'fusion' ? 'primary' : 'secondary'} full`, disabled: t.ratio < .55 }); }).join('')}</div><p class="footnote">失败不会重抽天劫；若仍有元气，会留在当前这一劫继续选择。前世道痕只在对应天劫开启一次额外路线，不直接增加当前战力；前世路线提示同样只是信息。</p></section>`;
   }
   function endingTitlePanel() {
     const titles = M.endingTitles(state), profile = M.classifyPath(state);
@@ -409,7 +417,7 @@
     const warning = warningText();
     const vista = home ? '' : `<div class="world-vista" aria-hidden="true"><span>${esc(scene.title)}</span><small>${esc(scene.subtitle)}</small></div>`;
     const body = home ? homeView() : inImmortal ? immortalView() : state.phase === 'talents' ? talentsView() : state.phase === 'attributes' ? attributesView() : state.phase === 'playing' ? playingView() : state.phase === 'draft' ? draftView() : state.phase === 'mutation' ? mutationView() : state.phase === 'fusion' ? fusionView() : state.phase === 'tribulation' ? tribulationView() : endingView();
-    app.innerHTML = `<div class="shell">${rail()}<div class="content-shell">${header()}<main id="main" tabindex="-1" data-view="${view}">${vista}${tutorialNote()}${body}</main><footer class="app-footer"><span>我欲飞升 · v${S.VERSION}</span><span>本地运行 / 无付费抽取</span></footer>${warning ? `<div class="storage-warning" role="alert">${esc(warning)}</div>` : ''}</div></div>`;
+    app.innerHTML = `<div class="shell" data-screen="${esc(view)}">${rail()}<div class="content-shell">${header()}<main id="main" tabindex="-1" data-view="${view}">${vista}${tutorialNote()}${body}</main><footer class="app-footer"><span>我欲飞升 · v${S.VERSION}</span><span>本地运行 / 无付费抽取</span></footer>${warning ? `<div class="storage-warning" role="alert">${esc(warning)}</div>` : ''}</div></div>`;
     if (view !== previousView) { window.scrollTo({ top: 0, behavior: 'instant' }); previousView = view; }
     syncCombatReplay();
   }
@@ -471,6 +479,12 @@
     const active=state.karma.active.map(row=>{const trigger=row.trigger.type==='immortal'?'真正踏入仙界后':`${D.REALMS[row.trigger.value]?.name||row.trigger.value}以后`;return `<li class="${row.id===state.karma.pending?'pending':''}"><span>${esc(row.relation)} · ${row.strength}/3</span><b>${esc(row.source)}</b><p>${esc(row.hint)}</p><small>${esc(trigger)}可能回响 · 来源键 ${esc(row.sourceKey)}</small></li>`;}).join('');
     const settled=state.karma.summaries.slice().reverse().map(row=>`<li><span>${esc(row.relation)}</span><b>${esc(row.source)}</b><small>${esc(row.outcome)} · 已偿</small></li>`).join('');
     modal('因果天网', `<div class="karma-head"><div><span>活跃因果</span><b>${state.karma.active.length} / ${Y.ACTIVE_LIMIT}</b></div><div><span>已偿摘要</span><b>${state.karma.summaries.length} / ${Y.SUMMARY_LIMIT}</b></div></div><p class="intro">因果不是随机惩罚。每条记录都保存“来源 → 关系 → 强度 → 可触发阶段”，结算后只保留有界摘要；同一来源不会重复领奖。</p>${pendingBlock}${active?`<h3>已知因果</h3><ul class="karma-list">${active}</ul>`:''}${settled?`<h3>已偿因果</h3><ul class="karma-settled">${settled}</ul>`:''}`);
+  }
+  function legacyModal() {
+    const view=M.legacySnapshot(meta,state?.seed||null), lives=view.lives.map((run,index)=>`<article class="legacy-life"><span>前世 ${index+1} · seed ${run.seed}</span><h3>${esc(run.summary||`${run.ascended?'飞升':'止步'} · ${M.PATHS[run.path]?.name||'道途未定'}`)}</h3><small>${run.bossRoute?`妖王：${esc(M.BOSS_ROUTES.find(x=>x.id===run.bossRoute)?.name||run.bossRoute)} · `:''}${run.tribulationRoutes?.length?`天劫：${run.tribulationRoutes.map(id=>esc(M.TRIBULATION_ROUTES.find(x=>x.id===id)?.name||id)).join(' / ')}`:'没有完整天劫记录'}</small></article>`).join('');
+    const legends=view.legends.map(row=>`<li><span>${row.type==='weapon'?'遗器传说':'灵契传说'}</span><b>${esc(row.name)}</b><p>${esc(row.text)}</p></li>`).join('');
+    const echoes=view.echoes.map(row=>`<li><span>${esc(row.relation)}</span><b>${esc(row.source)}</b><small>${esc(row.outcome)}</small></li>`).join('');
+    modal('百世回响', `<p class="intro">这里保留的是人物摘要、因果回声和重要对象的传说，不复制旧存档，也不永久叠加攻击或修炼倍率。当前世只能从这些历史中获得信息、叙事与路线提示。</p><h3>最近前世</h3><div class="legacy-lives">${lives||'<p class="legacy-clear">轮回册尚未记录完整前世。</p>'}</div>${legends?`<h3>前世传说</h3><ul class="legacy-legends">${legends}</ul>`:''}${echoes?`<h3>因果回声</h3><ul class="legacy-echoes">${echoes}</ul>`:''}`);
   }
   function spiritBeastModal() {
     if (!state || ['talents','attributes'].includes(state.phase)) { modal('灵兽仙缘','<p class="intro">入世之后才能与主灵兽结契。</p>'); return; }
@@ -630,6 +644,7 @@
         case 'spirit-beast': spiritBeastModal(); break;
         case 'crafting': craftingModal(); break;
         case 'karma': karmaModal(); break;
+        case 'legacy': legacyModal(); break;
         case 'sect': sectModal(); break;
         case 'life': lifeModal(); break;
         case 'equipment': equipmentModal(); break;

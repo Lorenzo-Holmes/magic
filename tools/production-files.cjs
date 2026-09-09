@@ -3,5 +3,6 @@
 module.exports = Object.freeze([
   'index.html', 'src/style.css', 'src/data.js', 'src/equipment.js', 'src/sect.js', 'src/life.js', 'src/spirit-beast.js', 'src/crafting.js', 'src/karma.js', 'src/build.js', 'src/combat.js', 'src/secret-realm.js', 'src/engine.js', 'src/scenes.js', 'src/format.js', 'src/audio.js', 'src/presentation.js', 'src/meta.js', 'src/quantity.js', 'src/evolution.js', 'src/immortal.js', 'src/app.js', 'assets/seal.svg',
   'assets/bg/realm-mortal.svg', 'assets/bg/realm-foundation.svg', 'assets/bg/realm-goldcore.svg',
+  'src/visual-theme.css', 'assets/ink-landscape.svg',
   'assets/bg/realm-nascent.svg', 'assets/bg/realm-void.svg', 'assets/bg/realm-tribulation.svg', 'assets/bg/realm-ascension.svg'
 ]);

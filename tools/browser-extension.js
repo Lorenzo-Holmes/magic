@@ -83,6 +83,37 @@ async (page, options = {}) => {
   const diag = await page.evaluate(() => FSSound.diagnostics());
   check(Object.keys(diag.cueCounts).length === 9 && diag.voices <= 24, 'Cue synthesis or voice cleanup failed');
   report.audio.nineCues = true; report.audio.maxVoiceBudget = 24;
+  if (await page.evaluate(() => FSMeta.VERSION >= 3)) {
+    const legacyRun=await run(), legacyMeta=await page.evaluate(()=>JSON.parse(localStorage.getItem('feisheng.meta.v1'))), rawLegacy=JSON.stringify(legacyRun), rawLegacyMeta=JSON.stringify(legacyMeta);
+    check(legacyMeta.runHistory.length>=1&&legacyRun.seed===legacyMeta.runHistory[0].seed,'Completed first-life fixture is not aligned with its ledger');
+    await page.evaluate(() => {
+      const first=JSON.parse(localStorage.getItem('feisheng.run.v1')), meta=JSON.parse(localStorage.getItem('feisheng.meta.v1'));
+      const next=FSEngine.createRun(((first.seed+104729)>>>0)||1,{carriedTrace:meta.nextTrace||null,sourceSeed:meta.nextTrace?first.seed:null});
+      localStorage.setItem('feisheng.run.v1',FSEngine.serialize(next));
+    });
+    await page.reload();
+    const later=await run();check(later.seed!==legacyRun.seed,'Previous-life read-only fixture did not create a later-life seed');
+    await ui('legacy').click();
+    check(await page.locator('dialog .legacy-life').count()>=1,'Previous-life summary modal is empty');
+    const laterRaw=JSON.stringify(later);await layout('legacy-overview'); await close(); await ui('continue').click();
+    check(JSON.stringify(await run())===laterRaw,'Reading previous lives changed the later-life save');
+    await restore('tribulation--thunder');
+    await page.evaluate(() => {
+      const meta=JSON.parse(localStorage.getItem('feisheng.meta.v1')), s=JSON.parse(localStorage.getItem('feisheng.run.v1'));
+      if(meta.runHistory.some(row=>row.seed===s.seed)) s.seed=((s.seed+7919)>>>0)||1;
+      localStorage.setItem('feisheng.run.v1',FSEngine.serialize(s));
+    });
+    await page.reload(); await ui('continue').click();
+    // The thunder scene is first captured at the realm-9 talent draft.
+    // Enter tribulation through its real UI transition before checking routes.
+    if ((await run()).phase === 'draft') await action('pick').first().click();
+    check((await run()).phase === 'tribulation', 'Previous-life route fixture did not enter tribulation');
+    const remembered=page.locator('[data-action="tribulation-step"][data-id="fusion"]');
+    check(await remembered.count()===1&&(await remembered.innerText()).includes('前世曾以此法承劫'),'Tribulation option did not gain previous-life route information');
+    report.systems.reincarnation={passed:true,summary:true,readOnly:true,routeHint:true,noPermanentMultiplier:true,metaVersion:legacyMeta.version};
+    await page.evaluate(({run,meta})=>{localStorage.setItem('feisheng.run.v1',run);localStorage.setItem('feisheng.meta.v1',meta);},{run:rawLegacy,meta:rawLegacyMeta});
+    await page.reload(); await ui('continue').click();
+  }
   if (await page.evaluate(() => !!window.FSEquipment)) {
     await restore('ascension--ascension');
     const equipmentStart = await run();
@@ -387,6 +418,9 @@ async (page, options = {}) => {
     if(a.type==='choose')check(Object.keys((await run()).immortal.evolution.slots).length===5,'Choosing an evolution grew an extra slot');
   }
   const evolved = await run(), evolvedRaw=JSON.stringify(evolved);
+  await ui('home').click();
+  check((await ui('continue').innerText()).includes(`仙界 · 第 ${evolved.immortal.days} 日`), 'Home lost the saved immortal day count');
+  await ui('continue').click();
   check(formalEnding && formalEnding.fusions.length > 0 && offerReloaded && upgraded && replaced, 'Evolution core features were not all exercised');
   check(evolved.immortal.evolution.endless && BigInt(evolved.immortal.evolution.layer) >= 7n, 'Two endless worlds were not completed');
   async function importRaw(text) {

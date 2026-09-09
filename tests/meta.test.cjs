@@ -4,6 +4,10 @@ const assert = require('node:assert/strict');
 const D = require('../src/data.js');
 const E = require('../src/engine.js');
 const M = require('../src/meta.js');
+const Z = require('../src/spirit-beast.js');
+const G = require('../src/equipment.js');
+const K = require('../src/karma.js');
+const { simulate } = require('../tools/simulation-policy.cjs');
 const clone = value => JSON.parse(JSON.stringify(value));
 function entered(seed = 600) {
   const s = E.createRun(seed);
@@ -83,4 +87,92 @@ test('命途图谱对未发现内容只给线索，序列化拒绝损坏数据',
   assert.throws(() => M.deserialize(JSON.stringify(broken)));
   const orphanSource = clone(observed); orphanSource.nextTraceSource = 123;
   assert.throws(() => M.deserialize(JSON.stringify(orphanSource)));
+});
+test('百世回响保存人物摘要、因果回声与重要对象传说，但不复制旧存档', () => {
+  const s=ascended(630);
+  s.karma.summaries=[{sourceKey:'life:test',source:'人生 · 故乡',relation:'凡尘旧约',strength:2,outcome:'亲自回应',settledRealm:6,kind:'life'}];
+  s.equipment.inventory=[{uid:'gear-legend',id:'heaven-rend',identified:true,refinement:0,xp:240}];
+  let beast=Z.bond(Z.createState(),'moonfox');beast=Z.addEssence(beast,20,'test');beast=Z.evolve(beast,{realm:1});beast=Z.evolve(beast,{realm:2},'sacred');s.spiritBeast=beast;
+  const meta=M.observe(M.createMeta(),s),snap=M.legacySnapshot(meta);
+  assert.equal(snap.lives.length,1);assert.match(snap.lives[0].summary,/飞升/);assert.equal(snap.lives[0].bossRoute,'see-through');assert.deepEqual(snap.lives[0].tribulationRoutes,s.tribulationRoutes);
+  assert.equal(snap.echoes.length,1);assert.equal(snap.echoes[0].relation,'凡尘旧约');
+  assert.ok(snap.legends.some(x=>x.type==='weapon'&&x.name==='斩界天锋'));assert.ok(snap.legends.some(x=>x.type==='beast'&&x.name.includes('圣狐')));
+  assert.ok(!JSON.stringify(meta).includes('inventory'));assert.ok(!JSON.stringify(meta).includes('materials'));
+});
+test('下一世只获得前世文本与路线提示，不直接改变当前数值或解锁条件', () => {
+  const old=ascended(631),meta=M.observe(M.createMeta(),old),next=entered(632);next.traceSourceSeed=old.seed;
+  const before=JSON.stringify(next),arrival=M.eventMemory(meta,next,'arrival'),boss=M.routeMemory(meta,next,'boss','see-through'),trib=M.routeMemory(meta,next,'tribulation','fusion');
+  assert.match(arrival,/记忆|旧字/);assert.match(boss,/前世/);assert.match(trib,/前世/);assert.equal(JSON.stringify(next),before);
+  assert.equal(M.routeMemory(meta,next,'boss','fight'),'');
+});
+test('v2轮回册迁移到v3只补空百世回响，不伪造旧传说', () => {
+  const old=clone(M.createMeta());old.version=2;delete old.legacy;
+  const migrated=M.deserialize(JSON.stringify(old));assert.equal(migrated.version,3);assert.deepEqual(migrated.legacy,{echoes:[],legends:[]});
+});
+test('飞升后合法结契与仙兽进化持续更新同世传说，旧v3及旧本世存档不降级', () => {
+  let s=simulate(633).state;
+  assert.equal(s.phase,'complete');
+  let meta=M.observe(M.createMeta(),s);
+  s=E.transition(s,{type:'beast-bond',id:'moonfox'});
+  meta=M.observe(meta,s);
+  assert.equal(meta.legacy.legends.filter(x=>x.type==='beast').length,1);
+  assert.equal(meta.legacy.legends.find(x=>x.type==='beast').stage,0);
+  // Supply a bounded resource fixture; all progression gates use the real reducer.
+  s.spiritBeast=Z.addEssence(s.spiritBeast,20,'progression-test');
+  const younger=E.deserialize(E.serialize(s));
+  for (const id of [undefined,'sacred',undefined]) {
+    s=E.transition(s,{type:'beast-evolve',id}); meta=M.observe(meta,s);
+    assert.equal(meta.legacy.legends.filter(x=>x.type==='beast').length,1);
+  }
+  assert.throws(()=>E.transition(s,{type:'beast-evolve'}));
+  const oldV3=clone(meta); for(const row of oldV3.legacy.legends) delete row.stage;
+  meta=M.deserialize(JSON.stringify(oldV3));
+  assert.deepEqual(M.observe(meta,younger),meta);
+  s=E.transition(s,{type:'immortal-enter'});
+  s=E.transition(s,{type:'beast-evolve'});
+  const raw=E.serialize(s); meta=M.observe(meta,s);
+  const beast=meta.legacy.legends.filter(x=>x.type==='beast');
+  assert.equal(beast.length,1); assert.equal(beast[0].stage,4); assert.match(beast[0].text,/仙兽/);
+  assert.deepEqual(meta.totals,{ended:1,ascended:1}); assert.equal(E.serialize(s),raw);
+  assert.deepEqual(M.observe(meta,s),meta); assert.deepEqual(M.observe(meta,younger),meta);
+  const finalOldV3=clone(meta); delete finalOldV3.legacy.legends.find(x=>x.type==='beast').stage;
+  const restored=M.deserialize(JSON.stringify(finalOldV3));
+  assert.deepEqual(M.observe(restored,younger),restored);
+});
+test('飞升后鉴定与本命进化保留同世最高段遗器，兼容缺stage的旧v3传说', () => {
+  let s=simulate(634).state,meta=M.observe(M.createMeta(),s);
+  const uid=s.equipment.inventory.find(x=>G.data(x).special).uid;
+  s=E.transition(s,{type:'equipment-identify',id:uid});
+  s=E.transition(s,{type:'equipment-equip',id:uid});
+  s.equipment=G.grantWeaponXp(s.equipment,300);
+  const younger=E.deserialize(E.serialize(s));
+  meta=M.observe(meta,s); assert.equal(meta.legacy.legends.find(x=>x.type==='weapon').stage,0);
+  s=E.transition(s,{type:'equipment-evolve',id:uid}); meta=M.observe(meta,s);
+  const oldV3=clone(meta); for(const row of oldV3.legacy.legends) delete row.stage;
+  meta=M.deserialize(JSON.stringify(oldV3)); assert.deepEqual(M.observe(meta,younger),meta);
+  s=E.transition(s,{type:'equipment-evolve',id:uid}); meta=M.observe(meta,s);
+  const weapons=meta.legacy.legends.filter(x=>x.type==='weapon');
+  assert.equal(weapons.length,1); assert.equal(weapons[0].stage,2); assert.equal(weapons[0].name,'擎天神岳');
+  assert.deepEqual(M.observe(meta,younger),meta); assert.deepEqual(M.observe(meta,s),meta);
+  assert.deepEqual(meta.totals,{ended:1,ascended:1});
+  const broken=clone(meta); broken.legacy.legends[0].stage=3;
+  assert.throws(()=>M.deserialize(JSON.stringify(broken)));
+});
+test('飞升后实际偿还天门因果新增跨世回声，重复观察不重复计数或改变本世', () => {
+  let s=simulate(635).state,meta=M.observe(M.createMeta(),s);
+  const initially=meta.legacy.echoes.length;
+  s=E.transition(s,{type:'immortal-enter'});
+  let resolvedAscension=false;
+  for(let i=0;s.karma.pending&&i<24;i++) {
+    const entry=K.pendingEntry(s.karma),choice=K.eventFor(entry).choices[0];
+    s=E.transition(s,{type:'karma-resolve',id:choice.id});
+    const raw=E.serialize(s); meta=M.observe(meta,s);
+    assert.equal(E.serialize(s),raw);
+    if(entry.kind==='ascension') resolvedAscension=true;
+  }
+  assert.ok(resolvedAscension); assert.ok(meta.legacy.echoes.length>initially);
+  assert.equal(meta.legacy.echoes.filter(x=>x.id===`karma:${s.seed}:ascension:first`).length,1);
+  assert.match(meta.legacy.echoes.find(x=>x.id===`karma:${s.seed}:ascension:first`).outcome,/记住凡界来处/);
+  assert.deepEqual(meta.totals,{ended:1,ascended:1}); assert.equal(meta.runHistory.length,1);
+  assert.deepEqual(M.observe(M.deserialize(M.serialize(meta)),E.deserialize(E.serialize(s))),meta);
 });

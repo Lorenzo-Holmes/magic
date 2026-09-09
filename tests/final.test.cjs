@@ -27,12 +27,12 @@ test('跨两个 localStorage 键的道痕消费可以在中断后自动对账', 
   assert.equal(recovered.nextTrace,null);assert.equal(recovered.nextTraceSource,null);
   assert.deepEqual(M.reconcile(recovered,second),recovered);
 });
-test('v1 轮回册迁移到 v2 后补齐仙界图谱字段且保留旧发现', () => {
+test('v1 轮回册迁移到当前版本后补齐仙界图谱与百世回响字段且保留旧发现', () => {
   const old=M.createMeta();old.version=1;
   for(const key of ['traceEvents','immortalLaws','evolutionTraits','evolutionFusions','worlds'])delete old.discovered[key];
   old.tutorialHidden=undefined;old.tutorialSeen=undefined;old.discovered.talents=['strong'];
   const migrated=M.deserialize(JSON.stringify(old));
-  assert.equal(migrated.version,2);assert.deepEqual(migrated.discovered.talents,['strong']);
+  assert.equal(migrated.version,M.VERSION);assert.deepEqual(migrated.discovered.talents,['strong']);assert.deepEqual(migrated.legacy,{echoes:[],legends:[]});
   for(const key of ['traceEvents','immortalLaws','evolutionTraits','evolutionFusions','worlds'])assert.deepEqual(migrated.discovered[key],[]);
   assert.equal(migrated.tutorialHidden,false);assert.deepEqual(migrated.tutorialSeen,[]);
 });

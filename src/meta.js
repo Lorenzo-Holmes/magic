@@ -2,13 +2,15 @@
   const meta = factory(
     typeof module === 'object' && module.exports ? require('./data.js') : root.FSData,
     typeof module === 'object' && module.exports ? require('./engine.js') : root.FSEngine,
-    typeof module === 'object' && module.exports ? require('./evolution.js') : root.FSEvolution
+    typeof module === 'object' && module.exports ? require('./evolution.js') : root.FSEvolution,
+    typeof module === 'object' && module.exports ? require('./equipment.js') : root.FSEquipment,
+    typeof module === 'object' && module.exports ? require('./spirit-beast.js') : root.FSSpiritBeast
   );
   if (typeof module === 'object' && module.exports) module.exports = meta;
   else root.FSMeta = meta;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (D, E, V) {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (D, E, V, G, Z) {
   'use strict';
-  const VERSION = 2;
+  const VERSION = 3, LEGACY_LIMIT = 24;
   const LAW_NAMES = Object.freeze({devour:'吞噬法则',sword:'锋芒法则',body:'不灭法则',soul:'破妄法则',fortune:'命线法则',insight:'归一法则'});
   const copy = value => JSON.parse(JSON.stringify(value));
   const traceById = id => D.TRACES.find(trace => trace.id === id);
@@ -139,8 +141,9 @@
     return { talents: [], mutations: [], fusions: [], highEvents: [], bossRoutes: [], tribulationRoutes: [], titles: [], traces: [],
       traceEvents: [], immortalLaws: [], evolutionTraits: [], evolutionFusions: [], worlds: [] };
   }
+  function legacyState() { return { echoes: [], legends: [] }; }
   function createMeta() {
-    return { version: VERSION, nextTrace: null, nextTraceSource: null, tutorialHidden: false, tutorialSeen: [], totals: { ended: 0, ascended: 0 }, discovered: discoveries(), runHistory: [] };
+    return { version: VERSION, nextTrace: null, nextTraceSource: null, tutorialHidden: false, tutorialSeen: [], totals: { ended: 0, ascended: 0 }, discovered: discoveries(), runHistory: [], legacy: legacyState() };
   }
   const validIds = Object.freeze({
     talents: D.TALENTS.map(x => x.id), mutations: D.MUTATIONS.map(x => x.id), fusions: D.FUSIONS.map(x => x.id),
@@ -162,7 +165,10 @@
       const list = meta.discovered[key];
       if (!Array.isArray(list) || list.length > ids.length || new Set(list).size !== list.length || list.some(id => !ids.includes(id))) throw new Error(`命途图谱损坏：${key}。`);
     }
-    if (!Array.isArray(meta.runHistory) || meta.runHistory.length > 50 || new Set(meta.runHistory.map(r=>r?.seed)).size !== meta.runHistory.length || meta.runHistory.some(run => !run || !Number.isInteger(run.seed) || run.seed <= 0 || run.seed > 4294967295 || typeof run.ending !== 'string' || run.ending.length > 200 || typeof run.ascended !== 'boolean' || (run.trace !== undefined && run.trace !== null && !traceById(run.trace)) || (run.sourceSeed !== undefined && run.sourceSeed !== null && (!Number.isInteger(run.sourceSeed) || run.sourceSeed <= 0 || run.sourceSeed > 4294967295)))) throw new Error('轮回历程损坏。');
+    if (!Array.isArray(meta.runHistory) || meta.runHistory.length > 50 || new Set(meta.runHistory.map(r=>r?.seed)).size !== meta.runHistory.length || meta.runHistory.some(run => !run || !Number.isInteger(run.seed) || run.seed <= 0 || run.seed > 4294967295 || typeof run.ending !== 'string' || run.ending.length > 200 || typeof run.ascended !== 'boolean' || (run.trace !== undefined && run.trace !== null && !traceById(run.trace)) || (run.sourceSeed !== undefined && run.sourceSeed !== null && (!Number.isInteger(run.sourceSeed) || run.sourceSeed <= 0 || run.sourceSeed > 4294967295)) || (run.bossRoute !== undefined && run.bossRoute !== null && !BOSS_ROUTES.some(x=>x.id===run.bossRoute)) || (run.tribulationRoutes !== undefined && (!Array.isArray(run.tribulationRoutes) || run.tribulationRoutes.length>3 || run.tribulationRoutes.some(id=>id!=='legacy'&&!TRIBULATION_ROUTES.some(x=>x.id===id)))) || (run.summary !== undefined && (typeof run.summary!=='string' || run.summary.length>500)))) throw new Error('轮回历程损坏。');
+    if (!meta.legacy || typeof meta.legacy !== 'object' || Array.isArray(meta.legacy)) throw new Error('百世回响损坏。');
+    if (!Array.isArray(meta.legacy.echoes) || meta.legacy.echoes.length > LEGACY_LIMIT || new Set(meta.legacy.echoes.map(x=>x?.id)).size !== meta.legacy.echoes.length || meta.legacy.echoes.some(x=>!x||typeof x.id!=='string'||x.id.length>180||!Number.isInteger(x.sourceSeed)||x.sourceSeed<=0||x.sourceSeed>4294967295||typeof x.source!=='string'||x.source.length>180||typeof x.relation!=='string'||x.relation.length>120||typeof x.outcome!=='string'||x.outcome.length>160)) throw new Error('前世因果回声损坏。');
+    if (!Array.isArray(meta.legacy.legends) || meta.legacy.legends.length > LEGACY_LIMIT || new Set(meta.legacy.legends.map(x=>x?.id)).size !== meta.legacy.legends.length || meta.legacy.legends.some(x=>!x||typeof x.id!=='string'||x.id.length>180||!['weapon','beast'].includes(x.type)||!Number.isInteger(x.sourceSeed)||x.sourceSeed<=0||x.sourceSeed>4294967295||typeof x.name!=='string'||x.name.length>120||typeof x.text!=='string'||x.text.length>300||(x.stage!==undefined&&(!Number.isInteger(x.stage)||x.stage<0||x.stage>(x.type==='beast'?4:2))))) throw new Error('前世传说损坏。');
     return true;
   }
   function serialize(meta) { validate(meta); return JSON.stringify(meta); }
@@ -170,15 +176,57 @@
     if (typeof text !== 'string' || text.length > 200000) throw new Error('轮回册文件无效。');
     const meta = JSON.parse(text);
     if (meta?.version === 1) {
-      meta.version = VERSION;
+      meta.version = 2;
       if (!meta.discovered || typeof meta.discovered !== 'object' || Array.isArray(meta.discovered)) throw new Error('旧轮回册图谱损坏。');
       for (const key of ['traceEvents','immortalLaws','evolutionTraits','evolutionFusions','worlds']) meta.discovered[key] = [];
       if (meta.tutorialHidden === undefined) meta.tutorialHidden = false;
       if (meta.tutorialSeen === undefined) meta.tutorialSeen = [];
     }
+    if (meta?.version === 2) { meta.version = 3; meta.legacy = legacyState(); }
     validate(meta); return meta;
   }
   function add(discovered, key, values) { discovered[key] = unique([...discovered[key], ...values]).filter(id => validIds[key].includes(id)); }
+  function addLegacy(list, value) {
+    if (!value || list.some(item => item.id === value.id)) return;
+    list.unshift(value); if (list.length > LEGACY_LIMIT) list.length = LEGACY_LIMIT;
+  }
+  function legendStage(value) {
+    if (value.stage !== undefined) return value.stage;
+    // Early v3 ledgers encoded the stage in catalog IDs instead of a field.
+    // Do not guess an unrecognized old record's strength from its prose.
+    if (value.type === 'weapon') {
+      const prefix=`weapon:${value.sourceSeed}:`, def=value.id.startsWith(prefix)?G?.BY_ID[value.id.slice(prefix.length)]:null;
+      return def?.special ? def.stage : Infinity;
+    }
+    const parts=value.id.split(':');
+    return parts.length===5&&parts[0]==='beast'&&parts[1]===String(value.sourceSeed)&&Z?.BY_ID[parts[2]]&&['none','wild','sacred'].includes(parts[3])&&/^[0-4]$/.test(parts[4]) ? Number(parts[4]) : Infinity;
+  }
+  function addLegend(list, value) {
+    const matches=list.filter(item=>item.type===value.type&&item.sourceSeed===value.sourceSeed);
+    if (!matches.length) { addLegacy(list,value); return; }
+    const best=matches.reduce((left,right)=>legendStage(right)>legendStage(left)?right:left);
+    const replacement=legendStage(value)>legendStage(best)?value:best;
+    const index=list.indexOf(matches[0]);
+    list.splice(index,1,replacement);
+    for (let i=list.length-1;i>index;i--) if(list[i].type===value.type&&list[i].sourceSeed===value.sourceSeed) list.splice(i,1);
+  }
+  function runSummary(state, profile, title) {
+    const origin = D.ORIGINS.find(x=>x.id===state.origin)?.name || '无名出身';
+    const realm = D.REALMS[state.realm]?.name || '未知境界';
+    return `${origin}出身，走成「${profile.name}」；${state.flags?.ascended ? `于 ${state.age} 岁飞升` : `止步${realm}`}。${title ? `世人后来称其「${title.name}」。` : ''}`;
+  }
+  function collectLegacy(next, state) {
+    for (const row of state.karma?.summaries || []) addLegacy(next.legacy.echoes, {
+      id:`karma:${state.seed}:${row.sourceKey}`,sourceSeed:state.seed,source:row.source,relation:row.relation,outcome:row.outcome
+    });
+    const specials=(state.equipment?.inventory||[]).map(entry=>({entry,def:G?.data(entry)})).filter(x=>x.entry.identified&&x.def?.special)
+      .sort((a,b)=>(b.def.stage||0)-(a.def.stage||0)||b.entry.xp-a.entry.xp);
+    if (specials[0]) addLegend(next.legacy.legends, {id:`weapon:${state.seed}:${specials[0].def.id}`,type:'weapon',sourceSeed:state.seed,name:specials[0].def.name,stage:specials[0].def.stage,
+      text:`此世曾持本命神兵「${specials[0].def.name}」，走到第 ${(specials[0].def.stage||0)+1} 段。后世只记其名，不继承装备数值。`});
+    const beast=state.spiritBeast?.companion ? Z?.summary(state.spiritBeast) : null;
+    if (beast) addLegend(next.legacy.legends, {id:`beast:${state.seed}:${beast.species}:${beast.branch||'none'}:${beast.stage}`,type:'beast',sourceSeed:state.seed,name:beast.name,stage:beast.stage,
+      text:`此世曾与「${beast.name}」同行至${beast.stageName}${beast.branchName?` · ${beast.branchName}`:''}。后世只听见这段灵契传说。`});
+  }
   function observe(meta, state) {
     validate(meta); if (!state) return copy(meta);
     const next = copy(meta), found = next.discovered;
@@ -201,12 +249,14 @@
     if (['complete', 'dead'].includes(state.phase)) {
       const titles = endingTitles(state), traces = traceCandidates(state);
       add(found, 'titles', titles.map(title => title.id)); add(found, 'traces', traces.map(trace => trace.id));
+      collectLegacy(next,state);
       if (!next.runHistory.some(run => run.seed === state.seed)) {
         next.totals.ended++;
         if (ascended(state)) { next.totals.ascended++; next.tutorialHidden = true; }
         const profile = classifyPath(state);
         next.runHistory.unshift({ seed: state.seed, ending: state.ending || state.phase, ascended: ascended(state), realm: state.realm, age: state.age, power: ascended(state) ? state.ascendedPower : E.power(state), path: profile.id, title: titles[0]?.id || null,
-          trace: state.carriedTrace || null, sourceSeed: state.traceSourceSeed || null });
+          trace: state.carriedTrace || null, sourceSeed: state.traceSourceSeed || null, origin:state.origin||null, root:state.root||null, bossRoute:state.bossRoute||null, tribulationRoutes:[...(state.tribulationRoutes||[])],
+          summary:runSummary(state,profile,titles[0]) });
         next.runHistory = next.runHistory.slice(0, 50);
       }
     }
@@ -227,6 +277,29 @@
     // Retry that one pending consumption if writing the second key was interrupted.
     if (state?.traceSourceSeed && state.seed !== state.traceSourceSeed && state.traceSourceSeed === meta.nextTraceSource && state.carriedTrace === meta.nextTrace) return consumeTrace(meta).meta;
     return copy(meta);
+  }
+  function recentLives(meta, currentSeed = null, limit = 5) {
+    validate(meta); return meta.runHistory.filter(run=>run.seed!==currentSeed).slice(0,Math.max(0,Math.min(12,limit)));
+  }
+  function previousRun(meta, state) {
+    const lives=recentLives(meta,state?.seed,12);
+    return lives.find(run=>state?.traceSourceSeed&&run.seed===state.traceSourceSeed)||lives[0]||null;
+  }
+  function eventMemory(meta, state, eventId) {
+    const run=previousRun(meta,state); if(!run)return '';
+    if(eventId==='arrival') return `轮回册里仍留着一行旧字：${run.summary||`上一世走成了${PATHS[run.path]?.name||'另一条道'}。`} 这只是记忆，不替这一世增加属性。`;
+    if(eventId==='first-python'&&run.ascended) return '你忽然记起：前世的自己也曾在这条山路前弱得必须退走。记得结局，不等于此刻拥有前世的力量。';
+    if(eventId==='boss'&&run.bossRoute) return `前世传说曾以「${BOSS_ROUTES.find(x=>x.id===run.bossRoute)?.name||run.bossRoute}」破过妖王；这一世是否能走同路，仍只看当前 Build。`;
+    return '';
+  }
+  function routeMemory(meta, state, type, id) {
+    const run=previousRun(meta,state); if(!run)return '';
+    if(type==='boss'&&run.bossRoute===id)return '前世曾以此路破局';
+    if(type==='tribulation'&&(run.tribulationRoutes||[]).includes(id))return '前世曾以此法承劫';
+    return '';
+  }
+  function legacySnapshot(meta, currentSeed = null) {
+    validate(meta); return { lives:recentLives(meta,currentSeed,8), echoes:meta.legacy.echoes.slice(0,LEGACY_LIMIT), legends:meta.legacy.legends.slice(0,LEGACY_LIMIT) };
   }
   function entry(id, name, detail, hint, discovered) { return { id, name: discovered ? name : '？？？', detail: discovered ? detail : '', hint, discovered }; }
   function codexSections(meta) {
@@ -253,5 +326,5 @@
     const sections = codexSections(meta);
     return { ended: meta.totals.ended, ascended: meta.totals.ascended, discovered: sections.reduce((n, section) => n + section.discovered, 0), total: sections.reduce((n, section) => n + section.total, 0), nextTrace: traceById(meta.nextTrace) || null };
   }
-  return Object.freeze({ VERSION, PATHS, TITLE_RULES, BOSS_ROUTES, TRIBULATION_ROUTES, createMeta, validate, serialize, deserialize, observe, classifyPath, pathScores, endingTitles, traceCandidates, selectTrace, consumeTrace, reconcile, codexSections, summary });
+  return Object.freeze({ VERSION, LEGACY_LIMIT, PATHS, TITLE_RULES, BOSS_ROUTES, TRIBULATION_ROUTES, createMeta, validate, serialize, deserialize, observe, classifyPath, pathScores, endingTitles, traceCandidates, selectTrace, consumeTrace, reconcile, recentLives, eventMemory, routeMemory, legacySnapshot, codexSections, summary });
 });

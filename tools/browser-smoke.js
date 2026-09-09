@@ -237,6 +237,8 @@ async (page, options = {}) => {
   check(endingMeta?.version === await page.evaluate(() => FSMeta.VERSION), 'Reincarnation ledger was not saved');
   check(endingMeta.totals.ended === 1 && endingMeta.totals.ascended === 1, 'Completed run was not recorded exactly once');
   check(endingMeta.runHistory.length === 1 && endingMeta.runHistory[0].seed === finished.seed, 'Run history is missing or duplicated');
+  check(typeof endingMeta.runHistory[0].summary === 'string' && endingMeta.runHistory[0].summary.length > 0, 'Previous-life character summary was not recorded');
+  check(endingMeta.legacy && Array.isArray(endingMeta.legacy.echoes) && Array.isArray(endingMeta.legacy.legends), 'Previous-life legacy ledger is missing');
   check(await page.locator('.ending-title').count() === 1, 'Ending title panel is missing');
   check(await page.locator('[data-ui="carry-trace"]').count() === 3, 'Ending must offer exactly three trace candidates');
   report.metaAfterEnding = {
@@ -289,6 +291,8 @@ async (page, options = {}) => {
   await action('confirm-talents').click();
   await action('preset', '[data-id="balanced"]').click();
   await action('enter').click();
+  check(await page.locator('.legacy-echo').count() === 1, 'Inherited life arrival does not show the previous-life text echo');
+  check((await page.locator('.legacy-echo').innerText()).includes('记忆') || (await page.locator('.legacy-echo').innerText()).includes('旧字'), 'Previous-life arrival echo is not clearly narrative-only');
   await action('cultivate-to-ready').click();
   check((await state()).event?.id === 'first-python', 'Inherited life did not stop at the serpent encounter');
   await action('resolve', '[data-choice="flee"]').click();
