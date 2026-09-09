@@ -450,6 +450,36 @@ async (page, options = {}) => {
   }
   report.evolution={passed:true,turns:evolutionTurns,formalEnding,offerReloaded,upgraded,replaced,
     endlessLayer:evolved.immortal.evolution.layer,endlessWorlds:2,largeNumberFixture:true,fileCases:evolutionFiles,mortalPreserved:evolved.ascendedPower===originalPower};
+  // The final earned run carries real sampled actions from both chapters.
+  await page.goto(baseURL);await importRaw(evolvedRaw);
+  for(let i=0;i<12&&!(await page.evaluate(()=>FSDao.preview(JSON.parse(localStorage.getItem('feisheng.run.v1')).dao,JSON.parse(localStorage.getItem('feisheng.run.v1'))).ready));i++)await action('immortal-evolution-cultivate').click();
+  check(await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('feisheng.run.v1'));return FSDao.preview(s.dao,s).ready;}),'Earned actions did not establish a stable Dao');
+  const beforeDao=await run(),beforeDaoRaw=JSON.stringify(beforeDao);
+  await page.locator('[data-ui="nav-panel"][data-id="build"]').click();await ui('dao').click();
+  await layout('dao-ready');
+  check(JSON.stringify(await run())===beforeDaoRaw,'Viewing Dao changed the run');
+  await action('dao-form').click();
+  const daoRun=await run(),daoRaw=JSON.stringify(daoRun);
+  check(daoRun.dao.formed&&daoRun.rng===beforeDao.rng&&daoRun.ascendedPower===beforeDao.ascendedPower,'Dao creation changed the random stream or mortal achievement');
+  await layout('dao-formed');await close();await page.reload();await ui('continue').click();
+  await page.locator('[data-ui="nav-panel"][data-id="build"]').click();await ui('dao').click();
+  check((await page.locator('.dao-card').innerText()).includes(daoRun.dao.formed.name),'Dao did not survive reload');await close();
+  const daoFiles=[];
+  for(const [mode,url]of options.fileRoots){await page.goto(url);await importRaw(daoRaw);await page.locator('[data-ui="nav-panel"][data-id="build"]').click();await ui('dao').click();check((await page.locator('.dao-card').innerText()).includes(daoRun.dao.formed.name),mode+': Dao missing');await close();daoFiles.push(mode);}
+  report.systems.dao={passed:true,name:daoRun.dao.formed.name,rules:daoRun.dao.formed.rules,samples:daoRun.dao.total,readOnly:true,reloadPreserved:true,fileCases:daoFiles,deterministic:true};
+  await page.goto(baseURL);await restore('mortal--world-spirit');
+  check((await run()).phase==='playing','Navigation fixture must have entered the mortal world');
+  const navRaw=JSON.stringify(await run()),navChecks=[];
+  for(const id of ['journal','build','life','codex','legacy','equipment','sect','spirit-beast','crafting','karma']){
+    await page.locator('[data-ui="nav-panel"][data-id="'+id+'"]').click();check(await page.locator('dialog[open]').count()===1,'Navigation failed: '+id);await close();navChecks.push(id);
+  }
+  check(JSON.stringify(await run())===navRaw,'Read-only navigation changed saved gameplay');
+  await layout('workbench-meditation');
+  const meditation=await page.locator('.meditation-silhouette').boundingBox();check(meditation&&meditation.width>100&&meditation.height>100,'Meditation silhouette missing');
+  await page.setViewportSize({width:390,height:844});
+  const overlap=await page.evaluate(()=>{const m=document.querySelector('main').getBoundingClientRect(),n=document.querySelector('.nav-right').getBoundingClientRect();return m.bottom>n.top+1;});
+  check(!overlap,'Bottom navigation overlaps the scrollable game region');
+  report.systems.workbench={passed:true,navigation:navChecks,readOnly:true,meditation:true,mobileNoOverlap:true};
   await page.goto(baseURL); await restore('ascension--ascension');
   report.externalRequests = report.requests.filter(url => /^https?:/.test(url) && !url.startsWith(`${baseURL}/`) && url !== baseURL).length;
   check(report.externalRequests === 0 && report.errors.length === 0 && report.failedRequests.length === 0, 'Extension produced network or browser errors');

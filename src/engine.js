@@ -3,7 +3,8 @@
   else root.FSEngine = factory(root.FSData);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (D) {
   'use strict';
-  const VERSION = 13;
+  const VERSION = 14;
+  const daoEngine = () => typeof module === 'object' && module.exports ? require('./dao.js') : globalThis.FSDao;
   const immortalEngine = () => typeof module === 'object' && module.exports ? require('./immortal.js') : globalThis.FSImmortal;
   const equipmentEngine = () => typeof module === 'object' && module.exports ? require('./equipment.js') : globalThis.FSEquipment;
   const buildEngine = () => typeof module === 'object' && module.exports ? require('./build.js') : globalThis.FSBuild;
@@ -256,7 +257,7 @@
       highSeen: [], realmProofs: [], tribulationStage: 0, tribulationBase: null, ascendedPower: null,
       carriedTrace, traceSourceSeed, bossRoute: null, tribulationRoutes: [], batchCultivations: 0,
       event: null, draft: null, firstPower: null, revengePower: null, lastGain: 0,
-      ending: null, log: [], equipment: equipmentEngine().createState(), combatReplay: null, secretRealm: secretRealmEngine().createState(), sect: sectEngine().createState(), life: lifeEngine().createState(), spiritBeast: spiritBeastEngine().createState(), crafting: craftingEngine().createState(), karma: karmaEngine().createState(), immortal: null
+      ending: null, log: [], equipment: equipmentEngine().createState(), combatReplay: null, secretRealm: secretRealmEngine().createState(), sect: sectEngine().createState(), life: lifeEngine().createState(), spiritBeast: spiritBeastEngine().createState(), crafting: craftingEngine().createState(), karma: karmaEngine().createState(), dao: daoEngine().createState(), immortal: null
     };
     s.offer = openingOffer(s);
     return s;
@@ -532,6 +533,7 @@
       }
       s.spiritBeast = spiritBeastEngine().observe(s.spiritBeast, state, s, action);
       s.karma = karmaEngine().observe(s.karma, state, s, action);
+      s.dao = daoEngine().observe(s.dao, state, s, action);
       nextRevision(s); validate(s); return s;
     }
     switch (action.type) {
@@ -742,6 +744,9 @@
         const result=C.forgeWeapon(s.crafting,action.id,def.path);s.crafting=result.state;s.equipment=equipmentEngine().grantWeaponXp(s.equipment,result.weaponXp);
         log(s,'炼器',`${result.recipe.name}完成，本命兵器历练 +${result.weaponXp}。没有强化失败或耐久损失。`,'gold');break;
       }
+      case 'dao-form':
+        s.dao=daoEngine().form(s.dao,s);
+        log(s,'自创大道',`十二段以上真实修行凝为「${s.dao.formed.name}」。此道的规则与来源已写入道途。`,'gold');break;
       case 'karma-resolve': {
         requireThat(s.karma?.pending,'当前没有待偿因果。');
         const K=karmaEngine(),result=K.resolve(s.karma,action.id,{realm:s.realm,immortal:!!s.immortal,playable:s.phase==='playing'||!!s.immortal});s.karma=result.state;
@@ -770,6 +775,13 @@
     s.crafting=craftingEngine().observe(s.crafting,state,s,action);
     s.crafting=craftingEngine().afterAction(s.crafting,action);
     s.karma=karmaEngine().observe(s.karma,state,s,action);
+    s.dao=daoEngine().observe(s.dao,state,s,action);
+    const daoResult=daoEngine().afterAction(s.dao,state,s,action,D.REALMS[s.realm].threshold||0);s.dao=daoResult.state;
+    for(const reward of daoResult.rewards){
+      s.xp=Math.min((D.REALMS[s.realm].threshold||500)*2,s.xp+reward.xp);
+      s.vitality=Math.min(100,s.vitality+reward.heal);
+      log(s,`大道 · ${reward.name}`,`${reward.xp?`修为 +${reward.xp}。`:''}${reward.heal?`元气恢复 ${reward.heal}。`:''}此规则的本世余次已扣除。`,'gold');
+    }
     nextRevision(s);
     validate(s);
     return s;
@@ -789,6 +801,8 @@
     spiritBeastEngine().validate(s.spiritBeast);
     craftingEngine().validate(s.crafting);
     karmaEngine().validate(s.karma);
+    daoEngine().validate(s.dao);
+    requireThat(!s.dao.formed||s.dao.formed.seed===s.seed,'大道不属于本世。');
     requireThat(s.defeats === undefined || s.defeats === null || (Number.isSafeInteger(s.defeats) && s.defeats >= 0), '败退记录损坏。');
     for (const key of ['seed', 'rng']) requireThat(Number.isInteger(s[key]) && s[key] > 0 && s[key] <= 4294967295, '随机种子损坏。');
     requireThat(Number.isSafeInteger(s.revision) && s.revision >= 0 || typeof s.revision === 'string' && s.revision.length <= 2048 && /^(0|[1-9]\d*)$/.test(s.revision), '操作版本损坏。');
@@ -902,7 +916,8 @@
     if (!s || s.version !== 12) return s;
     s.version = 13; s.karma = karmaEngine().createState(); return s;
   }
-  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); s = migrateV5(s); s = migrateV6(s); s = migrateV7(s); s = migrateV8(s); s = migrateV9(s); s = migrateV10(s); s = migrateV11(s); s = migrateV12(s); if (s?.version === VERSION && s.immortal) s.immortal = immortalEngine().migrate(s.immortal); validate(s); return s; }
+  function migrateV13(s){if(s?.version===13){s.version=14;s.dao=daoEngine().createState();}return s;}
+  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); s = migrateV5(s); s = migrateV6(s); s = migrateV7(s); s = migrateV8(s); s = migrateV9(s); s = migrateV10(s); s = migrateV11(s); s = migrateV12(s); s=migrateV13(s); if (s?.version === VERSION && s.immortal) s.immortal = immortalEngine().migrate(s.immortal); validate(s); return s; }
   function synergies(s) {
     const list = [];
     if (s.sword && s.root === 'thunder' && s.talents.includes('swordbone')) list.push({ name: '雷剑体', text: '雷灵根 × 天生剑骨 × 青云剑诀：战力额外 +20%。' });

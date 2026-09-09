@@ -187,7 +187,7 @@
       : state.realm === 3 && !state.flags.bossSlain ? '金丹修为 · 为妖王一战蓄势'
       : proofMissing ? `${r.name}修为 · 尚欠一次天地印证`
       : state.realm >= 4 ? `${r.name}修为 · 天地印证已成` : '修为';
-    return `<section class="status-panel realm-focus" aria-label="人物状态"><div class="realm-line"><div class="realm-sigil" aria-hidden="true"><i class="realm-orbit"></i><span>${esc(r.name.slice(0,2))}</span></div><div class="realm-heading"><span class="eyebrow">当前境界</span><h2>${r.name}<small>${stage}</small></h2></div><div class="power"><span>此世战力</span><strong id="power-value">${powerFigure(E.power(state))}</strong></div></div><div class="meter-label"><span>${meterTitle}</span><b>${fmt(state.xp)} / ${fmt(r.threshold)}</b></div><div class="meter" role="progressbar" aria-label="修为" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(xp)}"><i style="width:${xp}%"></i></div><div class="life-row"><span>寿元 <b>${state.age} / ${E.maxAge(state)}</b> 岁</span><span class="${state.vitality < 40 ? 'danger-text' : ''}">元气 <b>${state.vitality} / 100</b></span></div></section>`;
+    return `<section class="status-panel realm-focus" aria-label="人物状态"><div class="realm-line"><div class="realm-sigil" aria-hidden="true"><i class="realm-orbit"></i><span>${esc(r.name.slice(0,2))}</span></div><div class="realm-heading"><span class="eyebrow">当前境界</span><h2>${r.name}<small>${stage}</small></h2></div><div class="power"><span>此世战力</span><strong id="power-value">${powerFigure(E.power(state))}</strong></div></div>${window.FSWorkbench.meditation()}<div class="meter-label"><span>${meterTitle}</span><b>${fmt(state.xp)} / ${fmt(r.threshold)}</b></div><div class="meter" role="progressbar" aria-label="修为" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(xp)}"><i style="width:${xp}%"></i></div><div class="life-row"><span>寿元 <b>${state.age} / ${E.maxAge(state)}</b> 岁</span><span class="${state.vitality < 40 ? 'danger-text' : ''}">元气 <b>${state.vitality} / 100</b></span></div></section>`;
   }
   function pathBanner() {
     const profile = M.classifyPath(state);
@@ -409,6 +409,7 @@
       <div class="immortal-actions">${button('spirit-beast','查看主灵兽',{ui:true,classes:'secondary full'})}${button('immortal-journal','翻阅仙界命册',{ui:true,classes:'secondary full'})}${button('mortal-summary','回看凡界 · 凝练道痕',{ui:true,classes:'secondary full'})}${button('new','另起一世',{ui:true,classes:'text-button full'})}</div></section>`;
   }
   function render() {
+    const previousScroll=document.getElementById('main')?.scrollTop||0;
     const inImmortal = !!(state?.immortal && !mortalSummary);
     const shown = mortalSummary && state?.immortal ? { ...state, immortal: null } : state;
     sound.scene(shown, home);
@@ -417,11 +418,23 @@
     const warning = warningText();
     const vista = home ? '' : `<div class="world-vista" aria-hidden="true"><span>${esc(scene.title)}</span><small>${esc(scene.subtitle)}</small></div>`;
     const body = home ? homeView() : inImmortal ? immortalView() : state.phase === 'talents' ? talentsView() : state.phase === 'attributes' ? attributesView() : state.phase === 'playing' ? playingView() : state.phase === 'draft' ? draftView() : state.phase === 'mutation' ? mutationView() : state.phase === 'fusion' ? fusionView() : state.phase === 'tribulation' ? tribulationView() : endingView();
-    app.innerHTML = `<div class="shell" data-screen="${esc(view)}">${rail()}<div class="content-shell">${header()}<main id="main" tabindex="-1" data-view="${view}">${vista}${tutorialNote()}${body}</main><footer class="app-footer"><span>我欲飞升 · v${S.VERSION}</span><span>本地运行 / 无付费抽取</span></footer>${warning ? `<div class="storage-warning" role="alert">${esc(warning)}</div>` : ''}</div></div>`;
+    const workspace = !home && state && !['talents','attributes'].includes(state.phase);
+    const note=tutorialNote(),content=state?.phase==='playing'&&!home&&!inImmortal?body.replace('</section>',`</section>${note}`):`${note}${body}`;
+    const main = `<main id="main" tabindex="-1" data-view="${view}">${vista}${content}</main>`;
+    const footer = `<footer class="app-footer"><span>我欲飞升 · v${S.VERSION}</span><span>本地运行 / 无付费抽取</span></footer>${warning ? `<div class="storage-warning" role="alert">${esc(warning)}</div>` : ''}`;
+    if(workspace){
+      const W=window.FSWorkbench,i=inImmortal?state.immortal:null;
+      const materials=Object.values(state.crafting?.materials||{}).reduce((a,b)=>a+b,0);
+      const rows=i?[{glyph:'元',label:'仙元',value:F.short(i.essence),note:'修炼与重构'},{glyph:'则',label:'法则碎片',value:fmt(i.fragments),note:'凝法与进化'},{glyph:'气',label:'元气',value:`${i.health} / 100`,note:'仙躯状态'},{glyph:'界',label:'当前界层',value:i.evolution?.layer||'序章',note:`仙界第 ${i.days} 日`}]:[{glyph:'气',label:'元气',value:`${state.vitality} / 100`,note:'当前状态'},{glyph:'年',label:'寿元',value:`${state.age} / ${E.maxAge(state)}`,note:'一世修行'},{glyph:'灵',label:'灵兽精华',value:fmt(state.spiritBeast?.essence||0),note:'结契与进化'},{glyph:'丹',label:'丹器材料',value:fmt(materials),note:'八类材料合计'}];
+      const identity={title:i?'仙界 · 诸天行旅':`${find(D.ROOTS,state.root)?.name||'凡人'} · ${find(D.ORIGINS,state.origin)?.name||'此生命途'}`,detail:i?`凡界道基长存 · ${D.REALMS[state.realm].name}`:`${D.REALMS[state.realm].name} · 此世第 ${state.actions||1} 段道途`};
+      app.innerHTML=`<div class="shell game-shell" data-screen="${esc(view)}"><div class="content-shell">${header()}${W.resources(rows,identity)}<div class="game-layout">${W.navigation('left',state,button)}${main}${W.navigation('right',state,button)}</div>${footer}</div></div>`;
+    }else app.innerHTML = `<div class="shell" data-screen="${esc(view)}">${rail()}<div class="content-shell">${header()}${main}${footer}</div></div>`;
     if (view !== previousView) { window.scrollTo({ top: 0, behavior: 'instant' }); previousView = view; }
+    else document.getElementById('main').scrollTop=previousScroll;
     syncCombatReplay();
   }
   function modal(title, body) {
+    if(title==='万法归一'&&state?.dao)body=button('dao',state.dao.formed?`此世大道 · ${esc(state.dao.formed.name)}`:'大道争锋 · 查看修行与创道',{ui:true,classes:'secondary full'})+body;
     if (title === '存档与说明') body = `<div class="settings-extra"><h3>命册批注</h3><p class="intro">首次飞升后自动关闭；也可以提前关闭。战力主显示使用万、亿，点按数字查看完整值。</p>${button('tutorial-reset', '重新阅读批注', { ui: true, classes: 'secondary full', disabled: meta.totals.ascended > 0 })}</div>${body}`;
     dialog.innerHTML = `<div class="dialog-head"><h2>${title}</h2>${button('close-dialog', '×', { ui: true, classes: 'icon-button', aria: '关闭窗口' })}</div>${body}`;
     if (!dialog.open) dialog.showModal();
@@ -462,8 +475,14 @@
     const last=eq.lastDrop&&!eq.lastDrop.missed?`<p class="footnote">最近所得：${eq.lastDrop.full?`行囊已满，自动化为 ${eq.lastDrop.converted} 器蕴。`:`${esc(G.BY_ID[eq.lastDrop.id]?.name||'未知器物')} · 来源 ${esc(eq.lastDrop.kind)}`}</p>`:'';
     modal('本命神兵', `<div class="gear-summary"><div><span>行囊</span><b>${eq.inventory.length} / ${G.MAX_INVENTORY}</b></div><div><span>器蕴</span><b>${eq.essence}</b></div><div><span>规则</span><b>无耐久 · 无失败</b></div></div><p class="intro">四槽装备只作用于凡界 Build，与仙界肉身 / 血脉 / 神魂 / 神通 / 法则五槽完全分离。历练与战斗可让已穿戴本命神兵获得历练；温养使用归炉所得器蕴，显示阶段名而不是“+N”。</p><div class="gear-slots">${slots}</div><h3>行囊</h3><div class="gear-grid">${inventory||'<p class="intro">行囊尚空。历练、妖王、天地印证与天劫会确定性生成掉落。</p>'}</div>${last}`);
   }
+  function daoModal(){
+    if(!state?.dao)return;
+    const A=window.FSDao,p=A.preview(state.dao,state),f=state.dao.formed,rules=(f?.rules||p.rules).map(id=>A.RULES.find(r=>r.id===id));
+    const sources=state.dao.samples.slice(-12).reverse().map(row=>'<li><b>'+esc(A.KINDS[row.kind])+' · '+esc(B.TAGS[row.main])+'</b><small>第 '+row.n+' 段 · '+esc(D.REALMS[row.realm].name)+'</small>'+(row.equipment.length?'<span>佩戴器物：'+row.equipment.map(id=>esc(B.TAGS[id])).join(' / ')+'</span>':'')+'</li>').join('');
+    modal('大道争锋','<section class="dao-card"><span class="eyebrow">'+(f?'此世大道已成':'修行凝道')+'</span><h3>'+esc(f?.name||'大道尚未命名')+'</h3><p>已见 '+state.dao.total+' 段修行 · 最近十二段中 '+p.stable+' 段主脉一致</p><p class="intro">元婴以后，至少十二段真实修行，最近十二段中九段主脉一致，即可凝成此世唯一大道。闭关、历练、战斗与因果会留下依据。</p>'+(!f?button('dao-form','凝成此世大道',{classes:'primary full',disabled:!p.ready||!!state.secretRealm?.active}):'<p class="dao-seal">此道已定 · 不随临时换装重置</p>')+'</section><div class="dao-rules">'+rules.map(r=>'<article><h3>'+esc(r.name)+'</h3><p>'+esc(r.text)+'</p><small>'+(f?'本世剩余 '+(r.charges-state.dao.used[r.id])+' 次':'形成后获得，当前不生效')+'</small></article>').join('')+'</div><p class="footnote">规则只在凡界触发，仙界保留完整道名与来源。转世重新修行，不累计永久战力。</p><details class="dao-evidence" open><summary>最近修行依据</summary><ol>'+sources+'</ol></details>');
+  }
   function buildModal() {
-    if (!state || ['talents','attributes'].includes(state.phase)) { modal('万法归一','<p class="intro">入世之后，天命、属性、异变、融合、装备与真实路线才会逐渐形成 Build。</p>'); return; }
+    if (!state || ['talents','attributes'].includes(state.phase)) { modal('万法归一','<p class="intro">入世之后，天命、属性、异变、融合、装备与真实路线才会逐渐形成道途。</p>'); return; }
     const value=B.evaluateBuild(state), tags=value.tags.map(t=>`<span class="build-tag"><b>${esc(t.name)}</b><small>${t.score}</small></span>`).join('');
     const synergies=value.synergies.map(s=>{
       const matching=value.sources.filter(src=>s.requires.some(tag=>src.tags.includes(tag))).slice(0,4);
@@ -473,6 +492,7 @@
     modal('万法归一', `<div class="build-head"><div><span>主脉</span><b>${esc(value.main?B.TAGS[value.main]:'未显')}</b></div><div><span>辅脉</span><b>${esc(value.sub?B.TAGS[value.sub]:'未显')}</b></div><div><span>激活协同</span><b>${value.synergies.length}</b></div></div><p class="intro">${esc(value.explanation)} 标签只解释真实来源；打开或关闭命册不会推进 RNG，也不会写入存档。</p><div class="build-tags">${tags}</div><h3>来源 → 协同 → 当前效果</h3><div class="build-synergies">${synergies||'<p class="intro">当前尚没有满足两类标签的协同。继续让这一世的选择互相呼应。</p>'}</div><details class="build-sources"><summary>查看全部来源 · ${value.sources.length}</summary><ul>${sourceRows}</ul></details>`);
   }
   function karmaModal() {
+    
     if (!state?.karma) { modal('因果天网','<p class="intro">当前没有可读取的因果账本。</p>'); return; }
     const pending=Y.pendingEntry(state.karma), event=Y.eventFor(pending);
     const pendingBlock=pending&&event?`<section class="karma-event"><span>因果回响 · 强度 ${pending.strength}/3</span><h3>${esc(event.title)}</h3><p>${esc(event.text)}</p><small>来源：${esc(pending.source)} → ${esc(pending.relation)}</small><div>${event.choices.map((choice,index)=>button('karma-resolve',`${esc(choice.name)}${small(choice.note)}`,{id:choice.id,classes:`${index===0?'primary':'secondary'} full`})).join('')}</div></section>`:'<p class="karma-clear">当前没有必须处理的因果回响。账本只记录已经发生的来源，不提前剧透完整结果。</p>';
@@ -628,7 +648,8 @@
   document.addEventListener('click', event => {
     const el = event.target.closest('button'); if (!el || el.disabled) return;
     if (el.dataset.ui) {
-      switch (el.dataset.ui) {
+      switch (el.dataset.ui==='nav-panel'?el.dataset.id:el.dataset.ui) {
+        case 'practice': home=false;mortalSummary=false;dialog.close();render();document.getElementById('main').focus({preventScroll:true});break;
         case 'quantity-detail': {
           const [m,e] = el.dataset.id.split('|');
           modal('势能的数量级', `<p class="exact-number">${esc(window.FSQuantity.format({m:Number(m),e},true))}</p><p class="intro">保留 12 位有效数字与精确的十进制指数。超出普通数值范围后继续使用科学计数，不把它转成 Infinity，也不宣称无限整数精度。</p>`); break;
@@ -649,6 +670,7 @@
         case 'life': lifeModal(); break;
         case 'equipment': equipmentModal(); break;
         case 'build': buildModal(); break;
+        case 'dao': daoModal(); break;
         case 'audio-music': sound.update({ music: !sound.settings().music }); audioSettings(); break;
         case 'audio-effects': sound.update({ effects: !sound.settings().effects }); audioSettings(); break;
         case 'number-detail': modal('完整战力', `<p class="exact-number">${esc(F.full(Number(el.dataset.id)))}</p><p class="intro">主显示只改变排版，不改变战力计算或存档精度。</p>`); break;
@@ -711,7 +733,9 @@
       clearTimeout(noticeTimer); notice.classList.remove('visible'); notice.textContent = '';
       persist(); render();
       showFeedback(feedback);
-      if (action.type.startsWith('karma-')) {
+      if (action.type==='dao-form') {
+        daoModal();
+      } else if (action.type.startsWith('karma-')) {
         karmaModal();
         dialog.querySelector('[data-action^="karma-"]')?.focus({ preventScroll:true });
       } else if (action.type.startsWith('craft-')) {
