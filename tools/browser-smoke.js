@@ -150,7 +150,7 @@ async (page, options = {}) => {
     if(a.type==='journey-start'){
       await page.locator('[data-ui="nav-panel"][data-id="atlas"]').click();
       const region=await page.evaluate(id=>FSJourney.ROUTES.find(r=>r.id===id).region,a.id);
-      await page.locator('.region-tabs [data-ui="region"][data-id="'+region+'"]').click();
+      await page.locator('[data-ui="region"][data-id="'+region+'"]:visible').first().click();
       await page.locator('#journey-kit').selectOption(a.kind);
       if(!journeyChecked)await layout('journey-atlas');
     }else if(a.type==='journey-prepare')await page.locator('[data-ui="nav-panel"][data-id="inventory"]').click();
@@ -169,7 +169,7 @@ async (page, options = {}) => {
   while (iterations++ < 400) {
     const s = await state();
     const travel=options.journeyAction(s);if(travel){await travelClick(travel);continue;}
-    if(await page.locator('.atlas-view,.hub-view').count())await page.locator('[data-ui="nav-panel"][data-id="practice"]').click();
+    if(await page.locator('.atlas-view,.hub-view,.v3-world-window,.v3-baggage-window,.v3-character-window,.v3-forge-window').count())await page.locator('[data-ui="nav-panel"][data-id="practice"]').click();
     const checkpoint = `${s.phase}:${s.event?.id || 'realm'}:${s.realm}${s.phase === 'tribulation' ? `:${s.tribulationStage}` : ''}`;
     if (!captured.has(checkpoint)) {
       captured.add(checkpoint); report.checkpoints.push({ checkpoint, realm: s.realm, power: s.revengePower, age: s.age });

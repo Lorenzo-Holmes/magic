@@ -78,7 +78,7 @@ test('全部正式背景存在、为轻量自包含 SVG 且进入生产白名单
   }
 });
 test('生产清单唯一且不携带截图、文档、字体或开发依赖', () => {
-  assert.equal(files.length, 40); assert.equal(new Set(files).size, files.length);
+  assert.equal(files.length, 48); assert.equal(new Set(files).size, files.length);
   assert.ok(files.includes('src/ink-theme.css'));
   assert.ok(files.includes('src/scene-ui.css'));
   assert.ok(files.includes('assets/art/retreat-v2.1.webp')&&files.includes('assets/art/atlas-v2.1.webp'));

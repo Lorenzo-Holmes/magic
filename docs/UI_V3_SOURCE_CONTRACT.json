@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "status": "functional-preview-implemented-final-design-pending",
+  "createdOn": "2026-09-10",
+  "project": "我欲飞升",
+  "baseline": {
+    "version": "2.2.1",
+    "commit": "306bf79d438e996f547b31d93032e55e86b49827",
+    "workspace": "D:\\我欲飞升",
+    "referenceWorkspace": "D:\\一念逍遥",
+    "referenceAccessObserved": "read-only"
+  },
+  "evidence": [
+    {
+      "id": "E01",
+      "kind": "raw-export-read",
+      "path": "D:\\一念逍遥\\ui_analysis\\prefab_layouts.json",
+      "lineRanges": [[1, 100], [190, 339]],
+      "supports": ["HudWnd full stretch", "bar bottom stretch", "house fixed-size child", "redpoint anchored state child"],
+      "doesNotProve": ["runtime CanvasScaler configuration", "all page layouts", "runtime Lua bindings"]
+    },
+    {
+      "id": "E02",
+      "kind": "raw-inventory-read",
+      "path": "D:\\一念逍遥\\ui_analysis\\bundle_report.json",
+      "lineRanges": [[1, 180]],
+      "supports": ["61 selected members", "HUD UnityFS offset 12", "exported object paths"]
+    },
+    {
+      "id": "E03",
+      "kind": "prior-analysis-report",
+      "path": "D:\\一念逍遥\\ui_analysis\\FRONTEND_ANALYSIS.md",
+      "supports": ["HouseWnd", "CharNewWnd", "BaggageWnd", "ForgeWnd", "WorldWnd", "TupoWnd", "Lua payload unreadable"],
+      "caution": "本轮完整读取报告，但未重新解析其中所有 Bundle 和对象。"
+    },
+    {
+      "id": "E04",
+      "kind": "actual-project-screenshot-viewed",
+      "path": "output/playwright/v2.2.1/runs/acceptance-INWjPA/extension-navigation-character-390.png",
+      "finding": "人物页是打坐山水背景与四个菜单，不是实际装备展示。"
+    },
+    {
+      "id": "E05",
+      "kind": "actual-project-screenshot-viewed",
+      "path": "output/playwright/v2.2.1/runs/acceptance-INWjPA/extension-navigation-inventory-390.png",
+      "finding": "行囊页是法阵与三个菜单，首屏不显示物品。"
+    },
+    {
+      "id": "E06",
+      "kind": "project-source-read",
+      "paths": ["src/app.js", "src/journey-ui.js", "src/equipment.js"],
+      "supports": ["existing transition and persist boundary", "four real equipment slots", "12 equipment capacity", "current UI action routing"]
+    },
+    {
+      "id": "E07",
+      "kind": "official-component-semantics",
+      "urls": [
+        "https://docs.unity3d.com/2022.3/Documentation/Manual/class-RectTransform.html",
+        "https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/script-CanvasScaler.html",
+        "https://docs.unity3d.com/2022.3/Documentation/Manual/9SliceSprites.html"
+      ],
+      "caution": "解释通用 Unity 语义，不证明参考游戏的运行时参数。"
+    }
+  ],
+  "observedHud": {
+    "evidenceId": "E01",
+    "prefab": "assets_ui_windows_hudwnd.prefab.unity3d",
+    "gameObjects": 40,
+    "rectTransforms": 40,
+    "root": {"name": "HudWnd", "anchorMin": [0, 0], "anchorMax": [1, 1], "exportedSize": [0, 0]},
+    "bar": {
+      "pathId": "7854053009731657025",
+      "anchorMin": [0, 0], "anchorMax": [1, 0],
+      "position": [0, 65], "exportedSize": [0, 130], "pivot": [0.5, 0.5]
+    },
+    "house": {
+      "pathId": "-8764429649704084159",
+      "exportedSize": [124, 124],
+      "redpoint": {"active": false, "anchorMin": [1, 1], "anchorMax": [1, 1], "position": [-17, -14.5], "exportedSize": [29, 29]}
+    }
+  },
+  "unresolvedReferenceData": [
+    "可读 Lua 源码与具体函数调用关系",
+    "根 CanvasScaler referenceResolution、match、pixelsPerUnit",
+    "脚本/动画对节点位置、激活与尺寸的运行时修改",
+    "未审阅窗口的 LayoutGroup、旋转、缩放与排序规则",
+    "完整 Sprite border、pivot、textureRect 及外部依赖",
+    "原作同版本同状态的全部运行态截图"
+  ],
+  "currentImplementation": {
+    "version": "3.0.0",
+    "entry": "index.html",
+    "scope": "five primary window renderers and a shared HUD",
+    "modules": ["src/ui-v3/core.js", "src/ui-v3/hud.js", "src/ui-v3/cave.js", "src/ui-v3/character.js", "src/ui-v3/baggage.js", "src/ui-v3/world-map.js", "src/ui-v3/forge.js"],
+    "css": "src/ui-v3.css",
+    "actualLifecycle": ["synchronous render", "commit bind/update", "deactivate cleanup/dispose"],
+    "sameWindowReplacementCleansBindings": true,
+    "legacyRendererExitCleansBindings": true,
+    "gameActionAndPersistence": "existing app.js transition/persist path, no second save store",
+    "deferred": ["final original artwork", "async asset loader", "Unity RectTransform interpreter", "sprite atlas and nine-slice pipeline", "persistent DOM window cache", "remaining chapter renderer migration"],
+    "referenceLuaRestored": false,
+    "referenceLuaReused": false,
+    "statusDocument": "docs/UI_V3_IMPLEMENTATION_STATUS.md"
+  },
+  "plannedRuntime": {
+    "renderer": "existing plain JavaScript with isolated V3 window modules",
+    "productionEngineChange": false,
+    "originalLuaReuse": false,
+    "referenceAssetDistribution": false,
+    "windowLifecycle": ["prepareAssets", "mount", "bind", "update", "suspend", "resume", "unmount", "dispose"],
+    "lifecycleNamesAreOriginalProjectDesign": true,
+    "layoutSpaces": ["ArtSpace with shared artwork/hotspot transform", "UIScreen with safe-area anchored controls"],
+    "minimumTouchTargetCssPx": 44,
+    "minimumSecondaryTextCssPx": 12,
+    "pathIdEncoding": "decimal-string",
+    "unsafeDynamicEvaluation": false,
+    "localFileModeRequired": true,
+    "configurationDelivery": "bundled local script objects or static build output; no required file URL fetch"
+  },
+  "navigation": [
+    {"id": "practice", "label": "洞府", "window": "CaveWindow"},
+    {"id": "atlas", "label": "山海", "window": "WorldMapWindow"},
+    {"id": "inventory", "label": "行囊", "window": "BaggageWindow"},
+    {"id": "character", "label": "人物", "window": "CharacterWindow"}
+  ],
+  "plannedWindows": [
+    {
+      "id": "CaveWindow", "kind": "scene-navigation", "reference": "HouseWnd", "evidenceId": "E03",
+      "visibleSubject": "洞府建筑与修炼石台",
+      "existingDestinations": ["act:cultivate", "atlas", "crafting", "spirit-beast", "inventory"],
+      "requiredStates": ["normal", "blocking-event", "breakthrough-ready", "foundation-missing", "near-age-limit", "journey-active", "secret-realm-active"],
+      "forbidden": ["unrelated floating menus", "permanent decorative redpoints", "nonfunctional garden gameplay"]
+    },
+    {
+      "id": "CharacterWindow", "kind": "subject-and-equipment", "reference": "CharNewWnd", "evidenceId": "E03",
+      "slots": ["weapon", "artifact", "robe", "accessory"],
+      "selectors": ["FSEngine.stats", "FSEngine.power", "FSEquipment.equipped", "FSEquipment.data"],
+      "actions": ["equipment-equip", "equipment-unequip", "equipment-identify", "equipment-refine", "equipment-evolve"],
+      "requiredStates": ["empty", "equipped", "unidentified", "insufficient-resource", "mortal-equipment-in-immortal-chapter"],
+      "forbidden": ["four menus replacing gear slots", "CSS geometric character as final art", "extra invented slots"]
+    },
+    {
+      "id": "BaggageWindow", "kind": "categorized-item-list", "reference": "BaggageWnd", "evidenceId": "E03",
+      "referenceReportedItemCellDesignUnits": [752, 125],
+      "categories": ["all", "equipment", "pills", "materials", "supplies"],
+      "equipmentCapacity": 12,
+      "capacityAppliesTo": "state.equipment.inventory only",
+      "actions": ["equipment-identify", "equipment-equip", "equipment-refine", "equipment-salvage", "existing crafting actions", "existing journey preparation actions"],
+      "requiredStates": ["empty", "full", "selected-item-removed", "unidentified", "last-consumable-used", "stale-revision"],
+      "forbidden": ["giant decorative bag sigil replacing inventory", "new unified save schema for visual grouping"]
+    },
+    {
+      "id": "WorldMapWindow", "kind": "map-and-context-drawer", "reference": "WorldWnd", "evidenceId": "E03",
+      "regions": 6, "routes": 18,
+      "requiredStates": ["available", "locked", "selected", "journey-active", "wounded", "insufficient-supplies"],
+      "forbidden": ["background-only crop with stationary hotspots", "randomly invented route links"]
+    },
+    {
+      "id": "CraftWindow", "kind": "subject-and-workbench", "reference": "ForgeWnd", "evidenceId": "E03",
+      "existingModule": "FSCrafting",
+      "requiredStates": ["recipe-selected", "materials-missing", "result", "weapon-not-equipped"],
+      "forbidden": ["invented success probability", "timer callback granting rewards"]
+    },
+    {
+      "id": "BreakthroughWindow", "kind": "exclusive-presentation", "reference": ["TupoWnd", "JinxianWnd"], "evidenceId": "E03",
+      "resultCommittedBeforeAnimation": true,
+      "skippable": true,
+      "reducedMotion": "static result, not hidden result",
+      "forbidden": ["animation completion calling transition again", "flashing required for comprehension"]
+    }
+  ],
+  "gameAdapterRules": {
+    "gameActionEntry": "FSEngine.transition(state, action)",
+    "revisionRequired": true,
+    "persistUsesExistingRunAndMetaLogic": true,
+    "readOnlyIntents": ["page-navigation", "item-details", "category-filter", "map-camera"],
+    "dataChangingUiIntentsNeedExplicitHandling": ["new-run", "import-save", "carry-trace", "tutorial-settings"],
+    "rngOwnedByEngineOnly": true
+  },
+  "acceptance": {
+    "visualApproval": "pending",
+    "productionUiImplemented": false,
+    "functionalPreviewWiredToEntry": true,
+    "finalArtImplemented": false,
+    "currentEvidenceDocument": "docs/UI_V3_IMPLEMENTATION_STATUS.md",
+    "technicalPreview": {
+      "nodeTests": {"passed": 181, "total": 181, "exitCode": 0},
+      "browserExitCode": 0,
+      "layoutChecks": 540,
+      "dialogLayoutChecks": 12,
+      "finalPackageCenterHitCases": 10,
+      "sourceQuickCases": 31,
+      "physicalMobileDeviceTest": false,
+      "evidenceDirectory": "output/playwright/v3.0.0/runs/acceptance-o9Qigq",
+      "testedZipSha256": "d903d3171e85a157f5811b57406cb50e850b84a9504f9f4caccf7963d0d39285",
+      "zipBytes": 995449,
+      "productionFiles": 48,
+      "releaseDisposition": "local preview branch; final visual approval pending"
+    },
+    "viewports": [[320, 568], [360, 800], [390, 844], [430, 932], [768, 1024], [1280, 800]],
+    "requiredChecks": ["visual inspection of actual screenshots", "hit testing", "safe area", "no text truncation of costs", "dialog focus return", "source-dist-zip identity", "save compatibility", "file mode"],
+    "historicalTestResultsAreNotV3Acceptance": true
+  }
+}

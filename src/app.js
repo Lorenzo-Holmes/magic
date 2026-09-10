@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat, P = window.FSPresentation, G = window.FSEquipment, B = window.FSBuild, C = window.FSCombat, R = window.FSSecretRealm, X = window.FSSect, L = window.FSLife, Z = window.FSSpiritBeast, K = window.FSCrafting, Y = window.FSKarma;
+  const D = window.FSData, E = window.FSEngine, S = window.FSScenes, M = window.FSMeta, F = window.FSFormat, P = window.FSPresentation, G = window.FSEquipment, B = window.FSBuild, C = window.FSCombat, R = window.FSSecretRealm, X = window.FSSect, L = window.FSLife, Z = window.FSSpiritBeast, K = window.FSCrafting, Y = window.FSKarma, J = window.FSJourney, UI3 = window.FSUIV3;
   const world = S.attach(document.getElementById('world'));
   const sound = window.FSAudio.create();
   window.FSSound = sound; // Readable audio diagnostics; no gameplay state is exposed.
@@ -309,16 +309,47 @@
     const beast=state?.spiritBeast&&Z.summary(state.spiritBeast);
     return `<div class="beast-call"><div><span>${beast?`${esc(beast.stageName)} · 灵兽精华 ${state.spiritBeast.essence}`:'单主灵兽位 · 此世唯一'}</span><b>${beast?esc(beast.name):'灵兽仙缘'}</b><p>${beast?`道途：${beast.tags.map(id=>esc(B.TAGS[id]||id)).join(' / ')}`:'四种初始灵兽，只能选择一只长期陪伴。'}</p></div>${button('spirit-beast',beast?'查看灵兽':'寻一只主灵兽',{ui:true,classes:'secondary'})}</div>`;
   }
-  function playingView() {
-    const quest = !state.flags.pythonSeen ? '初入山门 · 闭关修行，或整装出行'
+  function currentQuest() {
+    return !state.flags.pythonSeen ? '初入山门 · 闭关修行，或整装出行'
       : state.realm === 0 ? (window.FSJourney.ready(state.journey,0)?'引气入体 · 修为圆满即可破境':'引气入体 · 修满修为，行旅稳固根基')
       : state.realm === 1 ? '筑基之后 · 回来讨还赤鳞因果'
       : state.realm === 2 ? (state.flags.pythonSlain ? '将吞来的力量炼进金丹' : '故地重返 · 赤鳞因果')
       : state.realm === 3 ? (state.flags.bossSlain ? '妖眼已闭 · 向元婴迈进' : `金丹炼道 · 已历 ${state.advancedResolved} 处机缘`)
       : state.realm >= 4 && state.realm <= 8 ? `${D.REALMS[state.realm].name} · ${state.realmProofs.includes(state.realm) ? '天地印证已成' : '去看一眼更大的世界'}`
       : '渡劫将至';
+  }
+  function playingView() {
+    const quest = currentQuest();
     const waiting=E.isBlocking(state),arrivalMemory=state.event?.id==='arrival'?M.eventMemory(meta,state,'arrival'):null;
     return `<section class="cultivation-view ${waiting?'has-encounter':''}">${cultivationScene(waiting,quest)}${waiting?eventView():`<div class="quiet-record"><span>草庐手记</span><p>${esc(state.event?.text||'山中风起，今日也可以向外走走。')}</p></div>`}${arrivalMemory?`<p class="legacy-echo">${esc(arrivalMemory)}</p>`:''}${actionsView()}${window.FSJourneyUI.foundation(state,button)}<div class="play-bottom"><span>选择之后，进度自动留存。</span>${button('character','查看此生命途 →',{ui:true,classes:'text-button'})}</div></section>`;
+  }
+  function v3CaveCommands() {
+    if(state.secretRealm?.active){
+      const active=state.secretRealm.active, config=R.REALMS.find(r=>r.id===active.realmId);
+      return `<div class="v3-context-status"><span>秘境 ${active.floor}/${active.floors}</span><b>${esc(config?.name||'秘境')}</b></div>${button('secret-realm','返回秘境',{ui:true,classes:'v3-context-primary'})}`;
+    }
+    if(E.canBreak(state))return `<div class="v3-context-status"><span>修为圆满 · 根基已稳</span><b>破境在即</b></div>${button('breakthrough',`破境 · ${D.REALMS[state.realm+1].name}`,{classes:'v3-context-primary'})}`;
+    if(state.journey.enabled&&state.realm<9&&state.xp>=D.REALMS[state.realm].threshold&&!J.ready(state.journey,state.realm))return `<div class="v3-context-status"><span>修为已满</span><b>尚欠此境见闻</b></div>${button('atlas','去山海稳固根基',{ui:true,classes:'v3-context-primary'})}`;
+    const items=[];
+    if(E.canChallengeBoss(state))items.push(button('challenge-boss','寻三眼妖王',{classes:'v3-context-primary'}));
+    if(state.realm>=4&&state.realm<=8&&!state.realmProofs.includes(state.realm))items.push(button('seek-proof','寻天地印证',{classes:'v3-context-secondary',disabled:!E.canSeekProof(state)}));
+    if(state.realm<9&&E.canCultivateToReady(state))items.push(button('cultivate-to-ready','闭关至桎梏',{classes:'v3-context-secondary'}));
+    if(!items.length)return'';
+    const foundation=state.journey.enabled&&state.realm<9?`${state.journey.foundation[state.realm]} / ${J.required(state.realm)}`:'旧法';
+    return `<div class="v3-context-status"><span>此境根基</span><b>${foundation}</b></div>${items.join('')}`;
+  }
+  function v3PrimaryView(tab) {
+    const common={state,D,E,G,K,B,J,button,small,esc,fmt,powerFigure,selectedRegion,journeyKit};
+    if(tab==='practice'){
+      const waiting=E.isBlocking(state), arrivalMemory=state.event?.id==='arrival'?M.eventMemory(meta,state,'arrival'):null;
+      const memory=arrivalMemory?`<span class="v3-scene-memory legacy-echo">${esc(arrivalMemory)}</span>`:'';
+      return UI3.render('CaveWindow',{...common,quest:currentQuest(),waiting,eventHtml:waiting?eventView():'',contextHtml:waiting?'':v3CaveCommands(),memoryHtml:memory});
+    }
+    if(tab==='atlas')return UI3.render('WorldMapWindow',common);
+    if(tab==='inventory')return UI3.render('BaggageWindow',common);
+    if(tab==='character')return UI3.render('CharacterWindow',common);
+    if(tab==='forge')return UI3.render('ForgeWindow',common);
+    return playingView();
   }
   function draftView() {
     const redraws = Math.max(0, 1 + (E.effects(state).redraw || 0) - state.redrawUsed);
@@ -455,12 +486,18 @@
     const scene = world.update(shown, home);
     const warning = warningText();
     const vista = home ? '' : `<div class="world-vista" aria-hidden="true"><span>${esc(scene.title)}</span><small>${esc(scene.subtitle)}</small></div>`;
-    const body = home ? homeView() : inJourney?window.FSJourneyUI.active(state,button):panel?(pageTab==='atlas'?window.FSJourneyUI.atlas(state,button,selectedRegion,journeyKit):window.FSJourneyUI.hub(state,button,pageTab)):inWorld ? window.FSWorldUI.view(state.world,button) : inImmortal ? immortalView() : state.phase === 'talents' ? talentsView() : state.phase === 'attributes' ? attributesView() : state.phase === 'playing' ? playingView() : state.phase === 'draft' ? draftView() : state.phase === 'mutation' ? mutationView() : state.phase === 'fusion' ? fusionView() : state.phase === 'tribulation' ? tribulationView() : endingView();
+    const v3Primary=!!(!home&&state?.phase==='playing'&&!inWorld&&!inImmortal&&!inJourney&&['practice','atlas','inventory','character','forge'].includes(pageTab));
+    if(!v3Primary)UI3.deactivate();
+    const body = home ? homeView() : v3Primary?v3PrimaryView(pageTab):inJourney?window.FSJourneyUI.active(state,button):panel?(pageTab==='atlas'?window.FSJourneyUI.atlas(state,button,selectedRegion,journeyKit):window.FSJourneyUI.hub(state,button,pageTab)):inWorld ? window.FSWorldUI.view(state.world,button) : inImmortal ? immortalView() : state.phase === 'talents' ? talentsView() : state.phase === 'attributes' ? attributesView() : state.phase === 'playing' ? playingView() : state.phase === 'draft' ? draftView() : state.phase === 'mutation' ? mutationView() : state.phase === 'fusion' ? fusionView() : state.phase === 'tribulation' ? tribulationView() : endingView();
     const workspace = !home && state && !['talents','attributes'].includes(state.phase);
-    const note=!panel&&!inJourney?tutorialNote():'',content=state?.phase==='playing'&&!home&&!inImmortal?body.replace('</section>',`</section>${note}`):`${note}${body}`;
+    const note=!v3Primary&&!panel&&!inJourney?tutorialNote():'',content=v3Primary?body:state?.phase==='playing'&&!home&&!inImmortal?body.replace('</section>',`</section>${note}`):`${note}${body}`;
     const main = `<main id="main" tabindex="-1" data-view="${view}">${vista}${content}</main>`;
     const footer = `<footer class="app-footer"><span>我欲飞升 · v${S.VERSION}</span><span>本地运行 / 无付费抽取</span></footer>${warning ? `<div class="storage-warning" role="alert">${esc(warning)}</div>` : ''}`;
-    if(workspace){
+    if(workspace&&v3Primary){
+      const navCurrent=pageTab==='forge'?'practice':pageTab;
+      app.innerHTML=`<div class="shell game-shell" data-ui-generation="v3" data-screen="${esc(view)}"><div class="content-shell">${main}${UI3.renderHud({state,button},navCurrent)}${warning?`<div class="storage-warning" role="alert">${esc(warning)}</div>`:''}</div></div>`;
+      UI3.commit(app,{state,pageTab});
+    } else if(workspace){
       const W=window.FSWorkbench,i=inImmortal?state.immortal:null;
       const materials=Object.values(state.crafting?.materials||{}).reduce((a,b)=>a+b,0);
       const rows=i?[{glyph:'元',label:'仙元',value:F.short(i.essence),note:'修炼与重构'},{glyph:'则',label:'法则碎片',value:fmt(i.fragments),note:'凝法与进化'},{glyph:'气',label:'元气',value:`${i.health} / 100`,note:'仙躯状态'},{glyph:'界',label:'当前界层',value:i.evolution?.layer||'序章',note:`仙界第 ${i.days} 日`}]:[{glyph:'气',label:'元气',value:`${state.vitality} / 100`,note:'当前状态'},{glyph:'年',label:'寿元',value:`${state.age} / ${E.maxAge(state)}`,note:'一世修行'},{glyph:'灵',label:'灵兽精华',value:fmt(state.spiritBeast?.essence||0),note:'结契与进化'},{glyph:'丹',label:'丹器材料',value:fmt(materials),note:'八类材料合计'}];
@@ -691,6 +728,9 @@
       switch (el.dataset.ui==='nav-panel'?el.dataset.id:el.dataset.ui) {
         case 'practice': pageTab='practice';home=false;mortalSummary=false;worldVisible=false;dialog.close();render();document.getElementById('main').focus({preventScroll:true});break;
         case 'atlas':case 'inventory':case 'character':pageTab=el.dataset.ui==='nav-panel'?el.dataset.id:el.dataset.ui;home=false;worldVisible=false;dialog.close();render();break;
+        case 'forge':pageTab='forge';home=false;worldVisible=false;dialog.close();render();break;
+        case 'v3-bag-filter':UI3.setState('bagFilter',el.dataset.id||'all');render();break;
+        case 'v3-forge-select':UI3.setState('forgeKind',el.dataset.kind||'pill');UI3.setState('forgeRecipe',el.dataset.id||'qi');pageTab='forge';render();break;
         case 'region':selectedRegion=el.dataset.id;render();break;
         case 'world-setup':modal('执掌一方天地',window.FSWorldUI.setup(state,button));break;
         case 'world-open':worldVisible=true;home=false;mortalSummary=false;render();break;
@@ -789,8 +829,9 @@
         karmaModal();
         dialog.querySelector('[data-action^="karma-"]')?.focus({ preventScroll:true });
       } else if (action.type.startsWith('craft-')) {
-        craftingModal();
-        dialog.querySelector('[data-action^="craft-"]')?.focus({ preventScroll:true });
+        if(dialog.open){craftingModal();dialog.querySelector('[data-action^="craft-"]')?.focus({ preventScroll:true });}
+        else if(pageTab==='forge'||pageTab==='inventory')document.getElementById('main')?.focus({preventScroll:true});
+        else { craftingModal(); dialog.querySelector('[data-action^="craft-"]')?.focus({ preventScroll:true }); }
       } else if (action.type.startsWith('beast-')) {
         spiritBeastModal();
         dialog.querySelector('[data-action^="beast-"]')?.focus({ preventScroll:true });
@@ -801,8 +842,9 @@
         sectModal();
         dialog.querySelector('[data-action^="sect-"]')?.focus({ preventScroll:true });
       } else if (action.type.startsWith('equipment-')) {
-        equipmentModal();
-        dialog.querySelector(`[data-action="${action.type}"]`)?.focus({ preventScroll:true });
+        if(dialog.open){equipmentModal();dialog.querySelector(`[data-action="${action.type}"]`)?.focus({ preventScroll:true });}
+        else if(['inventory','character'].includes(pageTab))document.getElementById('main')?.focus({preventScroll:true});
+        else { equipmentModal(); dialog.querySelector(`[data-action="${action.type}"]`)?.focus({ preventScroll:true }); }
       } else if (action.type.startsWith('secret-')) {
         secretRealmModal();
       } else if (['select', 'stat', 'preset'].includes(action.type)) {

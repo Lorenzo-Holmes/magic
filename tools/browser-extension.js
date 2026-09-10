@@ -31,6 +31,33 @@ async (page, options = {}) => {
     await ui(name).first().click();
   }
   const widths = [320, 360, 390, 430, 768, 1280];
+  async function v3HitCheck(label) {
+    const result=await page.evaluate(()=>{
+      const shell=document.querySelector('[data-ui-generation="v3"]');
+      const failures=[];let checked=0;
+      if(!shell)return {checked,failures};
+      const candidates=[...shell.querySelectorAll('button:not(:disabled),select:not(:disabled)')];
+      for(const element of candidates){
+        const box=element.getBoundingClientRect();
+        if(box.width<1||box.height<1||getComputedStyle(element).visibility==='hidden')continue;
+        let left=Math.max(0,box.left),right=Math.min(innerWidth,box.right),top=Math.max(0,box.top),bottom=Math.min(innerHeight,box.bottom);
+        for(let parent=element.parentElement;parent;parent=parent.parentElement){
+          const style=getComputedStyle(parent),r=parent.getBoundingClientRect();
+          if(/auto|scroll|hidden|clip/.test(style.overflowX)){left=Math.max(left,r.left);right=Math.min(right,r.right);}
+          if(/auto|scroll|hidden|clip/.test(style.overflowY)){top=Math.max(top,r.top);bottom=Math.min(bottom,r.bottom);}
+        }
+        // A clipped row is tested when scrolled into view by the action suite.
+        if(right-left<box.width-1||bottom-top<box.height-1)continue;
+        checked++;
+        const x=(left+right)/2,y=(top+bottom)/2,hit=document.elementFromPoint(x,y);
+        if(!hit||!(hit===element||element.contains(hit)))failures.push({label:element.textContent.trim().slice(0,50),blockedBy:hit?.className||hit?.tagName||'none'});
+      }
+      const main=shell.querySelector('main').getBoundingClientRect(),nav=shell.querySelector('.v3-hud').getBoundingClientRect();
+      return {checked,failures,mainBottom:main.bottom,navTop:nav.top,navBottom:nav.bottom,height:innerHeight};
+    });
+    check(result.checked>0&&!result.failures.length&&result.mainBottom<=result.navTop+1&&result.navBottom<=result.height+1,`V3 hit test ${label}: ${JSON.stringify(result)}`);
+    return {label,...result};
+  }
   async function close() { if (await page.locator('dialog[open]').count()) await page.locator('dialog [data-ui="close-dialog"]').click(); if(await page.locator('.game-shell[data-screen^="panel-"]').count())await page.locator('[data-ui="nav-panel"][data-id="practice"]').click(); }
   async function restore(name) {
     await close(); await openPanel('settings');
@@ -524,11 +551,36 @@ async (page, options = {}) => {
   }
   check(JSON.stringify(await run())===navRaw,'Read-only navigation changed saved gameplay');
   for(const id of ['practice','atlas','inventory','character']){await page.locator('[data-ui="nav-panel"][data-id="'+id+'"]').click();await layout('navigation-'+id);}
+  await page.locator('[data-ui="nav-panel"][data-id="inventory"]').click();
+  const forgeBefore=JSON.stringify(await run());
+  await page.locator('[data-ui="forge"]:visible').first().click();
+  check(await page.locator('.v3-forge-window').count()===1,'V3 forge window did not open from baggage');
+  await layout('navigation-forge');
+  const recipeTabs=page.locator('[data-ui="v3-forge-select"]');
+  if(await recipeTabs.count()>1)await recipeTabs.nth(1).click();
+  check(JSON.stringify(await run())===forgeBefore,'Changing V3 forge recipe modified gameplay state');
+  await page.locator('[data-ui="practice"]:visible').first().click();
+  check(await page.locator('.v3-cave-window').count()===1,'V3 forge return did not restore cave window');
+  const v3Hits=[];
+  for(const viewport of [{width:320,height:568},{width:390,height:844}]){
+    await page.setViewportSize(viewport);
+    for(const id of ['practice','atlas','inventory','character']){
+      await page.locator('[data-ui="nav-panel"][data-id="'+id+'"]').click();
+      v3Hits.push(await v3HitCheck(`${id}/${viewport.width}x${viewport.height}`));
+    }
+  }
+  await page.locator('[data-ui="nav-panel"][data-id="inventory"]').click();
+  await page.evaluate(()=>document.querySelector('[data-ui-generation="v3"]').style.setProperty('--v3-safe-bottom','34px'));
+  v3Hits.push(await v3HitCheck('inventory/synthetic-bottom-inset-34px'));
+  await page.locator('[data-ui="forge"]:visible').first().click();
+  v3Hits.push(await v3HitCheck('forge/390x844'));
+  check(JSON.stringify(await run())===navRaw,'V3 hit testing modified gameplay');
+  report.systems.v3={passed:true,hitTests:v3Hits,syntheticSafeArea:true,visualArtApproved:false};
   await page.locator('[data-ui="nav-panel"][data-id="practice"]').click();
   await layout('workbench-meditation');
-  const meditation=await page.locator('.cultivation-scene-painting').boundingBox();check(meditation&&meditation.width>100&&meditation.height>100,'Cultivation scene artwork missing');
+  const meditation=await page.locator('.v3-cave-bg,.cultivation-scene-painting').first().boundingBox();check(meditation&&meditation.width>100&&meditation.height>100,'Cultivation scene artwork missing');
   await page.setViewportSize({width:390,height:844});
-  const overlap=await page.evaluate(()=>{const m=document.querySelector('main').getBoundingClientRect(),n=document.querySelector('.nav-left').getBoundingClientRect();return m.bottom>n.top+1;});
+  const overlap=await page.evaluate(()=>{const m=document.querySelector('main').getBoundingClientRect(),n=document.querySelector('.v3-hud,.nav-left').getBoundingClientRect();return m.bottom>n.top+1;});
   check(!overlap,'Bottom navigation overlaps the scrollable game region');
   report.systems.workbench={passed:true,navigation:navChecks,readOnly:true,meditation:true,mobileNoOverlap:true};
   const journeyFiles=[];

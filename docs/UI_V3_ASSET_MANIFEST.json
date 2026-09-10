@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "status": "functional-preview-uses-placeholders-final-assets-not-generated",
+  "createdOn": "2026-09-10",
+  "artDirection": "灰白水墨、细墨线建筑、淡青灰设色、完整道身轮廓、局部朱印与旧金细框；不用深褐滤镜和统一金色圆按钮",
+  "characterRequirement": "无明确面貌的完整墨绘道身，可保留剪影，但不使用 CSS 几何占位作为成品",
+  "visualTextIsHtml": true,
+  "allReferencesResearchOnly": true,
+  "releasePolicy": "仅使用本项目有权发布的资源。原作字体、角色、Logo、纹理、Prefab、专有代码不进入公开包。",
+  "budget": {
+    "unit": "bytes",
+    "estimatedNewArtTotal": 2350000,
+    "reservedCompressedCodeAndPackaging": 450000,
+    "headroom": 200000,
+    "targetZipBytesExclusive": 3000000,
+    "hardZipBytesExclusive": 10000000,
+    "measured": false,
+    "condition": "用新资产替代退役旧图；不得将全部旧图、新图和概念稿同时加入生产清单。实际 ZIP 与解码内存另测。"
+  },
+  "requiredMetadataAtDelivery": ["logicalAssetId", "actualPath", "pixelDimensions", "format", "alpha", "pivot", "cropOffset", "safeZones", "sourceRecord", "licenseOrOwnership", "sha256", "reviewStatus"],
+  "currentRuntimeAssets": {
+    "cave": "assets/art/retreat-v2.1.webp plus CSS and text hotspot placeholders",
+    "map": "assets/art/atlas-v2.1.webp plus HTML map nodes",
+    "characterBackground": "assets/bg/realm-foundation.svg",
+    "characterPortrait": "inline SVG in src/ui-v3/character.js; placeholder, not final art",
+    "forge": "CSS furnace and fire; placeholder, not final art",
+    "itemsAndHud": "HTML text glyphs and CSS frames; placeholder icons",
+    "newFinalAssetGroupsDelivered": 0,
+    "conceptBoardUsedAsGameBackground": false,
+    "originalGameAssetsBundled": false
+  },
+  "groups": [
+    {"id":"cave-background","target":"assets/ui-v3/scenes/cave.webp","status":"planned","priority":"P0","budgetBytes":260000,"sourceSize":[1200,2400],"alpha":false,"design":"灰白远山、竖向崖壁与留给主殿和石台的中景；上部 HUD 安全区；不烘焙人物与标签"},
+    {"id":"cave-props","target":"assets/ui-v3/props/cave/","status":"planned","priority":"P0","budgetBytes":240000,"alpha":true,"design":"主殿、修炼石台、丹炉、山门、藏物处、灵兽台；独立透明层和逻辑锚点"},
+    {"id":"character-background","target":"assets/ui-v3/scenes/character.webp","status":"planned","priority":"P0","budgetBytes":130000,"sourceSize":[1200,2400],"alpha":false,"design":"低对比墨山与地台，主体和装备阅读区留白；不是洞府背景复用"},
+    {"id":"character-portrait","target":"assets/ui-v3/characters/dao-body.webp","status":"planned","priority":"P0","budgetBytes":320000,"sourceSize":[900,1600],"alpha":true,"design":"完整衣袍站姿或稳重持器姿态，无明确面貌；人物脚点和安全轮廓可复用"},
+    {"id":"baggage-paper","target":"assets/ui-v3/panels/baggage-paper.webp","status":"planned","priority":"P0","budgetBytes":90000,"sourceSize":[800,1200],"alpha":false,"design":"浅灰白纸纹、细线边缘；中心用于真实物品行，不画巨型囊字或法阵"},
+    {"id":"world-map","target":"assets/ui-v3/scenes/world-map.webp","status":"planned","priority":"P1","budgetBytes":300000,"sourceSize":[1200,2400],"alpha":false,"design":"六地区域构图，地理定位随现有数据确认；裁切区和镜头范围有记录"},
+    {"id":"world-landmarks","target":"assets/ui-v3/props/map/","status":"planned","priority":"P1","budgetBytes":90000,"alpha":true,"design":"六地地标、题签底片与锁定/选中标记；不把文字画死在地标上"},
+    {"id":"craft-background","target":"assets/ui-v3/scenes/craft.webp","status":"planned","priority":"P1","budgetBytes":180000,"sourceSize":[1200,2000],"alpha":false,"design":"器室内景，中央器炉空间，材料与方子操作区域预留"},
+    {"id":"craft-props","target":"assets/ui-v3/props/craft/","status":"planned","priority":"P1","budgetBytes":110000,"alpha":true,"design":"器炉、炉火、烟雾和产物托盘；与真实结算对应的状态资源"},
+    {"id":"breakthrough-background","target":"assets/ui-v3/scenes/breakthrough.webp","status":"planned","priority":"P1","budgetBytes":170000,"sourceSize":[1200,2400],"alpha":false,"design":"云海与开阔天光，境界题字与角色单独叠加；无高频闪光"},
+    {"id":"common-ui-atlas","target":"assets/ui-v3/atlas/common.webp","status":"planned","priority":"P0","budgetBytes":160000,"alpha":true,"design":"四个底栏图标、返回、菜单、音景、页签、品质框、状态点、锁定与选中态"},
+    {"id":"item-icon-atlas","target":"assets/ui-v3/atlas/items.webp","status":"planned","priority":"P0","budgetBytes":160000,"alpha":true,"design":"已有装备、丹药、材料、补给的可辨认小图；按真实 id 建表；完整图标覆盖不能只给默认圆章"},
+    {"id":"panel-slices","target":"assets/ui-v3/panels/common/","status":"planned","priority":"P0","budgetBytes":80000,"alpha":true,"design":"九切边框、标题片、按钮底板、详情抽屉；切片值属于自有新资产，不冒称原作参数"},
+    {"id":"ambient-overlays","target":"assets/ui-v3/fx/","status":"planned","priority":"P1","budgetBytes":60000,"alpha":true,"design":"少量云片、叶影与灵气；首版每屏最多两类持续环境动效"}
+  ],
+  "conceptArt": {
+    "state": "pending-review",
+    "screens": ["cave", "character", "baggage"],
+    "sampleDataOnly": true,
+    "includedInProduction": false,
+    "approvalRecorded": false
+  }
+}

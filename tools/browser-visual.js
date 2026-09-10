@@ -73,7 +73,7 @@ async (page, options = {}) => {
     // Legacy scene metadata still loads for old saves; visible art is static ink.
     const animation=await page.evaluate(()=>document.getAnimations().filter(a=>a.effect?.target?.closest?.('#world')&&a.playState==='running').map(a=>a.animationName));
     check(animation.length===0,'Removed ambient layer still animates');
-    const painting=page.locator('.cultivation-scene-painting');
+    const painting=page.locator('.v3-cave-bg,.cultivation-scene-painting').first();
     if(await painting.count())check(await painting.evaluate(i=>i.complete&&i.naturalWidth>1000),'Generated retreat artwork failed to load');
     if(scene==='tribulation')report.lightning={enabled:false,reason:'Static ink art replaces flashing scenery'};
     report.backgrounds.push({ ...data, animation, reducedMotion: await reduced() });
