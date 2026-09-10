@@ -186,7 +186,28 @@
       : state.realm === 3 && !state.flags.bossSlain ? '金丹修为 · 为妖王一战蓄势'
       : proofMissing ? `${r.name}修为 · 尚欠一次天地印证`
       : state.realm >= 4 ? `${r.name}修为 · 天地印证已成` : '修为';
-    return `<section class="status-panel realm-focus" aria-label="人物状态"><div class="realm-line"><div class="realm-sigil" aria-hidden="true"><i class="realm-orbit"></i><span>${esc(r.name.slice(0,2))}</span></div><div class="realm-heading"><span class="eyebrow">当前境界</span><h2>${r.name}<small>${stage}</small></h2></div><div class="power"><span>此世战力</span><strong id="power-value">${powerFigure(E.power(state))}</strong></div></div>${window.FSWorkbench.meditation()}<div class="meter-label"><span>${meterTitle}</span><b>${fmt(state.xp)} / ${fmt(r.threshold)}</b></div><div class="meter" role="progressbar" aria-label="修为" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(xp)}"><i style="width:${xp}%"></i></div><div class="life-row"><span>寿元 <b>${state.age} / ${E.maxAge(state)}</b> 岁</span><span class="${state.vitality < 40 ? 'danger-text' : ''}">元气 <b>${state.vitality} / 100</b></span></div></section>`;
+    return `<section class="status-panel realm-focus compact-realm-hud" aria-label="人物状态"><div class="realm-line"><div class="realm-sigil" aria-hidden="true"><i class="realm-orbit"></i><span>${esc(r.name.slice(0,2))}</span></div><div class="realm-heading"><span class="eyebrow">当前境界</span><h2>${r.name}<small>${stage}</small></h2></div><div class="power"><span>此世战力</span><strong id="power-value">${powerFigure(E.power(state))}</strong></div></div><div class="meter-label"><span>${meterTitle}</span><b>${fmt(state.xp)} / ${fmt(r.threshold)}</b></div><div class="meter" role="progressbar" aria-label="修为" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(xp)}"><i style="width:${xp}%"></i></div><div class="life-row"><span>寿元 <b>${state.age} / ${E.maxAge(state)}</b> 岁</span><span class="${state.vitality < 40 ? 'danger-text' : ''}">元气 <b>${state.vitality} / 100</b></span></div></section>`;
+  }
+  function cultivationScene(waiting, quest) {
+    const cultivate = E.actionPreview(state, 'cultivate');
+    const explore = E.actionPreview(state, 'explore');
+    const realm = D.REALMS[state.realm];
+    const foundationReady = !state.journey.enabled || state.realm >= 9 || window.FSJourney.ready(state.journey, state.realm);
+    const full = !!realm.threshold && state.xp >= realm.threshold;
+    const sceneState = waiting ? '山中有事' : E.canBreak(state) ? '可破境' : full && !foundationReady ? '根基未稳' : '清修无事';
+    const hotspots = waiting ? '' : `<div class="scene-hotspots" aria-label="草庐可用行动">
+      ${button('act', `<span class="scene-hotspot-glyph">息</span><b>闭关</b><small>${cultivate.xp ? `修为 +${cultivate.xp} · ` : ''}${cultivate.years} 年</small>`, { kind:'cultivate', classes:'scene-hotspot scene-hotspot-cultivate' })}
+      ${button('atlas', `<span class="scene-hotspot-glyph">游</span><b>山海</b><small>六地 · 十八条路</small>`, { ui:true, classes:'scene-hotspot scene-hotspot-atlas' })}
+      ${button('act', `<span class="scene-hotspot-glyph">缘</span><b>寻机缘</b><small>${state.realm >= 4 ? '天地印证' : `${explore.years} 年 · 奇遇功法`}</small>`, { kind:'explore', classes:'scene-hotspot scene-hotspot-explore' })}
+    </div>`;
+    return `<section class="cultivation-scene${waiting ? ' scene-blocked' : ''}" aria-label="草庐修行场景">
+      <img class="cultivation-scene-painting" src="./assets/art/retreat-v2.1.webp" width="1536" height="1024" alt="水墨草庐与盘膝修士剪影">
+      <div class="scene-ink-wash" aria-hidden="true"></div>
+      <div class="scene-place"><span>洞府</span><b>${state.realm >= 6 ? '云外小界' : state.realm >= 3 ? '听松别院' : '草庐 · 听松'}</b></div>
+      <div class="scene-state"><i></i><span>${sceneState}</span></div>
+      ${hotspots}
+      <div class="scene-quest"><span>此刻</span><p>${esc(quest)}</p></div>
+    </section>`;
   }
   function pathBanner() {
     const profile = M.classifyPath(state);
@@ -271,7 +292,7 @@
     const proof = state.realm >= 4 && state.realm <= 8 && !state.realmProofs.includes(state.realm)
       ? `<div class="proof-call"><span>破境还缺一步</span><b>下一次历练必遇天地印证，事件由你亲自选择</b>${button('seek-proof', '寻天地印证', { classes: 'secondary full', disabled: !E.canSeekProof(state) })}</div>` : '';
     const batch = state.realm < 9 ? button('cultivate-to-ready', `闭关至当前桎梏${small('自动停在强制遭遇、修为圆满或寿元警戒之前')}`, { classes: 'secondary full batch-cultivate', disabled: !E.canCultivateToReady(state) }) : '';
-    return `${boss}${proof}<div class="action-trio">${[['cultivate', '闭关', '静心炼化修为'], ['atlas', '行旅', '六地 · 十八条路'], ['explore', '寻机缘', state.realm >= 4 ? '天地印证' : '故人、奇遇与功法']].map(([kind, name, text]) => { const p = kind==='atlas'?null:E.actionPreview(state, kind); return button(kind==='atlas'?'atlas':'act', `<strong>${name}</strong><span>${text}</span><small>${p?`${p.xp ? `修为 +${p.xp} · ` : ''}${p.years} 年`:'整装后再出发'}</small>`, { ui:kind==='atlas',kind, classes: `action-tile ${kind === 'cultivate' ? 'quiet-action' : ''}` }); }).join('')}</div>${batch}`;
+    return `${boss}${proof}${batch}`;
   }
   function spiritBeastCall() {
     const beast=state?.spiritBeast&&Z.summary(state.spiritBeast);
@@ -286,7 +307,7 @@
       : state.realm >= 4 && state.realm <= 8 ? `${D.REALMS[state.realm].name} · ${state.realmProofs.includes(state.realm) ? '天地印证已成' : '去看一眼更大的世界'}`
       : '渡劫将至';
     const waiting=E.isBlocking(state),arrivalMemory=state.event?.id==='arrival'?M.eventMemory(meta,state,'arrival'):null;
-    return `<section class="cultivation-view ${waiting?'has-encounter':''}">${hud()}<p class="quest"><span class="quest-dot"></span>${quest}</p>${waiting?eventView():`<div class="quiet-record"><span>草庐手记</span><p>${esc(state.event?.text||'山中风起，今日也可以向外走走。')}</p></div>`}${arrivalMemory?`<p class="legacy-echo">${esc(arrivalMemory)}</p>`:''}${actionsView()}${window.FSJourneyUI.foundation(state,button)}<div class="play-bottom"><span>选择之后，进度自动留存。</span>${button('character','查看此生命途 →',{ui:true,classes:'text-button'})}</div></section>`;
+    return `<section class="cultivation-view ${waiting?'has-encounter':''}">${hud()}${cultivationScene(waiting,quest)}${waiting?eventView():`<div class="quiet-record"><span>草庐手记</span><p>${esc(state.event?.text||'山中风起，今日也可以向外走走。')}</p></div>`}${arrivalMemory?`<p class="legacy-echo">${esc(arrivalMemory)}</p>`:''}${actionsView()}${window.FSJourneyUI.foundation(state,button)}<div class="play-bottom"><span>选择之后，进度自动留存。</span>${button('character','查看此生命途 →',{ui:true,classes:'text-button'})}</div></section>`;
   }
   function draftView() {
     const redraws = Math.max(0, 1 + (E.effects(state).redraw || 0) - state.redrawUsed);

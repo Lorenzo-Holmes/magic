@@ -24,9 +24,27 @@
   function active(s,button){const j=s.journey,p=J.preview(j),a=j.active;if(!p)return'';
     return `<section class="journey-active"><header class="page-heading"><span class="eyebrow">${p.region.name} / ${p.route.name}</span><h2>${p.scene[0]}</h2><div class="travel-steps" aria-label="行旅进度">${[1,2,3].map(n=>`<span class="${n<=p.step?'visited':''}">${n}</span>`).join('<i></i>')}</div></header><div class="travel-landscape region-${p.region.id}"><img src="./assets/art/atlas-v2.1.webp" alt="${p.region.name}山水" width="1536" height="1024"></div>${a.stepOutcome?`<aside class="step-outcome ${a.stepOutcome.won?'':'is-loss'}" role="status">${esc(a.stepOutcome.title)} · ${a.stepOutcome.won?`应对成功，暂存所得 +${a.stepOutcome.gain}`:`失手，伤势 +${a.stepOutcome.harm}，暂存所得最多损失 2`}。行粮 −${a.stepOutcome.cost}。</aside>`:''}<p class="encounter-prose">${esc(p.scene[1])}</p><div class="travel-status"><span>余粮 <b>${j.supplies}</b></span><span>伤势 <b>${j.wounds}/3</b></span><span>暂存所得 <b>${a.pending}</b></span><span>已应对 <b>${a.successes}/${a.step}</b></span></div><div class="travel-choices">${p.options.map(o=>button('journey-resolve',`<span class="choice-heading"><b>${o.name}</b><strong>${o.chance}%</strong></span><span>${o.note}</span><small>行粮 −${o.cost} · 成功所得 +${Math.round(3*o.gain)} · 失手伤势 +${o.harm}</small>`,{id:o.id,disabled:!o.enabled,classes:'travel-choice'})).join('')}</div><p class="travel-rules">数字为当前成功率；伤势到三层会被迫返回，保留四成所得。行粮不足时可以直接撤回。</p>${button('journey-retreat','收好行囊，撤回草庐'+note('保留八成暂存所得 · 不增加伤势'),{classes:'retreat-button'})}</section>`;
   }
+  function characterHub(s,button){
+    const E=typeof module==='object'&&module.exports?require('./engine.js'):globalThis.FSEngine;
+    const D=typeof globalThis!=='undefined'?globalThis.FSData:null;
+    const stats=E?.stats?E.stats(s):s.stats||{};
+    const realm=D?.REALMS?.[s.realm]?.name||`第 ${Number(s.realm||0)+1} 境`;
+    const stage=s.realm>=8?'天门在望':s.realm>=4?'问道诸域':s.realm>=2?'道基已成':'初入仙途';
+    const secondary=[['sect','宗门','山门'],['life','人生','身世'],['karma','因果','因缘'],['legacy','轮回','前尘'],['codex','图谱','所见']];
+    return `<section class="character-scene-page"><header class="page-heading character-page-heading"><span class="eyebrow">此身即炉 · 此生即卷</span><h2>人物</h2><p>${esc(realm)} · ${stage}</p></header>${foundation(s,button)}<div class="character-stage" aria-label="人物与修行入口">
+      <div class="character-stage-title"><span>当前道身</span><b>${esc(realm)}</b></div>
+      <div class="character-silhouette" aria-hidden="true"><i class="character-head"></i><i class="character-body"></i><i class="character-aura"></i></div>
+      ${button('journal','<span>命</span><b>命册</b><small>天命 · 历程</small>',{ui:true,classes:'character-node character-node-journal'})}
+      ${button('equipment','<span>器</span><b>神兵</b><small>四槽装备</small>',{ui:true,classes:'character-node character-node-equipment'})}
+      ${button('build','<span>道</span><b>大道</b><small>协同 · 流派</small>',{ui:true,classes:'character-node character-node-build'})}
+      ${button('spirit-beast','<span>兽</span><b>灵兽</b><small>结契同行</small>',{ui:true,classes:'character-node character-node-beast'})}
+      <div class="character-stat-strip" aria-label="基础属性"><div><span>根骨</span><b>${esc(stats.bone??'-')}</b></div><div><span>神识</span><b>${esc(stats.mind??'-')}</b></div><div><span>悟性</span><b>${esc(stats.insight??'-')}</b></div><div><span>气运</span><b>${esc(stats.luck??'-')}</b></div></div>
+    </div><div class="character-secondary-links">${secondary.map(([id,title,label])=>button(id,`<span>${label}</span><b>${title}</b>`,{ui:true,classes:'character-link'})).join('')}</div></section>`;
+  }
   function hub(s,button,type){const inventory=type==='inventory';
-    const groups=inventory?[['随身器物','equipment','本命神兵','查看四槽装备，比较协同与器物成长。'],['丹药与炼制','crafting','丹器百艺','将行旅所得炼成修行和疗伤所需。'],['山中同行','spirit-beast','灵兽仙缘','照看此世结契的灵兽。']]:[['此生命格','journal','此世命册','属性、天命和一路走来的记录。'],['修行之道','build','道途与大道','查看真实协同，元婴之后凝成大道。'],['山门与人间','sect','宗门','入山门、承旧法，也可以继续做散修。'],['身世','life','人生','出身留下的故事与选择。'],['因缘','karma','因果','查看未了之事与它的来处。'],['前尘','legacy','百世回响','历世摘要与下一世的道痕。'],['所见','codex','命途图谱','已经遇见的天命、异变与传说。']];
-    return `<section class="hub-view"><header class="page-heading"><span class="eyebrow">${inventory?'行装有轻重，取舍在自己':'只记下此生真正经历的事'}</span><h2>${inventory?'行囊':'人物'}</h2></header>${inventory?provisions(s,button):foundation(s,button)}<div class="hub-list">${groups.map(([label,id,title,text])=>button(id,`<span class="eyebrow">${label}</span><b>${title}</b><span>${text}</span><i aria-hidden="true">→</i>`,{ui:true,classes:'hub-entry'})).join('')}</div></section>`;
+    if(!inventory)return characterHub(s,button);
+    const groups=[['随身器物','equipment','本命神兵','查看四槽装备，比较协同与器物成长。'],['丹药与炼制','crafting','丹器百艺','将行旅所得炼成修行和疗伤所需。'],['山中同行','spirit-beast','灵兽仙缘','照看此世结契的灵兽。']];
+    return `<section class="hub-view"><header class="page-heading"><span class="eyebrow">行装有轻重，取舍在自己</span><h2>行囊</h2></header>${provisions(s,button)}<div class="hub-list">${groups.map(([label,id,title,text])=>button(id,`<span class="eyebrow">${label}</span><b>${title}</b><span>${text}</span><i aria-hidden="true">→</i>`,{ui:true,classes:'hub-entry'})).join('')}</div></section>`;
   }
   return Object.freeze({provisions,foundation,atlas,active,hub,result});
 });

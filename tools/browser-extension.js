@@ -518,7 +518,7 @@ async (page, options = {}) => {
   for(const id of ['practice','atlas','inventory','character']){await page.locator('[data-ui="nav-panel"][data-id="'+id+'"]').click();await layout('navigation-'+id);}
   await page.locator('[data-ui="nav-panel"][data-id="practice"]').click();
   await layout('workbench-meditation');
-  const meditation=await page.locator('.retreat-painting').boundingBox();check(meditation&&meditation.width>100&&meditation.height>100,'Meditation silhouette missing');
+  const meditation=await page.locator('.cultivation-scene-painting').boundingBox();check(meditation&&meditation.width>100&&meditation.height>100,'Cultivation scene artwork missing');
   await page.setViewportSize({width:390,height:844});
   const overlap=await page.evaluate(()=>{const m=document.querySelector('main').getBoundingClientRect(),n=document.querySelector('.nav-left').getBoundingClientRect();return m.bottom>n.top+1;});
   check(!overlap,'Bottom navigation overlaps the scrollable game region');
