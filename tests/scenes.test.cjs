@@ -78,8 +78,9 @@ test('全部正式背景存在、为轻量自包含 SVG 且进入生产白名单
   }
 });
 test('生产清单唯一且不携带截图、文档、字体或开发依赖', () => {
-  assert.equal(files.length, 36); assert.equal(new Set(files).size, files.length);
-  assert.ok(files.includes('src/visual-theme.css'));
+  assert.equal(files.length, 39); assert.equal(new Set(files).size, files.length);
+  assert.ok(files.includes('src/ink-theme.css'));
+  assert.ok(files.includes('assets/art/retreat-v2.1.webp')&&files.includes('assets/art/atlas-v2.1.webp'));
   for (const file of files) {
     assert.ok(fs.existsSync(path.join(root, file)), file);
     assert.doesNotMatch(file, /\.\.|^\/|output|tests|docs|README|node_modules|\.(png|gif|mp4|woff2?|ttf)$/i);
@@ -89,7 +90,7 @@ test('版本显示、轮回配置和存档版本统一', () => {
   const pkg = require('../package.json');
   assert.equal(S.VERSION, pkg.version);
   assert.match(pkg.version, /^\d+\.\d+\.\d+$/);
-  assert.equal(E.VERSION, 15);
+  assert.equal(E.VERSION, 16);
   assert.equal(D.TRACES.length, 6);
   assert.ok(files.includes('src/meta.js'));
   assert.ok(files.includes('src/presentation.js'));

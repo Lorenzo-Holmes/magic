@@ -18,6 +18,7 @@ assert.equal(qa.testedZipSha256, build.zipSha256);
 assert.equal(qa.externalRequests, 0); assert.equal(qa.consoleErrors.length, 0); assert.equal(qa.failedRequests.length, 0);
 assert.ok(qa.mainFlow.ascended && qa.fileCases >= 21 && qa.reducedMotion);
 assert.deepEqual(qa.widths, [320,360,390,430,768,1280], 'Final six-width browser matrix incomplete');
+if(build.files.some(f=>f.path==='src/journey.js'))assert.ok(qa.journey?.passed&&qa.journey.newMode&&qa.journey.reloadPreserved&&qa.extension?.systems?.journey?.fileCases.length===3,'New journey browser acceptance missing');
 if (build.files.some(f => f.path === 'src/audio.js')) assert.ok(qa.extension?.audio?.startsLocked && qa.extension.audio.nineCues && qa.extension.audio.muteAndReload && qa.extension.audio.bands.length === 4, 'Audio acceptance missing');
 if (build.files.some(f => f.path === 'src/equipment.js')) assert.ok(qa.extension?.systems?.equipment?.passed && qa.extension.systems.equipment.capacity === 12 && qa.extension.systems.equipment.reloadPreserved && qa.extension.systems.equipment.mortalOnly, 'Equipment acceptance missing');
 if (build.files.some(f => f.path === 'src/build.js')) assert.ok(qa.extension?.systems?.build?.passed && qa.extension.systems.build.sources > 0 && qa.extension.systems.build.synergies > 0 && qa.extension.systems.build.readOnly, 'Build acceptance missing');
@@ -39,6 +40,8 @@ let finalSimulation = JSON.parse(fs.readFileSync(`output/final-simulation-v${ver
 assert.ok(finalSimulation.passed && finalSimulation.simulations === 6000 && finalSimulation.paths.length === 6, 'Final 6000-run simulation missing');
 assert.ok(finalSimulation.guarantees.allAscended && finalSimulation.guarantees.allImmortalProloguesComplete && finalSimulation.guarantees.allWormRevengeComplete && finalSimulation.guarantees.memoryTalentSelected, 'Final simulation guarantee failed');
 assert.ok(finalSimulation.balanceRatio < 4, 'Final path balance regression');
+const journeySimulation=build.files.some(f=>f.path==='src/journey.js')?JSON.parse(fs.readFileSync(`output/journey-simulation-v${version}.json`,'utf8')):null;
+if(journeySimulation)assert.ok(journeySimulation.version===version&&journeySimulation.passed&&journeySimulation.simulations===1200&&journeySimulation.policies.prepared.regions.length===6,'New journey risk simulation missing');
 if (version === '1.0.0') {
   assert.ok(qa.extension?.secondLife?.ledger?.ended === 2 && qa.extension.secondLife.ledger.ascended === 2 && qa.extension.secondLife.memoryTalent?.startsWith('memory-') && qa.extension.secondLife.immortalLaw, 'Second-life browser closure missing');
 }
@@ -46,8 +49,9 @@ assert.ok(build.zipBytes < 3000000);
 for (const f of build.files) assert.equal(crypto.createHash('sha256').update(fs.readFileSync(f.path)).digest('hex'), f.sha256, f.path);
 const reviewFile = `docs/REVIEW-v${version}.md`;
 assert.ok(fs.existsSync(reviewFile), 'Visual review not yet recorded');
-const result = { version, passed: true, zip: build.zip, zipBytes: build.zipBytes, zipSha256: build.zipSha256, unit: { tests, passed, failed }, browser: qa, finalSimulation, review: reviewFile };
+const result = { version, passed: true, zip: build.zip, zipBytes: build.zipBytes, zipSha256: build.zipSha256, unit: { tests, passed, failed }, browser: qa, finalSimulation, journeySimulation, review: reviewFile };
 fs.writeFileSync(`release/acceptance-v${version}.json`, JSON.stringify(result, null, 2));
 fs.writeFileSync(`release/build-report-v${version}.json`, JSON.stringify(build, null, 2));
 fs.writeFileSync(`docs/ACCEPTANCE-v${version}.md`, `# v${version} 验收\n\n- 单元测试 ${passed}/${tests}，失败 ${failed}。\n- 凡界完整 DOM 流程：${qa.mainFlow.steps} 次路线循环，seed ${qa.mainFlow.seed}，飞升战力 ${qa.mainFlow.ascendedPower}。\n- 布局检查 ${qa.layoutChecks}，视口 ${qa.widths.join(' / ')}。\n- 文件模式 ${qa.fileCases} 组；减少动态通过；控制台错误、资源失败、外部请求均为 0。\n${finalSimulation ? `- 最终压力仿真：${finalSimulation.simulations} 局，六大道途各 ${finalSimulation.seedsPerPath} 个种子；全部飞升并完成仙界序章与噬灵虫复仇。\n- 第二世真实 DOM：${JSON.stringify(qa.extension.secondLife)}\n` : ''}- 后续专项：${JSON.stringify(qa.extension || null)}\n- ZIP：release/${build.zip}，${build.zipBytes} 字节。\n- SHA-256：${build.zipSha256}\n- 测试证据：${path.relative(process.cwd(), latest.evidenceDirectory).split(path.sep).join('/')}\n- 截图复核：[记录](REVIEW-v${version}.md)。\n\n以上为桌面 Chromium 验证，不替代真机、主观听感、游玩时长与留存评价。\n`);
+if(journeySimulation){const p=journeySimulation.policies.prepared,r=journeySimulation.policies.reckless;fs.appendFileSync(`docs/ACCEPTANCE-v${version}.md`,`\n## 新行旅规则\n\n- 以上 6000 局属于经典规则兼容回归；新局风险另外运行 ${journeySimulation.simulations} 局合法策略仿真。\n- 充分准备：${p.ascended}/${p.runs} 飞升，路线完成率 ${(p.completionRate*100).toFixed(2)}%，每程伤势均值 ${p.meanWounds.toFixed(3)}。\n- 连续冒险：${r.ascended}/${r.runs} 飞升，路线完成率 ${(r.completionRate*100).toFixed(2)}%，每程伤势均值 ${r.meanWounds.toFixed(3)}。\n- 新局真实浏览器流程完成 ${qa.journey.journeys} 次行旅，九境根基齐备；途中刷新、选择反馈及三种离线文件入口通过。\n- 规则仿真用于发现卡死、资源失衡和回归问题，不冒充玩家留存或真实难度评分。\n`);}
 console.log(JSON.stringify({ version, passed: true, tests, zipBytes: build.zipBytes, zipSha256: build.zipSha256, evidence: latest.evidenceDirectory }, null, 2));

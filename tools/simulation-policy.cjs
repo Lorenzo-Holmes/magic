@@ -2,6 +2,20 @@
 // Legal-action policies; never assign a realm, victory, item or ending directly.
 const E = require('../src/engine.js');
 const D = require('../src/data.js');
+const J = require('../src/journey.js');
+function journeyAction(s, reckless=false){
+  const j=s.journey;
+  if(j.active){const p=J.preview(j),allowed=p.options.filter(o=>o.enabled);if(!allowed.length||(!reckless&&j.wounds>=2))return{type:'journey-retreat'};const pick=reckless?allowed.find(o=>o.id.endsWith(':bold'))||allowed[0]:allowed.sort((a,b)=>b.chance-a.chance||a.cost-b.cost)[0];return{type:'journey-resolve',id:pick.id};}
+  if(!j.enabled||s.realm>=9||E.isBlocking(s)||s.phase!=='playing'||J.ready(j,s.realm)||s.xp<D.REALMS[s.realm].threshold*.5)return null;
+  if(s.age+E.actionPreview(s,'hunt').years>=E.maxAge(s))return{type:'act',kind:'cultivate'};
+  if(j.wounds)return{type:'journey-prepare',id:j.medicine?'heal':'rest'};
+  if(j.silver<9)return{type:'journey-prepare',id:'work'};
+  if(j.supplies<6)return{type:'journey-prepare',id:'supplies'};
+  const preferred=['forest','marsh','village'][s.seed%3];
+  const route=J.ROUTES.filter(r=>J.REGIONS.find(x=>x.id===r.region).min<=s.realm&&!j.surveys.includes(`${s.realm}:${r.id}`)).sort((a,b)=>J.REGIONS.find(x=>x.id===b.region).min-J.REGIONS.find(x=>x.id===a.region).min||(b.region===preferred)-(a.region===preferred)||(b.kind==='lore')-(a.kind==='lore')||a.risk-b.risk)[0];
+  if(!route)throw Error('No unsurveyed route for required foundation');
+  return{type:'journey-start',id:route.id,kind:J.KITS.find(k=>k.stat===route.stat).id};
+}
 const PATHS = ['devour', 'sword', 'body', 'soul', 'fortune', 'insight'];
 const names = ['吞噬', '剑道', '肉身', '神魂', '气运', '修炼'];
 const mutations = { devour: 'serpentblood', sword: 'redscale', body: 'redscale', soul: 'serpenteye', fortune: 'serpenteye', insight: 'serpenteye' };
@@ -48,6 +62,7 @@ function chooseAction(s, strategy = 'body', batch = true) {
     const best = options.slice().sort((a, b) => b.chance - a.chance || a.enemyFactor - b.enemyFactor);
     return resolve((options.find(o => routes[strategy].includes(o.id) && o.chance === 1) || best[0]).id);
   }
+  const travel=journeyAction(s);if(travel)return travel;
   if (E.canBreak(s)) return { type: 'breakthrough' };
   if (s.realm >= 3 && s.vitality < 100) return { type:'act', kind:'cultivate' };
   if (E.canChallengeBoss(s) && s.xp >= D.REALMS[3].threshold) return { type: 'challenge-boss' };
@@ -59,15 +74,16 @@ function chooseAction(s, strategy = 'body', batch = true) {
 }
 function simulate(seed, strategy = 'body', options = {}) {
   if (!PATHS.includes(strategy)) throw new Error('Unknown simulation strategy');
-  let s = E.createRun(seed, options.trace || null), turns = 0;
-  for (; turns < 400 && !['dead', 'complete'].includes(s.phase); turns++) {
+  let s = E.createRun(seed, options.trace || null, {journey:options.journey===true}), turns = 0;
+  const cap=options.journey?1000:400;
+  for (; turns < cap && !['dead', 'complete'].includes(s.phase); turns++) {
     if (options.stop?.(s)) break;
-    const action = chooseAction(s, strategy, options.batch !== false), previous = s;
+    const action = (options.reckless&&s.journey.active?journeyAction(s,true):null)||chooseAction(s, strategy, options.batch !== false), previous = s;
     s = E.transition(s, action);
     if (options.reload) s = E.deserialize(E.serialize(s));
     options.onStep?.(s, action, previous);
   }
-  if (turns === 400) throw new Error(`Simulation turn cap: seed=${seed} strategy=${strategy}`);
+  if (turns === cap) throw new Error(`Simulation turn cap: seed=${seed} strategy=${strategy}`);
   return { state: s, turns };
 }
-module.exports = { simulate, chooseAction, PATHS };
+module.exports = { simulate, chooseAction, journeyAction, PATHS };

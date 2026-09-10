@@ -12,10 +12,20 @@ async (page, options = {}) => {
   const ui = name => page.locator(`[data-ui="${name}"]`);
   const action = name => page.locator(`[data-action="${name}"]`);
   const run = () => page.evaluate(() => JSON.parse(localStorage.getItem('feisheng.run.v1')));
+
+  async function openPanel(name){
+    const settings=page.locator('dialog[open] [data-ui="settings"]');
+    if(name==='settings'){if(await settings.count())await settings.click();else await page.locator('.topbar [data-ui="settings"]').click();return;}
+    if(await page.locator('dialog[open]').count())await page.locator('dialog [data-ui="close-dialog"]').click();
+    const direct=page.locator('[data-ui="'+name+'"]:visible').first();if(await direct.count()){await direct.click();return;}
+    const hub=['equipment','crafting','spirit-beast'].includes(name)?'inventory':name==='secret-realm'?'atlas':'character';
+    await page.locator('[data-ui="nav-panel"][data-id="'+hub+'"]').click();
+    await ui(name).first().click();
+  }
   const widths = [320, 360, 390, 430, 768, 1280];
-  async function close() { if (await page.locator('dialog[open]').count()) await page.locator('dialog [data-ui="close-dialog"]').click(); }
+  async function close() { if (await page.locator('dialog[open]').count()) await page.locator('dialog [data-ui="close-dialog"]').click(); if(await page.locator('.hub-view,.atlas-view').count())await page.locator('[data-ui="nav-panel"][data-id="practice"]').click(); }
   async function restore(name) {
-    await close(); await ui('journal').first().click();
+    await close(); await openPanel('settings');
     if (!(await page.locator('#import-save').count())) await page.locator('dialog [data-ui="settings"]').click();
     await page.locator('#import-save').setInputFiles(`${out}/states/${name}.json`);
     await page.locator('[data-ui="confirm-import"]').click();
@@ -93,7 +103,7 @@ async (page, options = {}) => {
     });
     await page.reload();
     const later=await run();check(later.seed!==legacyRun.seed,'Previous-life read-only fixture did not create a later-life seed');
-    await ui('legacy').click();
+    await openPanel('legacy');
     check(await page.locator('dialog .legacy-life').count()>=1,'Previous-life summary modal is empty');
     const laterRaw=JSON.stringify(later);await layout('legacy-overview'); await close(); await ui('continue').click();
     check(JSON.stringify(await run())===laterRaw,'Reading previous lives changed the later-life save');
@@ -119,7 +129,7 @@ async (page, options = {}) => {
     const equipmentStart = await run();
     check(equipmentStart.equipment?.inventory?.length > 0, 'Ascension fixture did not earn any mortal equipment');
     const uid = equipmentStart.equipment.inventory[0].uid;
-    await ui('equipment').click();
+    await openPanel('equipment');
     check(await page.locator('dialog .gear-card').count() === equipmentStart.equipment.inventory.length, 'Equipment modal inventory count differs from save');
     await layout('equipment-inventory');
     if (await page.locator(`[data-action="equipment-identify"][data-id="${uid}"]`).count()) await page.locator(`[data-action="equipment-identify"][data-id="${uid}"]`).click();
@@ -144,7 +154,7 @@ async (page, options = {}) => {
     await restore('goldcore--demon-eye');
     const buildBefore=JSON.stringify(await run()), evaluated=await page.evaluate(()=>FSBuild.evaluateBuild(JSON.parse(localStorage.getItem('feisheng.run.v1'))));
     check(evaluated.main && evaluated.sources.length > 0 && evaluated.synergies.length > 0, 'Build evaluator did not form an explainable build on the gold-core fixture');
-    await ui('build').click();
+    await openPanel('build');
     check(await page.locator('dialog .build-synergy').count() === evaluated.synergies.length, 'Build modal does not match pure evaluator');
     await layout('build-synergies'); await close();
     check(JSON.stringify(await run()) === buildBefore, 'Opening Build explanation changed the save');
@@ -189,7 +199,7 @@ async (page, options = {}) => {
     await page.locator('[data-action="mutate"][data-id="serpenteye"]').click();
     const secretStart=await run();
     check(secretStart.phase==='playing'&&!secretStart.secretRealm.active,'Secret-realm fixture is not a normal mortal playing state');
-    await ui('secret-realm').click();
+    await openPanel('secret-realm');
     check(await page.locator('dialog .secret-realm-card').count()===1,'Current realm should expose exactly one secret realm');
     await page.locator('dialog [data-action="secret-enter"]').click();
     const entered=await run(); check(entered.secretRealm.active?.floor===1,'Secret realm did not enter floor 1');
@@ -212,7 +222,7 @@ async (page, options = {}) => {
     await page.locator('[data-action="resolve"][data-choice="devour"]').click();
     await page.locator('[data-action="mutate"][data-id="serpenteye"]').click();
     const beforeSect=await run(); check(beforeSect.phase==='playing'&&!beforeSect.sect.membership,'Sect fixture is not a normal unaligned mortal state');
-    await ui('sect').click();
+    await openPanel('sect');
     check(await page.locator('dialog .sect-card').count()===4,'Sect chooser does not expose exactly four sects');
     await layout('sect-chooser');
     await page.locator('dialog [data-action="sect-decline"][data-id="tianji"]').click();
@@ -226,7 +236,7 @@ async (page, options = {}) => {
     const resolved=await run(); check(resolved.sect.heritageUnlocked&&resolved.sect.completed.includes('qingyun-init'),'Sect inheritance did not unlock exactly once');
     const saved=JSON.stringify(resolved); await close(); await page.reload(); await ui('continue').click();
     check(JSON.stringify(await run())===saved,'Reload changed sect membership, event history or inheritance');
-    await ui('sect').click(); await layout('sect-membership');
+    await openPanel('sect'); await layout('sect-membership');
     await page.locator('dialog [data-action="sect-leave"]').click();
     const left=await run(); check(left.sect.membership===null,'Manual sect leave did not clear current membership');
     const buildAfterLeave=await page.evaluate(()=>FSBuild.evaluateBuild(JSON.parse(localStorage.getItem('feisheng.run.v1'))));
@@ -241,7 +251,7 @@ async (page, options = {}) => {
     const lifeStart=await run();
     check(lifeStart.life?.pending,'Origin echo did not become pending after reaching Foundation');
     const pending=await page.evaluate(()=>FSLife.event(JSON.parse(localStorage.getItem('feisheng.run.v1')).life.pending));
-    await ui('life').click();
+    await openPanel('life');
     check(await page.locator('dialog .life-event').count()===1,'Origin echo event is not visible');
     check(await page.locator('dialog [data-action="life-resolve"]').count()===3,'Origin echo must offer three explicit choices including refusal');
     await layout('life-echo');
@@ -253,7 +263,7 @@ async (page, options = {}) => {
     check(build.sources.some(x=>x.source.startsWith('life:')),'Origin choice did not become a Build source');
     const saved=JSON.stringify(chosen); await close(); await page.reload(); await ui('continue').click();
     check(JSON.stringify(await run())===saved,'Reload changed origin echo choice or reward');
-    await ui('life').click(); await layout('life-history'); await close();
+    await openPanel('life'); await layout('life-history'); await close();
     report.systems.life={passed:true,origin:chosen.origin,event:pending.id,choices:3,settledOnce:true,reloadPreserved:true,buildSource:true,refusalAvailable:pending.choices.some(x=>x.xp===0)};
     await restore('ascension--ascension');
   }
@@ -261,7 +271,7 @@ async (page, options = {}) => {
     await restore('foundation--serpent-prey');
     await page.locator('[data-action="resolve"][data-choice="devour"]').click();
     await page.locator('[data-action="mutate"][data-id="serpenteye"]').click();
-    await ui('spirit-beast').click();
+    await openPanel('spirit-beast');
     check(await page.locator('dialog .beast-card').count()===4,'Spirit-beast chooser must expose exactly four initial species');
     await layout('spirit-beast-chooser');
     await page.locator('dialog [data-action="beast-bond"][data-id="moonfox"]').click();
@@ -270,7 +280,7 @@ async (page, options = {}) => {
     // Fixture-only material grant: acquisition rules are state-machine tested;
     // browser acceptance here verifies the actual irreversible evolution UI.
     await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('feisheng.run.v1'));s.spiritBeast=FSSpiritBeast.addEssence(s.spiritBeast,20,'browser-fixture');localStorage.setItem('feisheng.run.v1',FSEngine.serialize(s));});
-    await page.reload(); await ui('continue').click(); await ui('spirit-beast').click();
+    await page.reload(); await ui('continue').click(); await openPanel('spirit-beast');
     await page.locator('dialog [data-action="beast-evolve"]:not([data-id])').click();
     check((await run()).spiritBeast.companion.stage===1,'Spirit beast did not reach the spirit-beast stage');
     await page.locator('dialog [data-action="beast-evolve"][data-id="sacred"]').click();
@@ -290,7 +300,7 @@ async (page, options = {}) => {
     await page.locator('[data-action="resolve"][data-choice="devour"]').click();
     await page.locator('[data-action="mutate"][data-id="serpenteye"]').click();
     await page.evaluate(()=>{let s=JSON.parse(localStorage.getItem('feisheng.run.v1'));for(const m of FSCrafting.MATERIALS)s.crafting=FSCrafting.grantMaterial(s.crafting,m.id,12,'browser-fixture');localStorage.setItem('feisheng.run.v1',FSEngine.serialize(s));});
-    await page.reload(); await ui('continue').click(); await ui('crafting').click();
+    await page.reload(); await ui('continue').click(); await openPanel('crafting');
     check(await page.locator('dialog .craft-card').count()===10,'Crafting UI does not expose exactly ten pill formulas');
     check(await page.locator('dialog .forge-card').count()===4,'Crafting UI does not expose exactly four named-weapon recipes');
     check(await page.locator('dialog .craft-material').count()===8,'Crafting UI does not expose exactly eight core materials');
@@ -305,7 +315,7 @@ async (page, options = {}) => {
     const build=await page.evaluate(()=>FSBuild.evaluateBuild(JSON.parse(localStorage.getItem('feisheng.run.v1'))));check(build.sources.some(x=>x.source==='crafting:mind'),'Active pill effect did not become an explainable Build source');
     const saved=JSON.stringify(used);await close();await page.reload();await ui('continue').click();check(JSON.stringify(await run())===saved,'Reload changed crafted pills, material cost or temporary Build effect');
     await page.evaluate(()=>{let s=JSON.parse(localStorage.getItem('feisheng.run.v1'));s.equipment=FSEquipment.addDrop(s.equipment,s.seed,'boss:craft-browser','boss',3,'sword-break');const e=s.equipment.inventory.at(-1);s.equipment=FSEquipment.identify(s.equipment,e.uid);s.equipment=FSEquipment.equip(s.equipment,e.uid);for(const m of FSCrafting.MATERIALS)s.crafting=FSCrafting.grantMaterial(s.crafting,m.id,8,'forge-fixture');localStorage.setItem('feisheng.run.v1',FSEngine.serialize(s));});
-    await page.reload();await ui('continue').click();const beforeForge=await run(),weapon=beforeForge.equipment.inventory.find(x=>x.uid===beforeForge.equipment.slots.weapon),xpBefore=weapon.xp;await ui('crafting').click();
+    await page.reload();await ui('continue').click();const beforeForge=await run(),weapon=beforeForge.equipment.inventory.find(x=>x.uid===beforeForge.equipment.slots.weapon),xpBefore=weapon.xp;await openPanel('crafting');
     await page.locator('dialog [data-action="craft-weapon"][data-id="sword-temper"]').click();const forged=await run(),forgedWeapon=forged.equipment.inventory.find(x=>x.uid===forged.equipment.slots.weapon);check(forgedWeapon.xp===xpBefore+65,'Named-weapon crafting did not grant the declared existing weapon XP');
     report.systems.crafting={passed:true,pills:10,materials:8,methods:3,weaponRecipes:4,materialSpent:true,buffBounded:true,reloadPreserved:true,buildSource:true,weaponXp:true};
     await restore('ascension--ascension');
@@ -317,13 +327,13 @@ async (page, options = {}) => {
     await page.reload();await ui('continue').click();
     const pending=await run();check(pending.karma.pending&&pending.karma.active.length===1,'Delayed karma did not become pending at its declared later realm');
     const source=pending.karma.active[0];check(source.sourceKey.startsWith('beast:')&&source.source.includes('灵兽分支'),'Karma lost its original high-value source');
-    await ui('karma').click();check(await page.locator('dialog .karma-event').count()===1,'Pending karma event is not visible');check(await page.locator('dialog [data-action="karma-resolve"]').count()===3,'Karma event must expose three explicit choices');
+    await openPanel('karma');check(await page.locator('dialog .karma-event').count()===1,'Pending karma event is not visible');check(await page.locator('dialog [data-action="karma-resolve"]').count()===3,'Karma event must expose three explicit choices');
     check((await page.locator('dialog').innerText()).includes(source.source)&& (await page.locator('dialog').innerText()).includes(source.relation),'Karma UI does not expose source and relation');
     await layout('karma-pending');
     const xp=pending.xp, choice=await page.locator('dialog [data-action="karma-resolve"]').first().getAttribute('data-id');await page.locator(`dialog [data-action="karma-resolve"][data-id="${choice}"]`).click();
     const settled=await run();check(!settled.karma.pending&&settled.karma.active.length===0&&settled.karma.summaries.length===1,'Karma did not settle exactly once');check(settled.xp>=xp,'Karma resolution unexpectedly reduced mainline progress');
     const saved=JSON.stringify(settled);await close();await page.reload();await ui('continue').click();check(JSON.stringify(await run())===saved,'Reload changed settled karma or repaid its reward');
-    await ui('karma').click();await layout('karma-settled');await close();
+    await openPanel('karma');await layout('karma-settled');await close();
     report.systems.karma={passed:true,activeLimit:24,summaryLimit:40,sourceTraceable:true,delayed:true,choices:3,settledOnce:true,reloadPreserved:true,noRandomPenalty:true};
     await restore('ascension--ascension');
   }
@@ -372,7 +382,7 @@ async (page, options = {}) => {
   await ui('immortal-continue').click(); check(JSON.stringify(await run()) === raw, 'Reviewing mortal ending changed save');
   const fileCases = [];
   for (const [mode,url] of options.fileRoots) {
-    await page.goto(url); await close(); await ui('journal').first().click();
+    await page.goto(url); await close(); await openPanel('settings');
     if (!(await page.locator('#import-save').count())) await page.locator('dialog [data-ui="settings"]').click();
     await page.locator('#import-save').setInputFiles({ name:'earned-immortal.json', mimeType:'application/json', buffer:Buffer.from(raw) });
     await page.locator('[data-ui="confirm-import"]').click();
@@ -424,7 +434,7 @@ async (page, options = {}) => {
   check(formalEnding && formalEnding.fusions.length > 0 && offerReloaded && upgraded && replaced, 'Evolution core features were not all exercised');
   check(evolved.immortal.evolution.endless && BigInt(evolved.immortal.evolution.layer) >= 7n, 'Two endless worlds were not completed');
   async function importRaw(text) {
-    await close();await ui('journal').first().click();
+    await close();await openPanel('settings');
     if(!(await page.locator('#import-save').count()))await page.locator('dialog [data-ui="settings"]').click();
     await page.locator('#import-save').setInputFiles({name:'evolution-save.json',mimeType:'application/json',buffer:Buffer.from(text)});
     await page.locator('[data-ui="confirm-import"]').click();
@@ -455,17 +465,17 @@ async (page, options = {}) => {
   for(let i=0;i<12&&!(await page.evaluate(()=>FSDao.preview(JSON.parse(localStorage.getItem('feisheng.run.v1')).dao,JSON.parse(localStorage.getItem('feisheng.run.v1'))).ready));i++)await action('immortal-evolution-cultivate').click();
   check(await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('feisheng.run.v1'));return FSDao.preview(s.dao,s).ready;}),'Earned actions did not establish a stable Dao');
   const beforeDao=await run(),beforeDaoRaw=JSON.stringify(beforeDao);
-  await page.locator('[data-ui="nav-panel"][data-id="build"]').click();await ui('dao').click();
+  await openPanel('build');await ui('dao').click();
   await layout('dao-ready');
   check(JSON.stringify(await run())===beforeDaoRaw,'Viewing Dao changed the run');
   await action('dao-form').click();
   const daoRun=await run(),daoRaw=JSON.stringify(daoRun);
   check(daoRun.dao.formed&&daoRun.rng===beforeDao.rng&&daoRun.ascendedPower===beforeDao.ascendedPower,'Dao creation changed the random stream or mortal achievement');
   await layout('dao-formed');await close();await page.reload();await ui('continue').click();
-  await page.locator('[data-ui="nav-panel"][data-id="build"]').click();await ui('dao').click();
+  await openPanel('build');await ui('dao').click();
   check((await page.locator('.dao-card').innerText()).includes(daoRun.dao.formed.name),'Dao did not survive reload');await close();
   const daoFiles=[];
-  for(const [mode,url]of options.fileRoots){await page.goto(url);await importRaw(daoRaw);await page.locator('[data-ui="nav-panel"][data-id="build"]').click();await ui('dao').click();check((await page.locator('.dao-card').innerText()).includes(daoRun.dao.formed.name),mode+': Dao missing');await close();daoFiles.push(mode);}
+  for(const [mode,url]of options.fileRoots){await page.goto(url);await importRaw(daoRaw);await openPanel('build');await ui('dao').click();check((await page.locator('.dao-card').innerText()).includes(daoRun.dao.formed.name),mode+': Dao missing');await close();daoFiles.push(mode);}
   report.systems.dao={passed:true,name:daoRun.dao.formed.name,rules:daoRun.dao.formed.rules,samples:daoRun.dao.total,readOnly:true,reloadPreserved:true,fileCases:daoFiles,deterministic:true};
   await page.goto(baseURL);await importRaw(daoRaw);
   await ui('world-setup').click();
@@ -497,19 +507,35 @@ async (page, options = {}) => {
   const worldFiles=[];
   for(const [mode,url]of options.fileRoots){await page.goto(url);await importRaw(worldRaw);check(await page.locator('.creation-view').count()===1,mode+': world not restored');await action('world-resolve').first().click();check((await run()).world.cursor===1,mode+': next era event failed');worldFiles.push(mode);}
   report.systems.world={passed:true,parameters:5,eventTypes:worldTypes,created:true,ending:true,continuation:true,projection:worldEnding.world.projection.name,reloadPreserved:true,mortalAndImmortalPreserved:true,fileCases:worldFiles,historyLimit:24};
-  await page.goto(baseURL);await restore('mortal--world-spirit');
+  await page.goto(baseURL);await restore('mortal--serpent-danger');
+  await page.locator('[data-action="resolve"][data-choice="flee"]').click();
   check((await run()).phase==='playing','Navigation fixture must have entered the mortal world');
   const navRaw=JSON.stringify(await run()),navChecks=[];
   for(const id of ['journal','build','life','codex','legacy','equipment','sect','spirit-beast','crafting','karma']){
-    await page.locator('[data-ui="nav-panel"][data-id="'+id+'"]').click();check(await page.locator('dialog[open]').count()===1,'Navigation failed: '+id);await close();navChecks.push(id);
+    await openPanel(id);check(await page.locator('dialog[open]').count()===1,'Navigation failed: '+id);await close();navChecks.push(id);
   }
   check(JSON.stringify(await run())===navRaw,'Read-only navigation changed saved gameplay');
+  for(const id of ['practice','atlas','inventory','character']){await page.locator('[data-ui="nav-panel"][data-id="'+id+'"]').click();await layout('navigation-'+id);}
+  await page.locator('[data-ui="nav-panel"][data-id="practice"]').click();
   await layout('workbench-meditation');
-  const meditation=await page.locator('.meditation-silhouette').boundingBox();check(meditation&&meditation.width>100&&meditation.height>100,'Meditation silhouette missing');
+  const meditation=await page.locator('.retreat-painting').boundingBox();check(meditation&&meditation.width>100&&meditation.height>100,'Meditation silhouette missing');
   await page.setViewportSize({width:390,height:844});
-  const overlap=await page.evaluate(()=>{const m=document.querySelector('main').getBoundingClientRect(),n=document.querySelector('.nav-right').getBoundingClientRect();return m.bottom>n.top+1;});
+  const overlap=await page.evaluate(()=>{const m=document.querySelector('main').getBoundingClientRect(),n=document.querySelector('.nav-left').getBoundingClientRect();return m.bottom>n.top+1;});
   check(!overlap,'Bottom navigation overlaps the scrollable game region');
   report.systems.workbench={passed:true,navigation:navChecks,readOnly:true,meditation:true,mobileNoOverlap:true};
+  const journeyFiles=[];
+  for(const [mode,url]of options.fileRoots){
+    await page.goto(url);await restore('journey-active');
+    const before=await run(),choice=await page.locator('.travel-choices').innerText();
+    await page.reload();await ui('continue').click();
+    check(JSON.stringify(await run())===JSON.stringify(before)&&await page.locator('.travel-choices').innerText()===choice,mode+': journey reload changed');
+    await page.locator('[data-action="journey-resolve"]:not([disabled])').first().click();
+    const next=await run();check(next.journey.supplies<before.journey.supplies,mode+': journey cost missing');
+    if(next.journey.active){check(await page.locator('.step-outcome').count()===1,'Choice outcome missing');await action('journey-retreat').click();}
+    check(!(await run()).journey.active,mode+': retreat did not finish');
+    const raw=JSON.stringify(await run());await page.reload();await ui('continue').click();check(JSON.stringify(await run())===raw,mode+': rewards duplicated on refresh');journeyFiles.push(mode);
+  }
+  report.systems.journey={passed:true,regions:6,routes:18,events:54,reloadPreserved:true,retreat:true,outcomeVisible:true,fileCases:journeyFiles};
   await page.goto(baseURL); await restore('ascension--ascension');
   report.externalRequests = report.requests.filter(url => /^https?:/.test(url) && !url.startsWith(`${baseURL}/`) && url !== baseURL).length;
   check(report.externalRequests === 0 && report.errors.length === 0 && report.failedRequests.length === 0, 'Extension produced network or browser errors');

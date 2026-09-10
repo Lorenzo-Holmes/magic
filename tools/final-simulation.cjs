@@ -14,7 +14,7 @@ const root = path.resolve(__dirname, '..');
 const version = require('../package.json').version;
 function mean(values) { return values.reduce((a,b)=>a+b,0) / values.length; }
 function run() {
-  assert.match(version, /^(?:1\.(?:\d+)\.\d+|2\.0\.0)$/, 'Unsupported release version');
+  assert.match(version, /^(?:1|2)\.\d+\.\d+$/, 'Unsupported release version');
   const perPath = {}, allMortalTurns = [], allImmortalTurns = [];
   for (const strategy of PATHS) {
     const mortalTurns = [], immortalTurns = [], powers = [], ages = [];
@@ -48,7 +48,7 @@ function run() {
   // Paths should feel different, but a release regression must not make one
   // deterministic policy several orders of magnitude stronger than another.
   assert.ok(balanceRatio < 4, `Path mean-power spread is too large: ${balanceRatio}`);
-  const result = { version, passed:true, simulations:6000, seedsPerPath:1000, paths:PATHS, perPath,
+  const result = { version, rules:'classic-compatibility', passed:true, simulations:6000, seedsPerPath:1000, paths:PATHS, perPath,
     balanceRatio, mortalTurns:{min:Math.min(...allMortalTurns),max:Math.max(...allMortalTurns),mean:mean(allMortalTurns)},
     immortalTurns:{min:Math.min(...allImmortalTurns),max:Math.max(...allImmortalTurns),mean:mean(allImmortalTurns)},
     guarantees:{allAscended:true,allImmortalProloguesComplete:true,allWormRevengeComplete:true,memoryTalentSelected:true} };

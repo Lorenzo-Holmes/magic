@@ -3,7 +3,8 @@
   else root.FSEngine = factory(root.FSData);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (D) {
   'use strict';
-  const VERSION = 15;
+  const VERSION = 16;
+  const journeyEngine = () => typeof module === 'object' && module.exports ? require('./journey.js') : globalThis.FSJourney;
   const worldEngine = () => typeof module === 'object' && module.exports ? require('./world.js') : globalThis.FSWorld;
   const daoEngine = () => typeof module === 'object' && module.exports ? require('./dao.js') : globalThis.FSDao;
   const immortalEngine = () => typeof module === 'object' && module.exports ? require('./immortal.js') : globalThis.FSImmortal;
@@ -242,13 +243,13 @@
     const enemy = byId(D.ENEMIES, 'threeeye');
     return bossChoices(s).some(option => threat(s, { ...enemy, power: Math.round(enemy.power * option.enemyFactor) }).ratio >= .55);
   }
-  function createRun(seed, inherited = null) {
+  function createRun(seed, inherited = null, options = {}) {
     const carriedTrace = typeof inherited === 'string' ? inherited : inherited?.carriedTrace || null;
     const traceSourceSeed = inherited && typeof inherited === 'object' ? inherited.sourceSeed ?? null : null;
     requireThat(carriedTrace === null || byId(D.TRACES, carriedTrace), '未知轮回道痕。');
     requireThat(traceSourceSeed === null || carriedTrace && Number.isInteger(traceSourceSeed) && traceSourceSeed > 0 && traceSourceSeed <= 4294967295, '前世来源无效。');
     const s = {
-      version: VERSION, seed: (seed >>> 0) || 1, rng: (seed >>> 0) || 1, revision: 0,
+      version: VERSION, seed: (seed >>> 0) || 1, rng: (seed >>> 0) || 1, revision: 0, journey: journeyEngine().createState(options.journey === true),
       phase: 'talents', realm: 0, xp: 0, age: 16, vitality: 100,
       stats: { bone: 5, insight: 5, luck: 5, mind: 5 }, root: null, origin: null,
       talents: [], innate: [], selected: [], offer: [], mutations: [], fusions: [], fusionOffer: [], sword: false,
@@ -264,6 +265,7 @@
     return s;
   }
   function canBreak(s) {
+    if(s.journey?.active || s.journey && !journeyEngine().ready(s.journey,s.realm))return false;
     if (!(s.phase === 'playing' && !isBlocking(s) && s.realm < 9 && D.REALMS[s.realm].threshold && s.xp >= D.REALMS[s.realm].threshold && s.flags.pythonSeen)) return false;
     if (s.realm === 2 && !s.flags.pythonSlain) return false;
     if (s.realm === 3 && !s.flags.bossSlain) return false;
@@ -518,6 +520,31 @@
     requireThat(action && typeof action.type === 'string', '无效操作。');
     if (action.revision !== undefined) requireThat(String(action.revision) === String(state.revision), '此选择已失效，请使用当前画面的选项。');
     const s = copy(state);
+    if(s.journey.active&&!action.type.startsWith('journey-'))throw Error('行旅尚未结束，请先选择路线或撤回草庐。');
+    if(action.type.startsWith('journey-')){
+      requireThat(s.phase==='playing'&&!s.immortal&&!isBlocking(s)&&!s.secretRealm.active,'请先处理眼前的遭遇，再安排出行。');
+      const J=journeyEngine();let result=null;
+      if(action.type==='journey-enable'){requireThat(!s.journey.enabled&&!s.journey.active,'行旅规则已启用。');s.journey.enabled=true;}
+      else if(action.type==='journey-start'){
+        requireThat(s.age+actionPreview(s,'hunt').years<maxAge(s),'寿元不足以安排这次远行。');
+        s.journey=J.start(s.journey,{seed:s.seed,realm:s.realm,stats:stats(s),gear:Object.values(s.equipment.slots).filter(Boolean).length},action.id,action.kind);
+        years(s,1);s.actions++;log(s,'出行',`前往${J.ROUTES.find(r=>r.id===action.id).name}，带着行囊离开草庐。`);
+      }else if(action.type==='journey-resolve'){result=J.resolve(s.journey,action.id);s.journey=result.state;}
+      else if(action.type==='journey-retreat'){result=J.retreat(s.journey);s.journey=result.state;}
+      else if(action.type==='journey-prepare'){
+        if(['work','rest'].includes(action.id))requireThat(s.age+actionPreview(s,'hunt').years<maxAge(s),'寿元不足以再花一年准备。');
+        s.journey=J.prepare(s.journey,action.id);
+        if(['work','rest'].includes(action.id))years(s,1);
+        if(['rest','heal'].includes(action.id))s.vitality=Math.min(100,s.vitality+20);
+      }else throw Error('未知的山海行旅操作。');
+      if(result?.settlement){const r=result.settlement;
+        const xp=gain(s,D.REALMS[s.realm].threshold*r.xpPercent/100,'explore');
+        if(r.materialCount)s.crafting=craftingEngine().grantMaterial(s.crafting,r.material,r.materialCount,'山海行旅');
+        s.equipment=equipmentEngine().grantWeaponXp(s.equipment,Math.min(18,r.points));
+        log(s,r.ending==='complete'?'行旅归来':r.ending==='retreat'?'及时收手':'带伤归来',`修为 +${xp}，盘缠 +${r.silver}，根基 +${r.foundation}。伤势 ${s.journey.wounds}/3。`);
+      }
+      nextRevision(s);validate(s);return s;
+    }
     if(action.type.startsWith('world-')){
       const W=worldEngine();
       if(action.type==='world-create')s.world=W.create(s,action.config);
@@ -809,6 +836,8 @@
     craftingEngine().validate(s.crafting);
     karmaEngine().validate(s.karma);
     daoEngine().validate(s.dao);
+    journeyEngine().validate(s.journey);
+    if(s.journey.active)requireThat(s.phase==='playing'&&!s.immortal&&!s.secretRealm.active&&!isBlocking(s)&&s.journey.active.seed===s.seed&&s.journey.active.realm===s.realm,'行旅与此世进度不一致。');
     requireThat(!s.dao.formed||s.dao.formed.seed===s.seed,'大道不属于本世。');
     requireThat(s.world===null||s.world&&typeof s.world==='object','创世字段损坏。');
     if(s.world){worldEngine().validate(s.world);requireThat(s.flags.ascended&&s.immortal?.evolution?.completed&&s.dao.formed&&s.world.seed===s.seed&&s.world.projection.name===s.dao.formed.name&&JSON.stringify(s.world.rules)===JSON.stringify(s.dao.formed.rules),'创世来源与本世成就不一致。');}
@@ -927,7 +956,8 @@
   }
   function migrateV13(s){if(s?.version===13){s.version=14;s.dao=daoEngine().createState();}return s;}
   function migrateV14(s){if(s?.version===14){s.version=15;s.world=null;}return s;}
-  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); s = migrateV5(s); s = migrateV6(s); s = migrateV7(s); s = migrateV8(s); s = migrateV9(s); s = migrateV10(s); s = migrateV11(s); s = migrateV12(s); s=migrateV13(s); s=migrateV14(s); if (s?.version === VERSION && s.immortal) s.immortal = immortalEngine().migrate(s.immortal); validate(s); return s; }
+  function migrateV15(s){if(s?.version===15){s.version=16;s.journey=journeyEngine().createState(false);}return s;}
+  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); s = migrateV5(s); s = migrateV6(s); s = migrateV7(s); s = migrateV8(s); s = migrateV9(s); s = migrateV10(s); s = migrateV11(s); s = migrateV12(s); s=migrateV13(s); s=migrateV14(s); s=migrateV15(s); if (s?.version === VERSION && s.immortal) s.immortal = immortalEngine().migrate(s.immortal); validate(s); return s; }
   function synergies(s) {
     const list = [];
     if (s.sword && s.root === 'thunder' && s.talents.includes('swordbone')) list.push({ name: '雷剑体', text: '雷灵根 × 天生剑骨 × 青云剑诀：战力额外 +20%。' });

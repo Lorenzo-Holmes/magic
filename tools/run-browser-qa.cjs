@@ -58,7 +58,7 @@ async function suite(name, baseURL, build) {
   try {
     const source = fs.readFileSync(path.join(__dirname, `${name}.js`), 'utf8');
     const run = vm.runInThisContext(`(${source})`, { filename: `${name}.js` });
-    const result = await run(page, { out: relativeOut, evolutionAction: require('./evolution-policy.cjs').next, fileRoots: [
+    const result = await run(page, { out: relativeOut, journeyAction: require('./simulation-policy.cjs').journeyAction, evolutionAction: require('./evolution-policy.cjs').next, fileRoots: [
       ['source', pathToFileURL(path.join(root, 'index.html')).href],
       ['dist', pathToFileURL(path.join(root, 'dist/index.html')).href],
       ['zip-extracted', pathToFileURL(path.join(out, 'package/index.html')).href]
@@ -98,8 +98,7 @@ async function verifyDownloads(page) {
   const bytes = fs.readFileSync(imagePath);
   assert.equal(bytes.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
   assert.equal(bytes.readUInt32BE(16), 720); assert.equal(bytes.readUInt32BE(20), 1040);
-  await page.locator('[data-ui="journal"]').first().click();
-  await page.locator('dialog [data-ui="settings"]').click();
+  await page.locator('.topbar [data-ui="settings"]').click();
   const [json] = await Promise.all([
     page.waitForEvent('download'), page.locator('dialog [data-ui="export"]').click()
   ]);
@@ -171,7 +170,7 @@ async function main() {
   const result = { version, passed: true, startedAt, completedAt: new Date().toISOString(),
     browser: context.browser()?.version(), playwright: playwright.version, profile, baseURL, evidenceDirectory: out,
     testedZipSha256: build.zipSha256, zipBytes: build.zipBytes,
-    mainFlow: smoke.completed, batchCultivation: smoke.batchCultivation,
+    mainFlow: smoke.completed, journey:smoke.journey, batchCultivation: smoke.batchCultivation,
     reincarnation: smoke.reincarnation, metaAfterEnding: smoke.metaAfterEnding,
     layoutChecks: smoke.layouts.length + extension.layouts.length + (v100?.layouts?.length || 0), dialogLayoutChecks: smoke.dialogLayouts.length,
     widths: [...new Set([...smoke.layouts.map(x => x.width), ...extension.layouts.map(x => x.width), ...(v100?.layouts || []).map(x => x.width)])],

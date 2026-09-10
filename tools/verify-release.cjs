@@ -6,6 +6,14 @@ const zlib = require('node:zlib');
 const crypto = require('node:crypto');
 const root = path.resolve(__dirname, '..');
 const files = require('./production-files.cjs');
+function inventory(dir,prefix=''){
+  return fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>{
+    assert.ok(!entry.isSymbolicLink(),'Production directory contains a symbolic link');
+    const name=prefix+entry.name;
+    return entry.isDirectory()?inventory(path.join(dir,entry.name),name+'/'):[name];
+  });
+}
+assert.deepEqual(inventory(path.join(root,'dist')).sort(),[...files].sort(),'Production directory contains missing or unlisted files');
 const { version } = require('../package.json');
 const report = JSON.parse(fs.readFileSync(path.join(root, 'release/build-report.json'), 'utf8'));
 const zipPath = path.join(root, 'release', `wo-yu-fei-sheng-v${version}.zip`);

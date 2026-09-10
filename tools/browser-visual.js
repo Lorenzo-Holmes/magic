@@ -11,7 +11,7 @@ async (page, options = {}) => {
   page.on('response', r => { if (r.status() >= 400) report.errors.push(`${r.status()} ${r.url()}`); });
   async function restore(file) {
     if (await page.locator('dialog[open]').count()) await page.locator('dialog [data-ui="close-dialog"]').click();
-    await page.locator('[data-ui="journal"]').first().click();
+    await page.locator('.topbar [data-ui="settings"]').click();
     if (!(await page.locator('#import-save').count())) await page.locator('dialog [data-ui="settings"]').click();
     await page.locator('#import-save').setInputFiles(`${out}/states/${file}.json`);
     await page.locator('dialog [data-ui="confirm-import"]').click();
@@ -68,19 +68,12 @@ async (page, options = {}) => {
     await restore(`${scene}--${atmosphere}`);
     const data = await ready(scene, atmosphere);
     await page.waitForTimeout(1350);
-    // CSS timelines may begin on the next rendered frame after a media change.
-    await page.waitForFunction(() => document.getAnimations().some(a => a.animationName && a.effect?.target?.closest?.('#world') && a.playState === 'running' && a.currentTime > 0), null, { timeout: 10000 });
-    const animation = await page.evaluate(() => document.getAnimations().filter(a => a.animationName && a.effect?.target?.closest?.('#world') && a.playState === 'running').map(a => ({ name: a.animationName, time: a.currentTime })));
-    check(animation.length > 0 && animation.some(a => a.time > 0), `${scene}: normal animation is not advancing`);
-    if (scene === 'tribulation') {
-      const lightning = await page.evaluate(() => {
-        const a = document.getAnimations().find(a => a.animationName === 'world-thunder');
-        a.pause(); a.currentTime = 24000 * .89;
-        return { period: a.effect.getTiming().duration, peak: Number(getComputedStyle(document.querySelector('.world-lightning')).opacity) };
-      });
-      check(lightning.period === 24000 && lightning.peak <= .141, 'Lightning flash is too strong or frequent');
-      report.lightning = lightning;
-    }
+    // Legacy scene metadata still loads for old saves; visible art is static ink.
+    const animation=await page.evaluate(()=>document.getAnimations().filter(a=>a.effect?.target?.closest?.('#world')&&a.playState==='running').map(a=>a.animationName));
+    check(animation.length===0,'Removed ambient layer still animates');
+    const painting=page.locator('.retreat-painting');
+    if(await painting.count())check(await painting.evaluate(i=>i.complete&&i.naturalWidth>1000),'Generated retreat artwork failed to load');
+    if(scene==='tribulation')report.lightning={enabled:false,reason:'Static ink art replaces flashing scenery'};
     report.backgrounds.push({ ...data, animation, reducedMotion: await reduced() });
     const filename = `${out}/verified-${scene}-390.png`;
     await page.evaluate(() => scrollTo(0, 0));

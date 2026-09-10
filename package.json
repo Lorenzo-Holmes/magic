@@ -1,12 +1,13 @@
 {
   "name": "wo-yu-fei-sheng",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
   "description": "我欲飞升：文字修仙吞噬进化 · 轮回道痕",
   "scripts": {
     "start": "node tools/serve.cjs",
     "test": "node --test tests/*.test.cjs",
     "test:final": "node tools/final-simulation.cjs",
+    "test:journey": "node tools/journey-simulation.cjs",
     "build": "node tools/build.cjs",
     "test:browser": "node tools/run-browser-qa.cjs",
     "verify:release": "node tools/verify-release.cjs",

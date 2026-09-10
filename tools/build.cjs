@@ -9,6 +9,15 @@ const { version } = require('../package.json');
 const goalBytes = 3000000, maxBytes = 10000000;
 const out = path.join(root, 'dist'), release = path.join(root, 'release');
 fs.mkdirSync(out, { recursive: true }); fs.mkdirSync(release, { recursive: true });
+// Remove only these two retired generated assets; source originals remain intact.
+for(const name of ['src/visual-theme.css','assets/ink-landscape.svg']){
+  const target=path.resolve(out,name);
+  if(fs.existsSync(target)){
+    const relative=path.relative(fs.realpathSync(out),fs.realpathSync(target));
+    if(relative.startsWith('..')||path.isAbsolute(relative)||!fs.lstatSync(target).isFile())throw new Error('Retired asset is outside the generated directory');
+    fs.unlinkSync(target);
+  }
+}
 // Clean only generated production files through an allowlist, never the project itself.
 for (const file of entries) {
   fs.mkdirSync(path.dirname(path.join(out, file)), { recursive: true });

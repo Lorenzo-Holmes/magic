@@ -37,17 +37,27 @@ function walk(name) {
   else files.push(name);
 }
 roots.forEach(walk);
-const changes = [];
+const changes = [], binaries = [];
+const production = new Set(build.files.map(f=>f.path));
 for (const file of files) {
   if (/node_modules|\.env|(?:^|\/)\.cache|\.pem$|\.key$|output\//i.test(file)) throw new Error(`Unsafe source path: ${file}`);
   const raw = fs.readFileSync(file);
-  if (raw.length > 1024 * 1024 || raw.includes(0)) throw new Error(`Unexpected binary/large source: ${file}`);
+  if (raw.length > 1024 * 1024) throw new Error(`Unexpected large source: ${file}`);
+  if (/^assets\/art\/[a-z0-9-]+(?:\.[0-9]+)*\.webp$/.test(file)) {
+    if (!production.has(file) || raw.toString('ascii',0,4)!=='RIFF' || raw.toString('ascii',8,12)!=='WEBP' || raw.readUInt32LE(4)!==raw.length-8) throw new Error(`Unreviewed or invalid WebP: ${file}`);
+    const blob=crypto.createHash('sha1').update(`blob ${raw.length}\0`).update(raw).digest('hex');
+    if(remote.get(file)!==blob)binaries.push({path:file,raw,blob});
+    continue;
+  }
+  if (raw.includes(0)) throw new Error(`Unexpected binary source: ${file}`);
   const content = raw.toString('utf8');
   if (!Buffer.from(content, 'utf8').equals(raw)) throw new Error(`Non-UTF8 source: ${file}`);
   if (/gh[pousr]_[a-zA-Z0-9]{30,}|github_pat_[a-zA-Z0-9_]{40,}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/.test(content)) throw new Error(`Credential-like content: ${file}`);
   const blob = crypto.createHash('sha1').update(`blob ${raw.length}\0`).update(raw).digest('hex');
   if (remote.get(file) !== blob) changes.push({ path: file, mode: '100644', type: 'blob', content });
 }
+// Validate every local source before uploading any immutable binary blob.
+for(const item of binaries){const uploaded=api('git/blobs',{content:item.raw.toString('base64'),encoding:'base64'});if(uploaded.sha!==item.blob)throw new Error(`Binary hash mismatch: ${item.path}`);changes.push({path:item.path,mode:'100644',type:'blob',sha:uploaded.sha});}
 if (!changes.length) throw new Error('No changed source to publish.');
 // base_tree preserves remote-only files. No deleting unrelated remote work.
 const nextTree = api('git/trees', { base_tree: tree.sha, tree: changes });

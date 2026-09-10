@@ -34,6 +34,15 @@ async (page, options = {}) => {
     if (current && !report.sceneStates[`${result.scene}--${result.atmosphere}`]) report.sceneStates[`${result.scene}--${result.atmosphere}`] = current;
     return result;
   }
+
+  async function openPanel(name){
+    const settings=page.locator('dialog[open] [data-ui="settings"]');
+    if(name==='settings'){if(await settings.count())await settings.click();else await page.locator('.topbar [data-ui="settings"]').click();return;}
+    if(await page.locator('dialog[open]').count())await page.locator('dialog [data-ui="close-dialog"]').click();
+    const hub=['equipment','crafting','spirit-beast'].includes(name)?'inventory':name==='secret-realm'?'atlas':'character';
+    await page.locator('[data-ui="nav-panel"][data-id="'+hub+'"]').click();
+    await ui(name).first().click();
+  }
   const widths = [320, 360, 390, 430, 768, 1280];
   async function layout(label) {
     await background(label);
@@ -136,10 +145,31 @@ async (page, options = {}) => {
   check(batch.event?.id === 'first-python', 'Batch cultivation did not stop at the forced serpent encounter');
   check(batch.batchCultivations === 1, 'Batch cultivation count was not recorded');
   report.batchCultivation = { cycles: batch.batchCultivations, stop: batch.event.id, age: batch.age, xp: batch.xp };
+  let journeyChecked=false,journeySteps=0;
+  async function travelClick(a){
+    if(a.type==='journey-start'){
+      await page.locator('[data-ui="nav-panel"][data-id="atlas"]').click();
+      const region=await page.evaluate(id=>FSJourney.ROUTES.find(r=>r.id===id).region,a.id);
+      await page.locator('.region-tabs [data-ui="region"][data-id="'+region+'"]').click();
+      await page.locator('#journey-kit').selectOption(a.kind);
+      if(!journeyChecked)await layout('journey-atlas');
+    }else if(a.type==='journey-prepare')await page.locator('[data-ui="nav-panel"][data-id="inventory"]').click();
+    await action(a.type,a.id?'[data-id="'+a.id+'"]':'').click();journeySteps++;
+    if(a.type==='journey-start'&&!journeyChecked){
+      await layout('journey-active');
+      const raw=await state(),choices=await page.locator('.travel-choices').innerText();
+      report.sceneStates['journey-active']=raw;
+      await page.reload();await ui('continue').click();
+      check(JSON.stringify(await state())===JSON.stringify(raw)&&await page.locator('.travel-choices').innerText()===choices,'Journey changed on refresh');
+      journeyChecked=true;
+    }
+  }
   let iterations = 0, reloadedDraft = false, hunted = false, presentationChecked = version === '1.0.0';
   const captured = new Set();
-  while (iterations++ < 180) {
+  while (iterations++ < 400) {
     const s = await state();
+    const travel=options.journeyAction(s);if(travel){await travelClick(travel);continue;}
+    if(await page.locator('.atlas-view,.hub-view').count())await page.locator('[data-ui="nav-panel"][data-id="practice"]').click();
     const checkpoint = `${s.phase}:${s.event?.id || 'realm'}:${s.realm}${s.phase === 'tribulation' ? `:${s.tribulationStage}` : ''}`;
     if (!captured.has(checkpoint)) {
       captured.add(checkpoint); report.checkpoints.push({ checkpoint, realm: s.realm, power: s.revengePower, age: s.age });
@@ -210,13 +240,15 @@ async (page, options = {}) => {
     else if (s.realm === 3 && s.advancedResolved < 2) await action('act', '[data-kind="explore"]').click();
     else if (s.realm >= 4 && s.realm <= 8 && !s.realmProofs.includes(s.realm)) await action('seek-proof').click();
     else if (s.realm === 1 && !s.flags.swordEvent) await action('act', '[data-kind="explore"]').click();
-    else if (s.realm === 1 && !hunted) { hunted = true; await action('act', '[data-kind="hunt"]').click(); }
+    else if (s.realm === 1 && !hunted) { hunted = true; await page.locator('[data-ui="nav-panel"][data-id="atlas"]').click(); await action('act', '[data-kind="hunt"]').click(); }
     else if (await action('cultivate-to-ready').isEnabled()) await action('cultivate-to-ready').click();
     else await action('act', '[data-kind="cultivate"]').click();
   }
   const finished = await state();
+  check(finished.journey.enabled&&finished.journey.foundation.every((n,i)=>n>=2+Math.floor(i/3))&&journeyChecked,'New journey mode did not earn all nine realm foundations');
+  report.journey={passed:true,newMode:true,journeys:finished.journey.serial,steps:journeySteps,foundation:finished.journey.foundation,reloadPreserved:true};
   check((await meta()).tutorialHidden === true, 'First ascension did not disable tutorial annotations');
-  check(finished.phase === 'complete', 'Run failed to reach ascension within 180 UI steps');
+  check(finished.phase === 'complete', 'Run failed to reach ascension within 400 UI steps');
   check(finished.mutations[0] === 'serpenteye', 'Chosen mutation was not saved');
   check(finished.fusions.length === 1, 'Gold-core fusion was not saved');
   check(finished.flags.pythonSlain && finished.revengePower >= 450, 'Revenge was not a guaranteed crush');
@@ -247,7 +279,7 @@ async (page, options = {}) => {
     history: endingMeta.runHistory.length
   };
 
-  await ui('codex').first().click();
+  await openPanel('codex');
   check(await page.locator('dialog').isVisible(), 'Fate codex did not open');
   const expectedCodexSections = await page.evaluate(() => FSMeta.codexSections(FSMeta.createMeta()).length);
   check(await page.locator('dialog .codex-section').count() === expectedCodexSections, 'Fate codex section count is incomplete');
@@ -255,6 +287,7 @@ async (page, options = {}) => {
   await dialogLayout('codex');
   await page.locator('dialog [data-ui="close-dialog"]').click();
 
+  await page.locator('[data-ui="nav-panel"][data-id="practice"]').click();
   const traceButton = page.locator('[data-ui="carry-trace"]').first();
   const selectedTrace = await traceButton.getAttribute('data-id');
   const traceData = await page.evaluate(id => FSData.TRACES.find(trace => trace.id === id), selectedTrace);
@@ -315,9 +348,9 @@ async (page, options = {}) => {
   // File downloads are tested through separate CLI clicks: its download handler
   // owns downloaded artifacts and must not compete with download.saveAs here.
   report.exportsTestedSeparately = true;
-  await ui('journal').last().click();
+  await openPanel('journal');
   check(await page.locator('dialog').isVisible(), 'Journal did not open');
-  await shot('09-journal-mobile'); await ui('settings').click();
+  await shot('09-journal-mobile'); await openPanel('settings');
   await page.locator('#import-save').setInputFiles('tests/fixtures/invalid-save.json');
   await page.waitForFunction(() => document.querySelector('#notice').textContent.includes('导入失败'));
   check(await page.evaluate(() => localStorage.getItem('feisheng.run.v1')) === finalRaw, 'Invalid import changed existing save');
@@ -335,7 +368,7 @@ async (page, options = {}) => {
   report.validMetaImport = true;
   await page.evaluate(raw => localStorage.setItem('feisheng.meta.v1', raw), finalMetaRaw);
   await page.reload(); await ui('continue').click();
-  await ui('journal').last().click(); await ui('settings').click();
+  await openPanel('journal'); await openPanel('settings');
 
   await page.locator('#import-save').setInputFiles(`${out}/import-fixture.json`);
   await ui('confirm-import').click();
@@ -387,12 +420,13 @@ async (page, options = {}) => {
   await ui('new').click();
   if (await ui('confirm-new').count()) await ui('confirm-new').click();
   check(await action('select').count() === 8, 'File mode scripts did not run');
+  await ui('home').click();
   check(await ui('codex').count() >= 1, 'File mode did not load the reincarnation UI');
   report.fileMode = true;
   await page.goto(baseURL); await ui('continue').click();
   await background('normal-motion-ascension');
   const activeMotion = await page.evaluate(() => document.getAnimations().filter(a => a.effect?.target?.closest?.('#world') && a.playState === 'running').map(a => a.animationName));
-  check(activeMotion.length > 0, 'Normal background animations did not start'); report.activeMotion = activeMotion;
+  check(activeMotion.length === 0, 'Retired ambient layer is still animating'); report.activeMotion = activeMotion;
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const motion = await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
   check(motion, 'Reduced-motion emulation failed');
