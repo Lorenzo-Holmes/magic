@@ -22,6 +22,8 @@ if (!installed) throw new Error('Project-local Playwright is required; no implic
 const report = { passed: false, scope: 'isolated source-preview, not ZIP or physical device acceptance', out, checks: [], errors: [], externalRequests: [] };
 let browser, page;
 async function inspect(label) {
+  await page.waitForFunction(()=>[...document.querySelectorAll('img[data-art]')].every(img=>img.complete&&img.naturalWidth>0));
+  await page.waitForTimeout(80);
   const result = await page.evaluate(() => {
     const shell = document.querySelector('[data-ui-generation="v3"]');
     if (!shell) throw new Error('V3 shell missing');
@@ -86,6 +88,70 @@ async function main() {
   await inspect('inventory-synthetic-inset-34');
   assert.equal(await page.evaluate(() => localStorage.getItem('feisheng.run.v1')), saved, 'Read-only preview changed gameplay');
   assert.deepEqual(report.errors, []); assert.deepEqual(report.externalRequests, []);
+  // Decode every installed image, not merely those on the five empty screens.
+  report.artworkDecode=await page.evaluate(async()=>{
+    const results=[];
+    for(const [id,a] of Object.entries(FSArtManifest)){const image=new Image();image.src='./'+a.path;await image.decode();results.push({id,width:image.naturalWidth,height:image.naturalHeight,passed:image.naturalWidth===a.width&&image.naturalHeight===a.height});}
+    return results;
+  });
+  assert.equal(report.artworkDecode.length,82);assert.ok(report.artworkDecode.every(x=>x.passed));
+  await page.locator('[data-ui="nav-panel"][data-id="atlas"]').click();
+  const cameraBefore=await page.locator('.v3-map-viewport').getAttribute('data-camera-scale');
+  await page.locator('[data-camera="in"]').click();
+  assert.ok(Number(await page.locator('.v3-map-viewport').getAttribute('data-camera-scale'))>Number(cameraBefore));
+  const mapBox=await page.locator('.v3-map-viewport').boundingBox(),transformBefore=await page.locator('.v3-map-viewport .v3-art-canvas').getAttribute('style');
+  await page.mouse.move(mapBox.x+12,mapBox.y+75);await page.mouse.down();await page.mouse.move(mapBox.x+34,mapBox.y+105,{steps:5});await page.mouse.up();
+  assert.notEqual(await page.locator('.v3-map-viewport .v3-art-canvas').getAttribute('style'),transformBefore,'Dragging the map did not move its shared canvas');
+  await page.locator('[data-camera="reset"]').click();
+  for(const id of ['forest','marsh','village','peaks','ruins','canyon']){
+    await page.locator('[data-camera="overview"]').click();
+    await page.locator(`[data-ui="region"][data-id="${id}"]`).click();
+    assert.equal(await page.locator(`[data-ui="region"][data-id="${id}"]`).getAttribute('aria-pressed'),'true');
+  }
+  assert.equal(await page.evaluate(()=>localStorage.getItem('feisheng.run.v1')),saved);
+  report.camera={zoom:true,drag:true,reset:true,sixRegions:true,readOnly:true};
+  // A synthetic full-bag fixture is confined to this isolated QA context.
+  const fixture=await page.evaluate(()=>{
+    const s=FSEngine.deserialize(localStorage.getItem('feisheng.run.v1'));
+    s.equipment=FSEquipment.createState();
+    FSEquipment.ITEMS.slice(0,11).forEach((d,i)=>s.equipment.inventory.push({uid:'gear-art'+i,id:d.id,identified:true,refinement:0,xp:0}));
+    s.equipment.inventory.push({uid:'gear-art11',id:'azure-embryo',identified:true,refinement:0,xp:80});
+    s.equipment.slots.weapon='gear-art11';s.equipment.essence=20;
+    for(const m of FSCrafting.MATERIALS)s.crafting.materials[m.id]=9;
+    s.crafting.pills.qi=[false];FSEngine.validate(s);const raw=FSEngine.serialize(s);localStorage.setItem('feisheng.run.v1',raw);return raw;
+  });
+  await page.reload();await page.locator('[data-ui="continue"]').click();
+  await page.locator('[data-ui="nav-panel"][data-id="character"]').click();
+  await page.locator('[data-ui="v3-equipment-slot"][data-id="weapon"]').click();
+  assert.equal(await page.locator('[data-equipment-slot="weapon"]').count(),1);
+  await page.locator('[data-action="equipment-unequip"][data-id="weapon"]').click();
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('feisheng.run.v1')).equipment.slots.weapon),null);
+  assert.equal(await page.locator('[data-equipment-slot="weapon"]').count(),1);
+  await page.locator('[data-action="equipment-equip"][data-id="gear-art11"]').click();
+  await page.locator('dialog [data-ui="close-dialog"]').click();
+  await page.locator('[data-ui="nav-panel"][data-id="inventory"]').click();
+  assert.equal(await page.locator('[data-item-id]').count(),12);
+  await page.locator('.v3-baggage-scroll').evaluate(el=>el.scrollTop=el.scrollHeight);
+  await inspect('inventory-full-scroll-end');
+  await page.locator('[data-ui="forge"]').click();
+  await page.locator('[data-ui="v3-forge-select"][data-id="qi"]').click();
+  await page.locator('[data-action="craft-pill"][data-id="qi"][data-kind="gentle"]').click();
+  const crafted=await page.evaluate(()=>JSON.parse(localStorage.getItem('feisheng.run.v1')));
+  assert.equal(crafted.crafting.materials['spirit-herb'],7);assert.equal(crafted.crafting.materials['spirit-dew'],8);assert.equal(crafted.crafting.pills.qi.length,2);
+  await inspect('forge-crafted');
+  report.liveActions={syntheticFixture:true,fullInventory:12,slotFilter:true,unequip:true,equip:true,craftCosts:true};
+  assert.deepEqual(report.errors,[]);
+  // Failure injection has a separate context and is not mixed with normal-load errors.
+  const failureContext=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
+  await failureContext.addInitScript(raw=>localStorage.setItem('feisheng.run.v1',raw),fixture);
+  await failureContext.route('**/dao-body.webp',route=>route.abort());
+  const fallback=await failureContext.newPage();await fallback.goto(baseURL);await fallback.locator('[data-ui="continue"]').click();await fallback.locator('[data-ui="nav-panel"][data-id="character"]').click();
+  await fallback.locator('.v3-character-portrait.v3-art-failed').waitFor({state:'attached'});
+  await fallback.locator('[data-ui="v3-equipment-slot"][data-id="weapon"]').click();
+  assert.equal(await fallback.locator('[data-equipment-slot="weapon"]').count(),1);
+  assert.equal(await fallback.evaluate(()=>localStorage.getItem('feisheng.run.v1')),fixture);
+  await fallback.screenshot({path:path.join(out,'intentional-portrait-failure.png')});await failureContext.close();
+  report.intentionalFailure={asset:'character.dao',fallback:true,actionsStillWork:true,saveUnchanged:true};
   report.passed = true;
 }
 main().catch(async error => {

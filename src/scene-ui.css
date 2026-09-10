@@ -628,7 +628,7 @@
 .character-stage{
   height:680px;
   border:0;
-  background:#22291f url("../assets/art/retreat-v2.1.webp") 50% 62%/cover no-repeat;
+  background:#e9e7dc url("../assets/ui-v3/scenes/character.webp") 50% 62%/cover no-repeat;
   box-shadow:none;
 }
 .character-stage:before{

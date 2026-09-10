@@ -1,0 +1,2250 @@
+{
+  "schemaVersion": 1,
+  "status": "generated-art-integration-candidate",
+  "modelLabel": "Image generation tool output; exact model version was not exposed",
+  "userVisualApproval": false,
+  "noReferenceGameAssets": true,
+  "assets": [
+    {
+      "id": "scene.cave",
+      "path": "assets/ui-v3/scenes/cave.webp",
+      "width": 704,
+      "height": 1408,
+      "alpha": false,
+      "bytes": 197674,
+      "sha256": "5de23a6625a3f3520100d1fb4fb8140819e2b40373bf43a82e0318502c8b84d9",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "云隐仙境洞天平台主管.png",
+      "sourceSha256": "4b3d355013a8b5b85e9164310b208cd6309b4de93fab9caebcfd9c042922db0f",
+      "sourceSize": [
+        887,
+        1774
+      ],
+      "crop": [
+        0,
+        0,
+        887,
+        1774
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "scene.character",
+      "path": "assets/ui-v3/scenes/character.webp",
+      "width": 704,
+      "height": 1408,
+      "alpha": false,
+      "bytes": 195222,
+      "sha256": "dd5f634eaab0718a52828fda9a633447e95baf79b6f4fe2ddc3a3452713f165d",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "云海仙台水墨幻境.png",
+      "sourceSha256": "f00c67b492f243712dd8d72d611b635b50d7f4b2be7017ed97506373c5c4f13a",
+      "sourceSize": [
+        887,
+        1774
+      ],
+      "crop": [
+        0,
+        0,
+        887,
+        1774
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "scene.world",
+      "path": "assets/ui-v3/scenes/world.webp",
+      "width": 704,
+      "height": 1408,
+      "alpha": false,
+      "bytes": 211104,
+      "sha256": "58e5d77ba6a7fbef783625dad5b22d5eb54c53a3e8b780981309c6345718eef1",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙境浮世水墨全景_map.png",
+      "sourceSha256": "32cbc23a7f7e37078fc35433ab0fc6b98d69c4c242244c3aae24ac95870bbfa3",
+      "sourceSize": [
+        887,
+        1774
+      ],
+      "crop": [
+        0,
+        0,
+        887,
+        1774
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "scene.forge",
+      "path": "assets/ui-v3/scenes/forge.webp",
+      "width": 704,
+      "height": 1174,
+      "alpha": false,
+      "bytes": 152642,
+      "sha256": "4c289c9aae2cc3cb2e2d91a666bdb706105278ed84b1d8344d7f3a2a84b01b0a",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙侠秘境炼器大殿.png",
+      "sourceSha256": "23c5a0846f9a069872604236f82ae07d3e035fc6c8b16c96420e60300e57c7b8",
+      "sourceSize": [
+        971,
+        1619
+      ],
+      "crop": [
+        0,
+        0,
+        971,
+        1619
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "scene.breakthrough",
+      "path": "assets/ui-v3/scenes/breakthrough.webp",
+      "width": 704,
+      "height": 1251,
+      "alpha": false,
+      "bytes": 179398,
+      "sha256": "082fc6a0b05fac68d9ba01616722d117f6708cea96aa54cbd7941d62fa376af7",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "云海仙山金环圣殿.png",
+      "sourceSha256": "4f136ef9e41bd519efa9ae4ee26c1ea5dac48583f635b4465a7241c8471c9356",
+      "sourceSize": [
+        941,
+        1672
+      ],
+      "crop": [
+        0,
+        0,
+        941,
+        1672
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "scene.library",
+      "path": "assets/ui-v3/scenes/library.webp",
+      "width": 704,
+      "height": 1251,
+      "alpha": false,
+      "bytes": 156198,
+      "sha256": "a900f545709a2ea20dadf96ab3e62a860dac30d85a422849721e8e254ac50374",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙山秘境藏书阁.png",
+      "sourceSha256": "7541a3997582e615c7235469a3a6f2beebbee648c57b21314dedf349d01b2823",
+      "sourceSize": [
+        941,
+        1672
+      ],
+      "crop": [
+        0,
+        0,
+        941,
+        1672
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "character.dao",
+      "path": "assets/ui-v3/characters/dao-body.webp",
+      "width": 640,
+      "height": 1137,
+      "alpha": true,
+      "bytes": 252718,
+      "sha256": "5f5f7ab8977b0cdf86da0ae03a983335f1b3ce5c0a94a720055bac337f82356d",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "墨韵青竹仙侠剑客.png",
+      "sourceSha256": "6de3bfd784bfcd857a407d4b546b51a8732ec47ab75d292d0a4a130f04085bbe",
+      "sourceSize": [
+        941,
+        1672
+      ],
+      "crop": [
+        0,
+        0,
+        941,
+        1672
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "prop.platform",
+      "path": "assets/ui-v3/props/platform.webp",
+      "width": 320,
+      "height": 289,
+      "alpha": true,
+      "bytes": 51220,
+      "sha256": "a001deec2ef882230a277b9945b6d10d5470f29cb4272ba2020581be909974ab",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙侠山门浮岛素材图集.png",
+      "sourceSha256": "b5975c60e8e6261ff5403358d91adc902c74c13f3f4ea1d97fda135aa52d9bd6",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        426,
+        115,
+        822,
+        473
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "prop.forge",
+      "path": "assets/ui-v3/props/forge.webp",
+      "width": 277,
+      "height": 360,
+      "alpha": true,
+      "bytes": 64448,
+      "sha256": "5601e4590bf1de598b6b4c6cb158f784b9505283790eb944b1bb17522d98b138",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙侠山门浮岛素材图集.png",
+      "sourceSha256": "b5975c60e8e6261ff5403358d91adc902c74c13f3f4ea1d97fda135aa52d9bd6",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        825,
+        63,
+        1122,
+        449
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "prop.gate",
+      "path": "assets/ui-v3/props/gate.webp",
+      "width": 273,
+      "height": 354,
+      "alpha": true,
+      "bytes": 54212,
+      "sha256": "4be4772063ebb2c32a33821a32c37148ef00a6986c941543faaa23365604957b",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙侠山门浮岛素材图集.png",
+      "sourceSha256": "b5975c60e8e6261ff5403358d91adc902c74c13f3f4ea1d97fda135aa52d9bd6",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        0,
+        451,
+        273,
+        805
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "prop.beast",
+      "path": "assets/ui-v3/props/beast.webp",
+      "width": 320,
+      "height": 329,
+      "alpha": true,
+      "bytes": 56106,
+      "sha256": "e3108ace2ce836ed04a16a62c7a2ac2c4d42bc85a668c0b37a2c405cc27c3f0d",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙侠山门浮岛素材图集.png",
+      "sourceSha256": "b5975c60e8e6261ff5403358d91adc902c74c13f3f4ea1d97fda135aa52d9bd6",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        274,
+        470,
+        596,
+        801
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "prop.astrolabe",
+      "path": "assets/ui-v3/props/astrolabe.webp",
+      "width": 291,
+      "height": 353,
+      "alpha": true,
+      "bytes": 74060,
+      "sha256": "59240241d01c205394a70a27289905b8a61f09e26c26db1d6706e6a8ce6ef033",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙侠山门浮岛素材图集.png",
+      "sourceSha256": "b5975c60e8e6261ff5403358d91adc902c74c13f3f4ea1d97fda135aa52d9bd6",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        600,
+        452,
+        891,
+        805
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "prop.pine",
+      "path": "assets/ui-v3/props/pine.webp",
+      "width": 315,
+      "height": 211,
+      "alpha": true,
+      "bytes": 42334,
+      "sha256": "d92c2c41ed5a3304d5a5a8ca9a10b07459fc2c302ab4915df6f2f851c19038ba",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙侠山门浮岛素材图集.png",
+      "sourceSha256": "b5975c60e8e6261ff5403358d91adc902c74c13f3f4ea1d97fda135aa52d9bd6",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        0,
+        1191,
+        315,
+        1402
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "prop.pond",
+      "path": "assets/ui-v3/props/pond.webp",
+      "width": 320,
+      "height": 124,
+      "alpha": true,
+      "bytes": 26404,
+      "sha256": "1eee8cf156bd04a507dd6bb1c1d8e892dad8973d4d5c9a2a89a2366a27ed6568",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙侠山门浮岛素材图集.png",
+      "sourceSha256": "b5975c60e8e6261ff5403358d91adc902c74c13f3f4ea1d97fda135aa52d9bd6",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        0,
+        1007,
+        482,
+        1194
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "prop.furnace",
+      "path": "assets/ui-v3/props/furnace.webp",
+      "width": 320,
+      "height": 357,
+      "alpha": true,
+      "bytes": 68632,
+      "sha256": "70b1a6f052e97f7303ffbe66411d1216a8f95e66603ca5b75bb4c95b8cc7a48f",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        0,
+        0,
+        396,
+        442
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "icon.cave",
+      "path": "assets/ui-v3/icons/cave.webp",
+      "width": 111,
+      "height": 126,
+      "alpha": true,
+      "bytes": 8696,
+      "sha256": "e084359ce28974c24bc1e3c227abf8cbcf9a1b32f67ce4dcc64bb36613c9d97d",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠水墨金纹界面图标集.png",
+      "sourceSha256": "a458db5583daa0473e27d8e7c0fc6bb4019f699ad389f43797b6ac052530b45c",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        0,
+        20,
+        290,
+        349
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "icon.world",
+      "path": "assets/ui-v3/icons/world.webp",
+      "width": 105,
+      "height": 126,
+      "alpha": true,
+      "bytes": 8706,
+      "sha256": "3d1413037518a488eabbcc9a4877d8c83e2249abfdf914a9af17fc07eb034545",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠水墨金纹界面图标集.png",
+      "sourceSha256": "a458db5583daa0473e27d8e7c0fc6bb4019f699ad389f43797b6ac052530b45c",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        290,
+        20,
+        563,
+        349
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "icon.bag",
+      "path": "assets/ui-v3/icons/bag.webp",
+      "width": 103,
+      "height": 126,
+      "alpha": true,
+      "bytes": 8214,
+      "sha256": "5b1fc6468e8e598fa665c78f700ae33813ce62e4487fe960b23ccd112e495560",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠水墨金纹界面图标集.png",
+      "sourceSha256": "a458db5583daa0473e27d8e7c0fc6bb4019f699ad389f43797b6ac052530b45c",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        563,
+        20,
+        832,
+        349
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "icon.character",
+      "path": "assets/ui-v3/icons/character.webp",
+      "width": 111,
+      "height": 126,
+      "alpha": true,
+      "bytes": 8202,
+      "sha256": "70101c50ec03ab37808e8867e8b9c40a6176fcc6f59c17fb7e73407f9049c4f8",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠水墨金纹界面图标集.png",
+      "sourceSha256": "a458db5583daa0473e27d8e7c0fc6bb4019f699ad389f43797b6ac052530b45c",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        832,
+        20,
+        1122,
+        349
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "icon.forge",
+      "path": "assets/ui-v3/icons/forge.webp",
+      "width": 112,
+      "height": 122,
+      "alpha": true,
+      "bytes": 8286,
+      "sha256": "535df2a358ea4b600fba27c0023d54c4e6aa28bf1f99a1cc5387fd753b18182e",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠水墨金纹界面图标集.png",
+      "sourceSha256": "a458db5583daa0473e27d8e7c0fc6bb4019f699ad389f43797b6ac052530b45c",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        0,
+        349,
+        286,
+        661
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "icon.beast",
+      "path": "assets/ui-v3/icons/beast.webp",
+      "width": 110,
+      "height": 126,
+      "alpha": true,
+      "bytes": 9288,
+      "sha256": "b501723203bc2bc09f21c736444b2676af39182863662631635bc64e1cf9a62a",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠水墨金纹界面图标集.png",
+      "sourceSha256": "a458db5583daa0473e27d8e7c0fc6bb4019f699ad389f43797b6ac052530b45c",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        286,
+        349,
+        558,
+        661
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "icon.settings",
+      "path": "assets/ui-v3/icons/settings.webp",
+      "width": 111,
+      "height": 126,
+      "alpha": true,
+      "bytes": 7980,
+      "sha256": "554146ea39e9b6a1ba1260755d2400d9315ed16d3c683e1b2851fa1efebc5df3",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠水墨金纹界面图标集.png",
+      "sourceSha256": "a458db5583daa0473e27d8e7c0fc6bb4019f699ad389f43797b6ac052530b45c",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        558,
+        349,
+        833,
+        661
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "icon.audio",
+      "path": "assets/ui-v3/icons/audio.webp",
+      "width": 112,
+      "height": 121,
+      "alpha": true,
+      "bytes": 7774,
+      "sha256": "0d750aacd4efbcfc0a888a5be622f8103833ce16890cead3f1f5433cea6b3ede",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠水墨金纹界面图标集.png",
+      "sourceSha256": "a458db5583daa0473e27d8e7c0fc6bb4019f699ad389f43797b6ac052530b45c",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        833,
+        349,
+        1122,
+        661
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "icon.back",
+      "path": "assets/ui-v3/icons/back.webp",
+      "width": 112,
+      "height": 95,
+      "alpha": true,
+      "bytes": 5718,
+      "sha256": "12fba6c6fe2aa321b284298d2e649069ee7ee5625f3f57f64eca09b029c0cd67",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠水墨金纹界面图标集.png",
+      "sourceSha256": "a458db5583daa0473e27d8e7c0fc6bb4019f699ad389f43797b6ac052530b45c",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        36,
+        671,
+        272,
+        870
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "icon.alert",
+      "path": "assets/ui-v3/icons/alert.webp",
+      "width": 112,
+      "height": 89,
+      "alpha": true,
+      "bytes": 5584,
+      "sha256": "a8470727907831ce177814f477912518f3169572e5e287e4e77b93b384c62ba5",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠水墨金纹界面图标集.png",
+      "sourceSha256": "a458db5583daa0473e27d8e7c0fc6bb4019f699ad389f43797b6ac052530b45c",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        291,
+        671,
+        541,
+        870
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "icon.lock",
+      "path": "assets/ui-v3/icons/lock.webp",
+      "width": 112,
+      "height": 88,
+      "alpha": true,
+      "bytes": 5306,
+      "sha256": "fcbab00c3ad821da7008d52167b97a4fe22244a1e9a56933250519ffbef196de",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠水墨金纹界面图标集.png",
+      "sourceSha256": "a458db5583daa0473e27d8e7c0fc6bb4019f699ad389f43797b6ac052530b45c",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        559,
+        671,
+        813,
+        870
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "icon.marker",
+      "path": "assets/ui-v3/icons/marker.webp",
+      "width": 99,
+      "height": 126,
+      "alpha": true,
+      "bytes": 6490,
+      "sha256": "011462101307b790b425a10bfea664aefffcd45d451f0b89d04354d78d328a51",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠水墨金纹界面图标集.png",
+      "sourceSha256": "a458db5583daa0473e27d8e7c0fc6bb4019f699ad389f43797b6ac052530b45c",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        30,
+        902,
+        202,
+        1122
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "icon.marker-active",
+      "path": "assets/ui-v3/icons/marker-active.webp",
+      "width": 112,
+      "height": 126,
+      "alpha": true,
+      "bytes": 9462,
+      "sha256": "d61f7e98b794aa9fa4b2750ea5a71d77c7938d74403bfe91754feb61b2024dc9",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠水墨金纹界面图标集.png",
+      "sourceSha256": "a458db5583daa0473e27d8e7c0fc6bb4019f699ad389f43797b6ac052530b45c",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        220,
+        886,
+        441,
+        1134
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.sword",
+      "path": "assets/ui-v3/icons/item-sword.webp",
+      "width": 77,
+      "height": 112,
+      "alpha": true,
+      "bytes": 6114,
+      "sha256": "0553b8789165cb0f81a66d68011746d979b983327ba350b3b1eb7fcd8fd2616d",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        9,
+        607,
+        136,
+        793
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.blade",
+      "path": "assets/ui-v3/icons/item-blade.webp",
+      "width": 74,
+      "height": 112,
+      "alpha": true,
+      "bytes": 5574,
+      "sha256": "624bef1153a188d7095e0faf5766ca1162a36eb1e98614408c89649b2a6fb2cf",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        137,
+        607,
+        260,
+        793
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.spear",
+      "path": "assets/ui-v3/icons/item-spear.webp",
+      "width": 79,
+      "height": 112,
+      "alpha": true,
+      "bytes": 4960,
+      "sha256": "acb1eba41863f47a45388d4ee16b6628a38dfdf36284f2d6d7d668b5a24fb852",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        259,
+        604,
+        392,
+        793
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.fan",
+      "path": "assets/ui-v3/icons/item-fan.webp",
+      "width": 72,
+      "height": 112,
+      "alpha": true,
+      "bytes": 5634,
+      "sha256": "a5ff967fa65db147d5326efde66201d64ed867db91d1a55729d444670e448d19",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        386,
+        609,
+        503,
+        790
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.robe",
+      "path": "assets/ui-v3/icons/item-robe.webp",
+      "width": 96,
+      "height": 101,
+      "alpha": true,
+      "bytes": 7046,
+      "sha256": "11ad2192fff9d9cda97b153029038a424aaf742941e0f030b3ef5dab99c4056b",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        502,
+        610,
+        671,
+        788
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.hat",
+      "path": "assets/ui-v3/icons/item-hat.webp",
+      "width": 94,
+      "height": 112,
+      "alpha": true,
+      "bytes": 7128,
+      "sha256": "35991ca356d3efd9c497e8f11941097cf6e6fe81579dfbd6d22144f29c9b8d5a",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        649,
+        610,
+        798,
+        789
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.ring",
+      "path": "assets/ui-v3/icons/item-ring.webp",
+      "width": 63,
+      "height": 112,
+      "alpha": true,
+      "bytes": 3584,
+      "sha256": "4b2a7763bfafd875aa66501df7194a37255a5daf3acbfe6b56ff0113f70b6cc8",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        796,
+        645,
+        878,
+        791
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.pendant",
+      "path": "assets/ui-v3/icons/item-pendant.webp",
+      "width": 84,
+      "height": 112,
+      "alpha": true,
+      "bytes": 4414,
+      "sha256": "2618781baa24465adabdd5b0abf545fd9daa0343c79ea25d03c02712e08c3ea1",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        875,
+        645,
+        985,
+        791
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.orb",
+      "path": "assets/ui-v3/icons/item-orb.webp",
+      "width": 96,
+      "height": 80,
+      "alpha": true,
+      "bytes": 5112,
+      "sha256": "2b49ae89d280a2b694b3688457f43477d559c150f8b2bd8b20019a2aa34783f1",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        8,
+        798,
+        129,
+        899
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.pill",
+      "path": "assets/ui-v3/icons/item-pill.webp",
+      "width": 96,
+      "height": 84,
+      "alpha": true,
+      "bytes": 4270,
+      "sha256": "59c99f5a6fdf05a4193bda14d34560c9343fa23e10114a3f499763bdb314525c",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        131,
+        798,
+        247,
+        899
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.blood-pill",
+      "path": "assets/ui-v3/icons/item-blood-pill.webp",
+      "width": 96,
+      "height": 85,
+      "alpha": true,
+      "bytes": 5516,
+      "sha256": "a28b0f6212035a0cce5c83f60f2e3f62cb6a952606a06961eafd376af7898365",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        249,
+        795,
+        367,
+        899
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.bottle",
+      "path": "assets/ui-v3/icons/item-bottle.webp",
+      "width": 92,
+      "height": 112,
+      "alpha": true,
+      "bytes": 6166,
+      "sha256": "619c4b289f8fe3306929327e0c06fb52b87df8a88e0d0adfd5e1153e3c7a3b62",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        448,
+        785,
+        542,
+        899
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.purple-bottle",
+      "path": "assets/ui-v3/icons/item-purple-bottle.webp",
+      "width": 81,
+      "height": 112,
+      "alpha": true,
+      "bytes": 6508,
+      "sha256": "9920863fc38a046bf98b8913c77e8abe9388db8dc30d793e98d571475812533f",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        365,
+        785,
+        447,
+        899
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.bag",
+      "path": "assets/ui-v3/icons/item-bag.webp",
+      "width": 96,
+      "height": 94,
+      "alpha": true,
+      "bytes": 6298,
+      "sha256": "506487cc19a61ee96b6e4e3710875edd28c29678372168f02dd06d2d4b3ab595",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        543,
+        798,
+        646,
+        899
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.chest",
+      "path": "assets/ui-v3/icons/item-chest.webp",
+      "width": 96,
+      "height": 78,
+      "alpha": true,
+      "bytes": 5778,
+      "sha256": "9fec9d94d00181b687f131595c947caeeae68f1ecd75d6127f8126521391e120",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        646,
+        796,
+        774,
+        899
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.scroll",
+      "path": "assets/ui-v3/icons/item-scroll.webp",
+      "width": 89,
+      "height": 112,
+      "alpha": true,
+      "bytes": 7566,
+      "sha256": "ea6094361e2b2b7e772afb7b5e368f236179020f549fa57df50748a0a6713ab1",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        774,
+        786,
+        864,
+        899
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.book",
+      "path": "assets/ui-v3/icons/item-book.webp",
+      "width": 96,
+      "height": 76,
+      "alpha": true,
+      "bytes": 7152,
+      "sha256": "82a8113e26b25b377c2f33866463d0120daf735a1f5d3f6feee3d1049ca4027d",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        855,
+        796,
+        985,
+        899
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.talisman",
+      "path": "assets/ui-v3/icons/item-talisman.webp",
+      "width": 96,
+      "height": 85,
+      "alpha": true,
+      "bytes": 5896,
+      "sha256": "c954cb436ef4dc43a73150e74f77cbc823bec9d4364558b95a2b75463cde5e73",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        987,
+        786,
+        1115,
+        899
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.herb",
+      "path": "assets/ui-v3/icons/item-herb.webp",
+      "width": 96,
+      "height": 80,
+      "alpha": true,
+      "bytes": 7186,
+      "sha256": "b52673c410876f76a1ecdc6eab58017a603e1cf6cf74a43cd2885f34c6e62cb1",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        130,
+        903,
+        247,
+        1001
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.flower",
+      "path": "assets/ui-v3/icons/item-flower.webp",
+      "width": 96,
+      "height": 78,
+      "alpha": true,
+      "bytes": 5550,
+      "sha256": "e018f634a96a9673ab130e6bf7157d70e9e8f9ed279f800e8fb5cfeb3d34a1f9",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        9,
+        903,
+        130,
+        1001
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.berry",
+      "path": "assets/ui-v3/icons/item-berry.webp",
+      "width": 96,
+      "height": 78,
+      "alpha": true,
+      "bytes": 6076,
+      "sha256": "a30e21492a4201a7a361a58ac3402443a1488e34bb81d4cd500afc6e0a81411a",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        247,
+        903,
+        367,
+        1001
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.ginseng",
+      "path": "assets/ui-v3/icons/item-ginseng.webp",
+      "width": 79,
+      "height": 100,
+      "alpha": true,
+      "bytes": 7946,
+      "sha256": "72c7629bdf5bfdd882b36abb26bdc053b0df3f1fd204ba4d5435084e6f8a7151",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        356,
+        901,
+        435,
+        1001
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.fungus",
+      "path": "assets/ui-v3/icons/item-fungus.webp",
+      "width": 96,
+      "height": 73,
+      "alpha": true,
+      "bytes": 5480,
+      "sha256": "f84641cbb0774e2ef4fa0d9c81d95da328c5690a91d97d01048d7a7161317b06",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        421,
+        910,
+        541,
+        1001
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.lotus",
+      "path": "assets/ui-v3/icons/item-lotus.webp",
+      "width": 96,
+      "height": 86,
+      "alpha": true,
+      "bytes": 6594,
+      "sha256": "802df36a38ab1a27375faa8a761fa7e7dc1d93347be51b54fad4fd4366105c28",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        540,
+        901,
+        651,
+        1001
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.blue-crystal",
+      "path": "assets/ui-v3/icons/item-blue-crystal.webp",
+      "width": 96,
+      "height": 99,
+      "alpha": true,
+      "bytes": 4870,
+      "sha256": "b312d8d4c1aa5a4cf6336219a654d144ceaf6d3fa84da0452389ede13c1ffe02",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        651,
+        901,
+        748,
+        1001
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.purple-crystal",
+      "path": "assets/ui-v3/icons/item-purple-crystal.webp",
+      "width": 96,
+      "height": 87,
+      "alpha": true,
+      "bytes": 5792,
+      "sha256": "e1e33230fb3804c5f196f47718cef085d70aea8ef54cb9e7b72c51c0ae133b22",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        748,
+        901,
+        858,
+        1001
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.jade-crystal",
+      "path": "assets/ui-v3/icons/item-jade-crystal.webp",
+      "width": 96,
+      "height": 81,
+      "alpha": true,
+      "bytes": 4454,
+      "sha256": "8f4c041519cb7a0581c0ec69dbba2be66e2af915f419c647e7ebba519b7d0219",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        858,
+        901,
+        977,
+        1001
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.ore",
+      "path": "assets/ui-v3/icons/item-ore.webp",
+      "width": 96,
+      "height": 68,
+      "alpha": true,
+      "bytes": 4644,
+      "sha256": "331a2431e85865956732628c8c9a9f0af1921d8b3226891bd10d7e3d18ca235f",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        976,
+        900,
+        1119,
+        1001
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.wood",
+      "path": "assets/ui-v3/icons/item-wood.webp",
+      "width": 96,
+      "height": 75,
+      "alpha": true,
+      "bytes": 4510,
+      "sha256": "635774cd26475e2dd3a04ed46e5472ea45288aed05807b4667b3cb4c85a66895",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        8,
+        1009,
+        131,
+        1105
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.stone",
+      "path": "assets/ui-v3/icons/item-stone.webp",
+      "width": 96,
+      "height": 94,
+      "alpha": true,
+      "bytes": 4780,
+      "sha256": "5e3b2316a5ab7d9992cf0047bbdee33972de4f97dd98f87b8bc2fb284693c2fe",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        129,
+        1009,
+        227,
+        1105
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.white-stone",
+      "path": "assets/ui-v3/icons/item-white-stone.webp",
+      "width": 82,
+      "height": 96,
+      "alpha": true,
+      "bytes": 6336,
+      "sha256": "dce1bf4ce9cd4ad2e38a4f5da90a242b41c86e2afca42a9dd4e7024bd4625c24",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        227,
+        1009,
+        309,
+        1105
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.dew",
+      "path": "assets/ui-v3/icons/item-dew.webp",
+      "width": 90,
+      "height": 96,
+      "alpha": true,
+      "bytes": 6444,
+      "sha256": "508c5da1ec89685c6b9d8328a1cd28eb606e6f3e051a073961f60a719a46ee68",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        308,
+        1009,
+        398,
+        1105
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.iron",
+      "path": "assets/ui-v3/icons/item-iron.webp",
+      "width": 89,
+      "height": 96,
+      "alpha": true,
+      "bytes": 5264,
+      "sha256": "771de71a8d7a55ef6e55f47c9c5e4f21fab20c29e44feff285ad82f619d50138",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        399,
+        1009,
+        488,
+        1105
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.gold",
+      "path": "assets/ui-v3/icons/item-gold.webp",
+      "width": 96,
+      "height": 93,
+      "alpha": true,
+      "bytes": 5358,
+      "sha256": "ae65da548fa8f15e1ecd95a08cd31349ba49b3fa9bbe782c0b38f8c42c14bd27",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        488,
+        1009,
+        587,
+        1105
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.cloth",
+      "path": "assets/ui-v3/icons/item-cloth.webp",
+      "width": 96,
+      "height": 84,
+      "alpha": true,
+      "bytes": 4890,
+      "sha256": "f4538357d77ab7c9387ff49b07566c1eba02ef50e027e1914d92fa09fea47c92",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        587,
+        1009,
+        697,
+        1105
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.silk",
+      "path": "assets/ui-v3/icons/item-silk.webp",
+      "width": 96,
+      "height": 91,
+      "alpha": true,
+      "bytes": 6282,
+      "sha256": "1c994fb32bb6ebfb31b89769acbc69c862f6d855bbc1f81843ce990fc5049021",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        697,
+        1009,
+        798,
+        1105
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.thread",
+      "path": "assets/ui-v3/icons/item-thread.webp",
+      "width": 74,
+      "height": 96,
+      "alpha": true,
+      "bytes": 5392,
+      "sha256": "dee6d656b4e2112ead378fbb98898e1bc07790d41cd96582e14be3fb3281eeb3",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        797,
+        1009,
+        871,
+        1105
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.medicine",
+      "path": "assets/ui-v3/icons/item-medicine.webp",
+      "width": 96,
+      "height": 90,
+      "alpha": true,
+      "bytes": 6006,
+      "sha256": "6fb93af127e669253157ef04d005c83255e093e0ebeb650ba049ca9eee6b9c9d",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        869,
+        1008,
+        972,
+        1105
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.bamboo",
+      "path": "assets/ui-v3/icons/item-bamboo.webp",
+      "width": 96,
+      "height": 65,
+      "alpha": true,
+      "bytes": 4416,
+      "sha256": "3336da8480798ff9d54bafd91b4e0df7f662c68579b3a6ee767f090fc735b73e",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        972,
+        1008,
+        1115,
+        1105
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.food",
+      "path": "assets/ui-v3/icons/item-food.webp",
+      "width": 96,
+      "height": 73,
+      "alpha": true,
+      "bytes": 4792,
+      "sha256": "5fa01b7ce55ce49f41eb5c16d0f529b9b7927a70e7c8f0cc32a43c747cd19d08",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        132,
+        1109,
+        252,
+        1200
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.gourd",
+      "path": "assets/ui-v3/icons/item-gourd.webp",
+      "width": 74,
+      "height": 96,
+      "alpha": true,
+      "bytes": 5882,
+      "sha256": "09e5a24cb4c3473f092f7bcf75ba765fd852d0f7f0ebcccd28539f45c4ef9e96",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        678,
+        1104,
+        752,
+        1200
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "item.rice",
+      "path": "assets/ui-v3/icons/item-rice.webp",
+      "width": 96,
+      "height": 64,
+      "alpha": true,
+      "bytes": 5206,
+      "sha256": "9cc4d37446155b30f48890f94f94edc6d2d73a542007927f56f7d30f4faabe32",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        980,
+        1108,
+        1118,
+        1200
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "panel.paper",
+      "path": "assets/ui-v3/panels/paper.webp",
+      "width": 351,
+      "height": 401,
+      "alpha": true,
+      "bytes": 6898,
+      "sha256": "c65b7313dfca94248cfde8d64542256a09b9fb351cc14f908928562b6331faa6",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙侠水墨金箔游戏界面素材图集.png",
+      "sourceSha256": "e1442ea6e75bdc1b2599525b7748c18e1a43882023b7b6e08bcd5244e2943196",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        63,
+        205,
+        414,
+        606
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "panel.scroll",
+      "path": "assets/ui-v3/panels/scroll.webp",
+      "width": 446,
+      "height": 955,
+      "alpha": true,
+      "bytes": 87428,
+      "sha256": "b02143adee1eb08d9f1791db202ddf6dc5c527c9d538b4f41a1b7450db03347c",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙侠水墨金箔游戏界面素材图集.png",
+      "sourceSha256": "e1442ea6e75bdc1b2599525b7748c18e1a43882023b7b6e08bcd5244e2943196",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        10,
+        22,
+        456,
+        977
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending",
+      "slice": [
+        70,
+        52,
+        75,
+        52
+      ]
+    },
+    {
+      "id": "panel.drawer",
+      "path": "assets/ui-v3/panels/drawer.webp",
+      "width": 447,
+      "height": 255,
+      "alpha": true,
+      "bytes": 34348,
+      "sha256": "230f78ace9f08108147017d69d8be2bec8c708671a36252b97701cfef68fb42b",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙侠水墨金箔游戏界面素材图集.png",
+      "sourceSha256": "e1442ea6e75bdc1b2599525b7748c18e1a43882023b7b6e08bcd5244e2943196",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        475,
+        655,
+        922,
+        910
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending",
+      "slice": [
+        32,
+        40,
+        36,
+        40
+      ]
+    },
+    {
+      "id": "panel.header",
+      "path": "assets/ui-v3/panels/header.webp",
+      "width": 600,
+      "height": 129,
+      "alpha": true,
+      "bytes": 25948,
+      "sha256": "29888336d0d957ee50089b3f86d219235977bb0e2f7ef75f33ea4e21bef1ffff",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙侠水墨金箔游戏界面素材图集.png",
+      "sourceSha256": "e1442ea6e75bdc1b2599525b7748c18e1a43882023b7b6e08bcd5244e2943196",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        464,
+        0,
+        1122,
+        141
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "panel.slot",
+      "path": "assets/ui-v3/panels/slot.webp",
+      "width": 119,
+      "height": 120,
+      "alpha": true,
+      "bytes": 6690,
+      "sha256": "bf088d13739957d72aa5f716aa089551764e8a0ee8f4b12cf42283b12c9f8546",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source": "仙侠水墨金箔游戏界面素材图集.png",
+      "sourceSha256": "e1442ea6e75bdc1b2599525b7748c18e1a43882023b7b6e08bcd5244e2943196",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        19,
+        1137,
+        161,
+        1280
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "panel.button",
+      "path": "assets/ui-v3/panels/button.webp",
+      "width": 435,
+      "height": 72,
+      "alpha": true,
+      "bytes": 14268,
+      "sha256": "19a8c555e355787a59d415150a314eb16e25c4193aef05c2590949ad8cabf2f7",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙侠水墨玉韵界面素材图集.png",
+      "sourceSha256": "c07ecd9e74b4b257f3408f11178cc50a4bc1c2c315333f409f8c786c13c135fa",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        321,
+        546,
+        756,
+        618
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending",
+      "slice": [
+        18,
+        48,
+        18,
+        50
+      ]
+    },
+    {
+      "id": "panel.button-jade",
+      "path": "assets/ui-v3/panels/button-jade.webp",
+      "width": 436,
+      "height": 76,
+      "alpha": true,
+      "bytes": 18104,
+      "sha256": "2e8607b108a1184088d80416f35b61b24cae83762d064d2ad812ad37d5cebc95",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙侠水墨玉韵界面素材图集.png",
+      "sourceSha256": "c07ecd9e74b4b257f3408f11178cc50a4bc1c2c315333f409f8c786c13c135fa",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        321,
+        471,
+        757,
+        547
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending",
+      "slice": [
+        18,
+        48,
+        18,
+        50
+      ]
+    },
+    {
+      "id": "panel.divider",
+      "path": "assets/ui-v3/panels/divider.webp",
+      "width": 560,
+      "height": 82,
+      "alpha": true,
+      "bytes": 24042,
+      "sha256": "11a7f6268da3c95ad50fc7f9ff09c6bfdccd977b2f76810c98645ad785199490",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙侠水墨金纹界面图标集.png",
+      "sourceSha256": "a458db5583daa0473e27d8e7c0fc6bb4019f699ad389f43797b6ac052530b45c",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        14,
+        1260,
+        759,
+        1369
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "fx.cloud",
+      "path": "assets/ui-v3/fx/cloud.webp",
+      "width": 256,
+      "height": 81,
+      "alpha": true,
+      "bytes": 12676,
+      "sha256": "341bbf29794a0a3d06343da4e5ffc09fe67ef4c2f98910782c4156cd2a368569",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        0,
+        1201,
+        311,
+        1300
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "fx.leaves",
+      "path": "assets/ui-v3/fx/leaves.webp",
+      "width": 186,
+      "height": 112,
+      "alpha": true,
+      "bytes": 15170,
+      "sha256": "dff13152cd9b9895887c6cf8e95c2178f9d7c43a7294266643c7d775429a368c",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        534,
+        1200,
+        720,
+        1312
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "fx.fire",
+      "path": "assets/ui-v3/fx/fire.webp",
+      "width": 142,
+      "height": 256,
+      "alpha": true,
+      "bytes": 21124,
+      "sha256": "ce733a4fd29d0e021f70e9a83069ed4fcb90a28848fcd2530c8d73c047ba957a",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙侠炼丹锻造图标素材表.png",
+      "sourceSha256": "b0b6eeafc93ea2657264c659716a2019e842c207e57de02d84888a9949c55468",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        650,
+        10,
+        802,
+        285
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    },
+    {
+      "id": "fx.ring",
+      "path": "assets/ui-v3/fx/ring.webp",
+      "width": 256,
+      "height": 247,
+      "alpha": true,
+      "bytes": 36438,
+      "sha256": "248108d2190dbb4184da0d75724830ee77a74ecfdaa593b62d35d083e89324f2",
+      "pivot": [
+        0.5,
+        1
+      ],
+      "source": "仙侠幻境金白魔法特效图集.png",
+      "sourceSha256": "96ad1bc5bd0facec6bc930b61256ae0609ab8ea9855eac3234a1fa6b0e16814c",
+      "sourceSize": [
+        1122,
+        1402
+      ],
+      "crop": [
+        4,
+        4,
+        298,
+        287
+      ],
+      "sourceType": "generated-in-this-conversation",
+      "review": "contact-sheet-inspected; small disconnected neighboring sprites removed; user review pending"
+    }
+  ],
+  "totalBytes": 2424078,
+  "sourceCount": 13,
+  "croppingMethod": "explicit crop rectangles; alpha-aware disconnected-fragment filtering; resized for mobile 2x UI"
+}

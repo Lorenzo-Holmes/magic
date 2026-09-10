@@ -18,7 +18,13 @@
   let state = null, meta = M.createMeta(), home = true, mortalSummary = false, runStorageWarning = '', metaStorageWarning = '', noticeTimer, majorTimer, previousView = '', pendingImport = null, lastCombatReplay = '';
   let combatTimers = [];
   let worldVisible=true;
-  let pageTab='practice', selectedRegion='forest', journeyKit='rope';
+  let pageTab='practice', selectedRegion='forest', journeyKit='rope', activeEquipmentSlot=null, dialogReturnTarget=null;
+  document.body.dataset.artUi='v3';
+  dialog.addEventListener('close',()=>{
+    activeEquipmentSlot=null;
+    const key=dialogReturnTarget;dialogReturnTarget=null;
+    if(key)[...app.querySelectorAll('button')].find(b=>b.dataset.ui===key.ui&&b.dataset.action===key.action&&b.dataset.id===key.id)?.focus({preventScroll:true});
+  });
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fmt = value => Number(value || 0).toLocaleString('zh-CN');
   const find = (items, id) => items.find(item => item.id === id);
@@ -43,11 +49,11 @@
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const major = value.major;
     majorLayer.dataset.kind = major.kind;
-    majorLayer.innerHTML = `<div class="major-event-card"><span>${esc(major.eyebrow)}</span><strong>${esc(major.title)}</strong><small>${esc(major.subtitle)}</small></div>`;
+    majorLayer.innerHTML = `${window.FSArt.img('scene.breakthrough','v3-major-bg')}${window.FSArt.img('fx.ring','v3-major-ring')}<div class="major-event-card"><span>${esc(major.eyebrow)}</span><strong>${esc(major.title)}</strong><small>${esc(major.subtitle)}</small>${button('skip-major','收息 · 继续',{ui:true,classes:'v3-major-skip',aria:'结束境界演出，结果已经保存'})}</div>`;
+    majorLayer.setAttribute('aria-hidden','false');
     majorLayer.classList.add('visible');
-    const close = () => { majorLayer.classList.remove('visible'); majorLayer.replaceChildren(); delete majorLayer.dataset.kind; };
-    if (reduced) { close(); return; }
-    majorTimer = setTimeout(close, Math.max(1500, Math.min(3000, major.duration || 1900)));
+    const close = () => { majorLayer.classList.remove('visible');majorLayer.setAttribute('aria-hidden','true'); majorLayer.replaceChildren(); delete majorLayer.dataset.kind; };
+    majorTimer = setTimeout(close, reduced?1600:Math.max(1500, Math.min(3000, major.duration || 1900)));
   }
   function finishCombatReplay() {
     for (const timer of combatTimers) clearTimeout(timer);
@@ -137,7 +143,7 @@
     return `<svg class="mountains" viewBox="0 0 560 210" aria-hidden="true"><path d="M0 175 52 137 75 148 150 37 201 96 240 76 290 131 337 94 383 143 445 66 516 149 560 123V210H0Z" fill="currentColor" opacity=".20"/><path d="M0 198 105 143 129 171 217 96 240 130 273 113 327 181 402 141 456 183 520 144 560 178V210H0Z" fill="currentColor" opacity=".33"/><path d="m106 112 44-75 19 86m48-27 19 56m166-41 43-45 21 59" fill="none" stroke="currentColor" opacity=".4"/></svg>`;
   }
   function landscape() {
-    return '<img src="./assets/art/retreat-v2.1.webp" alt="" width="1536" height="1024" decoding="async">';
+    return window.FSArt.img('scene.cave','', '云山洞府');
   }
   function actionIcon(kind) {
     const paths={cultivate:'M12 3v3m-6 2 3 3m9-3-3 3M5 19c0-4 3-7 7-7s7 3 7 7M3 21h18M12 9v5',explore:'m3 20 6-13 4 8 3-5 5 10ZM8 20l4-6m4-11v4m-2-2h4',hunt:'m5 3 16 16-2 2L3 5Zm10 0 6 6m-9 8-7 4-2-2 4-7m8-1 6-8'};
@@ -202,7 +208,7 @@
       ${button('act', `<span class="scene-hotspot-glyph">缘</span><b>机缘</b><small>${state.realm >= 4 ? '天地印证' : `${explore.years} 年`}</small>`, { kind:'explore', classes:'scene-hotspot scene-hotspot-explore' })}
     </div>`;
     return `<section class="cultivation-scene${waiting ? ' scene-blocked' : ''}" aria-label="草庐修行场景">
-      <img class="cultivation-scene-painting" src="./assets/art/retreat-v2.1.webp" width="1536" height="1024" alt="水墨草庐与盘膝修士剪影">
+      ${window.FSArt.img('scene.cave','cultivation-scene-painting','云山洞府')}
       <div class="scene-ink-wash" aria-hidden="true"></div>
       <div class="scene-player-hud" aria-label="人物状态">
         <div class="scene-player-main"><span class="scene-realm-mark">${esc(realm.name.slice(0,2))}</span><div><small>当前境界</small><b>${esc(realm.name)}</b></div></div>
@@ -343,7 +349,7 @@
     if(tab==='practice'){
       const waiting=E.isBlocking(state), arrivalMemory=state.event?.id==='arrival'?M.eventMemory(meta,state,'arrival'):null;
       const memory=arrivalMemory?`<span class="v3-scene-memory legacy-echo">${esc(arrivalMemory)}</span>`:'';
-      return UI3.render('CaveWindow',{...common,quest:currentQuest(),waiting,eventHtml:waiting?eventView():'',contextHtml:waiting?'':v3CaveCommands(),memoryHtml:memory});
+      return UI3.render('CaveWindow',{...common,quest:currentQuest(),waiting,eventHtml:waiting?eventView():'',contextHtml:waiting?'':v3CaveCommands(),memoryHtml:memory,tutorialHtml:tutorialNote()});
     }
     if(tab==='atlas')return UI3.render('WorldMapWindow',common);
     if(tab==='inventory')return UI3.render('BaggageWindow',common);
@@ -486,7 +492,7 @@
     const scene = world.update(shown, home);
     const warning = warningText();
     const vista = home ? '' : `<div class="world-vista" aria-hidden="true"><span>${esc(scene.title)}</span><small>${esc(scene.subtitle)}</small></div>`;
-    const v3Primary=!!(!home&&state?.phase==='playing'&&!inWorld&&!inImmortal&&!inJourney&&['practice','atlas','inventory','character','forge'].includes(pageTab));
+    const v3Primary=!!(!home&&state&&!['talents','attributes'].includes(state.phase)&&!inWorld&&!inJourney&&(['atlas','inventory','character','forge'].includes(pageTab)||(pageTab==='practice'&&state.phase==='playing'&&!inImmortal)));
     if(!v3Primary)UI3.deactivate();
     const body = home ? homeView() : v3Primary?v3PrimaryView(pageTab):inJourney?window.FSJourneyUI.active(state,button):panel?(pageTab==='atlas'?window.FSJourneyUI.atlas(state,button,selectedRegion,journeyKit):window.FSJourneyUI.hub(state,button,pageTab)):inWorld ? window.FSWorldUI.view(state.world,button) : inImmortal ? immortalView() : state.phase === 'talents' ? talentsView() : state.phase === 'attributes' ? attributesView() : state.phase === 'playing' ? playingView() : state.phase === 'draft' ? draftView() : state.phase === 'mutation' ? mutationView() : state.phase === 'fusion' ? fusionView() : state.phase === 'tribulation' ? tribulationView() : endingView();
     const workspace = !home && state && !['talents','attributes'].includes(state.phase);
@@ -511,6 +517,8 @@
     syncCombatReplay();
   }
   function modal(title, body) {
+    if(!dialog.open){const el=document.activeElement;dialogReturnTarget=el?.dataset?{ui:el.dataset.ui,action:el.dataset.action,id:el.dataset.id}:null;}
+    activeEquipmentSlot=null;
     if(title==='万法归一'&&state?.dao)body=button('dao',state.dao.formed?`此世大道 · ${esc(state.dao.formed.name)}`:'大道争锋 · 查看修行与创道',{ui:true,classes:'secondary full'})+body;
     if (title === '存档与说明') body = `<div class="settings-extra"><h3>命册批注</h3><p class="intro">首次飞升后自动关闭；也可以提前关闭。战力主显示使用万、亿，点按数字查看完整值。</p>${button('tutorial-reset', '重新阅读批注', { ui: true, classes: 'secondary full', disabled: meta.totals.ascended > 0 })}</div>${body}`;
     dialog.innerHTML = `<div class="dialog-head"><h2>${title}</h2>${button('close-dialog', '×', { ui: true, classes: 'icon-button', aria: '关闭窗口' })}</div>${body}`;
@@ -551,6 +559,21 @@
     }).join('');
     const last=eq.lastDrop&&!eq.lastDrop.missed?`<p class="footnote">最近所得：${eq.lastDrop.full?`行囊已满，自动化为 ${eq.lastDrop.converted} 器蕴。`:`${esc(G.BY_ID[eq.lastDrop.id]?.name||'未知器物')} · 来源 ${esc(eq.lastDrop.kind)}`}</p>`:'';
     modal('本命神兵', `<div class="gear-summary"><div><span>行囊</span><b>${eq.inventory.length} / ${G.MAX_INVENTORY}</b></div><div><span>器蕴</span><b>${eq.essence}</b></div><div><span>规则</span><b>无耐久 · 无失败</b></div></div><p class="intro">四槽装备只作用于凡界 道途，与仙界肉身 / 血脉 / 神魂 / 神通 / 法则五槽完全分离。历练与战斗可让已穿戴本命神兵获得历练；温养使用归炉所得器蕴，显示阶段名而不是“+N”。</p><div class="gear-slots">${slots}</div><h3>行囊</h3><div class="gear-grid">${inventory||'<p class="intro">行囊尚空。历练、妖王、天地印证与天劫会确定性生成掉落。</p>'}</div>${last}`);
+  }
+  function equipmentSlotModal(slot) {
+    if(!Object.hasOwn(G.SLOTS,slot)||!state?.equipment)return;
+    const eq=state.equipment,current=G.equipped(eq,slot),occupied=!!(state.journey?.active||state.secretRealm?.active);
+    const candidates=eq.inventory.filter(entry=>G.data(entry)?.slot===slot);
+    const html=candidates.map(entry=>{
+      const def=G.data(entry),worn=current?.uid===entry.uid;
+      const actions=!entry.identified?button('equipment-identify','鉴定',{id:entry.uid,classes:'v3-item-action',disabled:occupied}):
+        button(worn?'equipment-unequip':'equipment-equip',worn?'卸下':'穿戴',{id:worn?slot:entry.uid,classes:'v3-item-action',disabled:occupied})+
+        (entry.refinement<3?button('equipment-refine',`温养 · ${entry.refinement+1} 器蕴`,{id:entry.uid,classes:'v3-item-action',disabled:occupied||eq.essence<entry.refinement+1}):'')+
+        (def.special&&def.next?button('equipment-evolve',`蜕变 · ${entry.xp}/${def.stage===0?80:220} 历练`,{id:entry.uid,classes:'v3-item-action',disabled:occupied||entry.xp<(def.stage===0?80:220)}):'');
+      return `<article class="v3-item-row" data-slot-item="${esc(entry.uid)}"><div class="v3-item-icon">${window.FSArt.img(window.FSArt.item('equipment',def.id,entry.identified))}</div><div class="v3-item-copy"><span>${worn?'已穿戴':entry.identified?G.REFINE_NAMES[entry.refinement]:'未鉴定'}</span><h3>${esc(entry.identified?def.name:'封灵器匣')}</h3><p>${esc(entry.identified?def.description:'鉴定不消耗资源。')}</p></div><div class="v3-item-actions">${actions}</div></article>`;
+    }).join('');
+    modal(`${G.SLOTS[slot]} · 此槽器物`,`<section class="v3-slot-detail" data-equipment-slot="${esc(slot)}"><p class="intro">仅显示本槽 ${candidates.length} 件器物。凡界装备不替代仙界五槽。</p>${occupied?'<p role="status">当前行旅或秘境未结束，暂只可查阅。</p>':''}${html||'<p class="intro">此槽尚无器物。历练与战斗所得将收进行囊。</p>'}${button('inventory','前往行囊',{ui:true,classes:'secondary full'})}</section>`);
+    activeEquipmentSlot=slot;
   }
   function daoModal(){
     if(!state?.dao)return;
@@ -729,6 +752,8 @@
         case 'practice': pageTab='practice';home=false;mortalSummary=false;worldVisible=false;dialog.close();render();document.getElementById('main').focus({preventScroll:true});break;
         case 'atlas':case 'inventory':case 'character':pageTab=el.dataset.ui==='nav-panel'?el.dataset.id:el.dataset.ui;home=false;worldVisible=false;dialog.close();render();break;
         case 'forge':pageTab='forge';home=false;worldVisible=false;dialog.close();render();break;
+        case 'v3-equipment-slot':equipmentSlotModal(el.dataset.id);break;
+        case 'skip-major':clearTimeout(majorTimer);majorLayer.classList.remove('visible');majorLayer.setAttribute('aria-hidden','true');majorLayer.replaceChildren();delete majorLayer.dataset.kind;break;
         case 'v3-bag-filter':UI3.setState('bagFilter',el.dataset.id||'all');render();break;
         case 'v3-forge-select':UI3.setState('forgeKind',el.dataset.kind||'pill');UI3.setState('forgeRecipe',el.dataset.id||'qi');pageTab='forge';render();break;
         case 'region':selectedRegion=el.dataset.id;render();break;
@@ -842,7 +867,7 @@
         sectModal();
         dialog.querySelector('[data-action^="sect-"]')?.focus({ preventScroll:true });
       } else if (action.type.startsWith('equipment-')) {
-        if(dialog.open){equipmentModal();dialog.querySelector(`[data-action="${action.type}"]`)?.focus({ preventScroll:true });}
+        if(dialog.open){if(activeEquipmentSlot)equipmentSlotModal(activeEquipmentSlot);else equipmentModal();dialog.querySelector(`[data-action="${action.type}"]`)?.focus({ preventScroll:true });}
         else if(['inventory','character'].includes(pageTab))document.getElementById('main')?.focus({preventScroll:true});
         else { equipmentModal(); dialog.querySelector(`[data-action="${action.type}"]`)?.focus({ preventScroll:true }); }
       } else if (action.type.startsWith('secret-')) {

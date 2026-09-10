@@ -1,6 +1,8 @@
 {
   "schemaVersion": 1,
-  "status": "functional-preview-uses-placeholders-final-assets-not-generated",
+  "status": "artwork-imported-and-integrated-user-visual-review-pending",
+  "canonicalAssetManifest": "assets/ui-v3/manifest.json",
+  "currentAcceptanceDocument": "docs/UI_V3_ART_ACCEPTANCE.md",
   "createdOn": "2026-09-10",
   "artDirection": "灰白水墨、细墨线建筑、淡青灰设色、完整道身轮廓、局部朱印与旧金细框；不用深褐滤镜和统一金色圆按钮",
   "characterRequirement": "无明确面貌的完整墨绘道身，可保留剪影，但不使用 CSS 几何占位作为成品",
@@ -14,22 +16,23 @@
     "headroom": 200000,
     "targetZipBytesExclusive": 3000000,
     "hardZipBytesExclusive": 10000000,
-    "measured": false,
+    "measured": true,
     "condition": "用新资产替代退役旧图；不得将全部旧图、新图和概念稿同时加入生产清单。实际 ZIP 与解码内存另测。"
   },
   "requiredMetadataAtDelivery": ["logicalAssetId", "actualPath", "pixelDimensions", "format", "alpha", "pivot", "cropOffset", "safeZones", "sourceRecord", "licenseOrOwnership", "sha256", "reviewStatus"],
   "currentRuntimeAssets": {
-    "cave": "assets/art/retreat-v2.1.webp plus CSS and text hotspot placeholders",
-    "map": "assets/art/atlas-v2.1.webp plus HTML map nodes",
-    "characterBackground": "assets/bg/realm-foundation.svg",
-    "characterPortrait": "inline SVG in src/ui-v3/character.js; placeholder, not final art",
-    "forge": "CSS furnace and fire; placeholder, not final art",
-    "itemsAndHud": "HTML text glyphs and CSS frames; placeholder icons",
-    "newFinalAssetGroupsDelivered": 0,
+    "cave": "assets/ui-v3/scenes/cave.webp and five independently clickable prop layers",
+    "map": "assets/ui-v3/scenes/world.webp and shared camera transform with marker layers",
+    "characterBackground": "assets/ui-v3/scenes/character.webp",
+    "characterPortrait": "assets/ui-v3/characters/dao-body.webp; generated portrait, user visual review pending",
+    "forge": "assets/ui-v3/scenes/forge.webp, props/furnace.webp, fx/fire.webp",
+    "itemsAndHud": "explicit item-ID/category map in src/ui-v3/art.js; independent WebP icons",
+    "importedImages": 82,
+    "importedGroups": 7,
     "conceptBoardUsedAsGameBackground": false,
     "originalGameAssetsBundled": false
   },
-  "groups": [
+  "originalPlanningGroups": [
     {"id":"cave-background","target":"assets/ui-v3/scenes/cave.webp","status":"planned","priority":"P0","budgetBytes":260000,"sourceSize":[1200,2400],"alpha":false,"design":"灰白远山、竖向崖壁与留给主殿和石台的中景；上部 HUD 安全区；不烘焙人物与标签"},
     {"id":"cave-props","target":"assets/ui-v3/props/cave/","status":"planned","priority":"P0","budgetBytes":240000,"alpha":true,"design":"主殿、修炼石台、丹炉、山门、藏物处、灵兽台；独立透明层和逻辑锚点"},
     {"id":"character-background","target":"assets/ui-v3/scenes/character.webp","status":"planned","priority":"P0","budgetBytes":130000,"sourceSize":[1200,2400],"alpha":false,"design":"低对比墨山与地台，主体和装备阅读区留白；不是洞府背景复用"},

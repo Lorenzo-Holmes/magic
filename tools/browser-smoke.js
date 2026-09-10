@@ -49,11 +49,20 @@ async (page, options = {}) => {
     await page.waitForTimeout(1300);
     for (const width of widths) {
       await page.setViewportSize({ width, height: width > 720 ? 900 : 844 });
+      await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
       const result = await page.evaluate(() => ({
         width: innerWidth,
         documentWidth: document.documentElement.scrollWidth,
         overflows: [...document.querySelectorAll('main *')].filter(el => {
           const r = el.getBoundingClientRect();
+          // A pan/zoom art canvas intentionally extends past its clipping port.
+          // Its port itself must remain in the page. HUD and other controls are
+          // still checked normally; V3 hit tests independently inspect buttons.
+          const camera=el.closest('.v3-art-canvas'),port=camera?.parentElement;
+          if(port&&port.matches('.v3-cave-viewport,.v3-map-viewport')){
+            const p=port.getBoundingClientRect(),style=getComputedStyle(port);
+            if(p.left>=-1&&p.right<=innerWidth+1&&['hidden','clip'].includes(style.overflowX))return false;
+          }
           return r.width && (r.left < -1 || r.right > innerWidth + 1);
         }).map(el => `${el.tagName}.${el.className}`),
         shortButtons: [...document.querySelectorAll('main button,.topbar button')].filter(el => {
@@ -150,6 +159,7 @@ async (page, options = {}) => {
     if(a.type==='journey-start'){
       await page.locator('[data-ui="nav-panel"][data-id="atlas"]').click();
       const region=await page.evaluate(id=>FSJourney.ROUTES.find(r=>r.id===id).region,a.id);
+      if(await page.locator('[data-camera="overview"]').count())await page.locator('[data-camera="overview"]').click();
       await page.locator('[data-ui="region"][data-id="'+region+'"]:visible').first().click();
       await page.locator('#journey-kit').selectOption(a.kind);
       if(!journeyChecked)await layout('journey-atlas');

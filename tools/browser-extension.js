@@ -10,7 +10,9 @@ async (page, options = {}) => {
   page.on('requestfailed', r => report.failedRequests.push(r.url()));
   page.on('response', r => { if (r.status() >= 400) report.errors.push(`${r.status()} ${r.url()}`); });
   const ui = name => page.locator(`[data-ui="${name}"]`);
-  const action = name => page.locator(`[data-action="${name}"]`);
+  // Native modal dialogs leave background DOM mounted but inert. Test the
+  // currently interactive layer rather than matching hidden background actions.
+  const action = name => page.locator(`:is(dialog[open],body:not(:has(dialog[open]))) [data-action="${name}"]`);
   const run = () => page.evaluate(() => JSON.parse(localStorage.getItem('feisheng.run.v1')));
 
   async function openPanel(name){
@@ -167,10 +169,10 @@ async (page, options = {}) => {
     await openPanel('equipment');
     check(await page.locator('dialog .gear-card').count() === equipmentStart.equipment.inventory.length, 'Equipment modal inventory count differs from save');
     await layout('equipment-inventory');
-    if (await page.locator(`[data-action="equipment-identify"][data-id="${uid}"]`).count()) await page.locator(`[data-action="equipment-identify"][data-id="${uid}"]`).click();
+    if (await page.locator(`dialog[open] [data-action="equipment-identify"][data-id="${uid}"]`).count()) await page.locator(`dialog[open] [data-action="equipment-identify"][data-id="${uid}"]`).click();
     const identified = await run();
     check(identified.equipment.inventory.find(x => x.uid === uid)?.identified, 'Equipment identify did not persist');
-    await page.locator(`[data-action="equipment-equip"][data-id="${uid}"]`).click();
+    await page.locator(`dialog[open] [data-action="equipment-equip"][data-id="${uid}"]`).click();
     const equipped = await run(), def = await page.evaluate(id => FSEquipment.data(JSON.parse(localStorage.getItem('feisheng.run.v1')).equipment.inventory.find(x=>x.uid===id)), uid);
     check(equipped.equipment.slots[def.slot] === uid, 'Equipment did not enter its matching mortal slot');
     const equippedRaw = JSON.stringify(equipped);

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "functional-preview-implemented-final-design-pending",
+  "status": "artwork-integrated-tested-user-visual-review-pending",
   "createdOn": "2026-09-10",
   "project": "我欲飞升",
   "baseline": {
@@ -179,11 +179,29 @@
   },
   "acceptance": {
     "visualApproval": "pending",
-    "productionUiImplemented": false,
+    "productionUiImplemented": true,
     "functionalPreviewWiredToEntry": true,
-    "finalArtImplemented": false,
-    "currentEvidenceDocument": "docs/UI_V3_IMPLEMENTATION_STATUS.md",
-    "technicalPreview": {
+    "finalArtImplemented": true,
+    "currentEvidenceDocument": "docs/UI_V3_ART_ACCEPTANCE.md",
+    "currentArtRelease": {
+      "version": "3.0.1",
+      "nodeTests": {"passed":195,"total":195,"exitCode":0},
+      "browserExitCode": 0,
+      "layoutChecks": 540,
+      "dialogLayoutChecks": 12,
+      "sourceQuickCases": 33,
+      "decodedArtImages": 82,
+      "mapDragZoomAndSixRegionClicks": true,
+      "isolatedFullBagAndCraftFixture": true,
+      "intentionalImageFailureSeparateFromNormalErrors": true,
+      "evidenceDirectory": "output/playwright/v3.0.1/runs/acceptance-Z64ILA",
+      "testedZipSha256": "fb26675102848c824b1cc0fd6b9c1b8bf45fd1e79914fe38f2dedd2f598fca81",
+      "zipBytes": 2674729,
+      "productionFiles": 131,
+      "physicalMobileDeviceTest": false,
+      "releaseDisposition": "preview branch; not merged into main"
+    },
+    "historicalFunctionalPreview": {
       "nodeTests": {"passed": 181, "total": 181, "exitCode": 0},
       "browserExitCode": 0,
       "layoutChecks": 540,

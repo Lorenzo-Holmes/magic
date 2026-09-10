@@ -6,6 +6,7 @@ module.exports = Object.freeze([
   'src/workbench.js', 'src/dao.js', 'src/world.js', 'src/world-ui.js',
   'src/journey.js', 'src/journey-ui.js', 'src/ink-theme.css', 'src/scene-ui.css', 'src/ui-v3.css',
   'src/ui-v3/core.js', 'src/ui-v3/hud.js', 'src/ui-v3/cave.js', 'src/ui-v3/world-map.js', 'src/ui-v3/baggage.js', 'src/ui-v3/character.js', 'src/ui-v3/forge.js',
-  'assets/art/retreat-v2.1.webp', 'assets/art/atlas-v2.1.webp',
+  'src/ui-v3/art.js','src/ui-v3-legacy.css','assets/ui-v3/manifest.js',
+  ...require('../assets/ui-v3/manifest.json').assets.map(asset => asset.path),
   'assets/bg/realm-nascent.svg', 'assets/bg/realm-void.svg', 'assets/bg/realm-tribulation.svg', 'assets/bg/realm-ascension.svg'
 ]);
