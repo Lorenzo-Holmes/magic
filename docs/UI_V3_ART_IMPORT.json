@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "status": "awaiting-user-file-transfer",
+  "filename": "wo-yu-fei-sheng-ui-v3-art-assets.zip",
+  "expectedLocalPath": "D:\\我欲飞升\\wo-yu-fei-sheng-ui-v3-art-assets.zip",
+  "zipBytes": 2444398,
+  "sha256": "66735b5f54192936ef4f1f74e80b4abe8fd5d7f4782e313db7c48e99f7126c68",
+  "imageAssets": 82,
+  "archiveEntries": 84,
+  "sourceImagesUsed": 13,
+  "imageBytes": 2424078,
+  "categories": {"scene": 6, "character": 1, "prop": 8, "icon": 13, "item": 42, "panel": 8, "fx": 4},
+  "preTransferChecks": {"allImagesDecoded": true, "dimensionAndAlphaChecked": true, "individualSHA256Checked": true, "zipCRCChecked": true, "contactSheetInspected": true},
+  "windowsImported": false,
+  "gameIntegrated": false,
+  "userVisualApproval": false,
+  "source": "Image-generation outputs already present in this conversation. Original game APK artwork is not included. Exact image-generation model version was not exposed.",
+  "transferBoundary": "DevSpace has no binary file import parameter. An attempted Browser Use observation of the ChatGPT tab failed closed because its permission/security check was unavailable. No browser security bypass or alternate authenticated download was attempted.",
+  "importCommand": "node tools/import-ui-v3-art.cjs",
+  "checkCommand": "node tools/import-ui-v3-art.cjs --check",
+  "importDoesNotDo": ["replace game code", "change saved progress", "mark visuals approved", "rebuild the release", "push main"]
+}
