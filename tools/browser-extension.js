@@ -15,7 +15,15 @@ async (page, options = {}) => {
 
   async function openPanel(name){
     const settings=page.locator('dialog[open] [data-ui="settings"]');
-    if(name==='settings'){if(await settings.count())await settings.click();else await page.locator('.topbar [data-ui="settings"]').click();return;}
+    if(name==='settings'){
+      if(await settings.count()){await settings.click();return;}
+      let direct=page.locator('[data-ui="settings"]:visible').first();
+      if(!(await direct.count())&&await page.locator('.game-shell[data-screen^="panel-"]').count()){
+        await page.locator('[data-ui="nav-panel"][data-id="practice"]').click();
+        direct=page.locator('[data-ui="settings"]:visible').first();
+      }
+      check(await direct.count(),'No visible settings entry');await direct.click();return;
+    }
     if(await page.locator('dialog[open]').count())await page.locator('dialog [data-ui="close-dialog"]').click();
     const direct=page.locator('[data-ui="'+name+'"]:visible').first();if(await direct.count()){await direct.click();return;}
     const hub=['equipment','crafting','spirit-beast'].includes(name)?'inventory':name==='secret-realm'?'atlas':'character';
@@ -23,7 +31,7 @@ async (page, options = {}) => {
     await ui(name).first().click();
   }
   const widths = [320, 360, 390, 430, 768, 1280];
-  async function close() { if (await page.locator('dialog[open]').count()) await page.locator('dialog [data-ui="close-dialog"]').click(); if(await page.locator('.hub-view,.atlas-view').count())await page.locator('[data-ui="nav-panel"][data-id="practice"]').click(); }
+  async function close() { if (await page.locator('dialog[open]').count()) await page.locator('dialog [data-ui="close-dialog"]').click(); if(await page.locator('.game-shell[data-screen^="panel-"]').count())await page.locator('[data-ui="nav-panel"][data-id="practice"]').click(); }
   async function restore(name) {
     await close(); await openPanel('settings');
     if (!(await page.locator('#import-save').count())) await page.locator('dialog [data-ui="settings"]').click();

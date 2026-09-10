@@ -37,7 +37,7 @@ async (page, options = {}) => {
 
   async function openPanel(name){
     const settings=page.locator('dialog[open] [data-ui="settings"]');
-    if(name==='settings'){if(await settings.count())await settings.click();else await page.locator('.topbar [data-ui="settings"]').click();return;}
+    if(name==='settings'){if(await settings.count())await settings.click();else await page.locator('[data-ui="settings"]:visible').first().click();return;}
     if(await page.locator('dialog[open]').count())await page.locator('dialog [data-ui="close-dialog"]').click();
     const hub=['equipment','crafting','spirit-beast'].includes(name)?'inventory':name==='secret-realm'?'atlas':'character';
     await page.locator('[data-ui="nav-panel"][data-id="'+hub+'"]').click();

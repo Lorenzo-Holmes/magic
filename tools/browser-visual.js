@@ -11,7 +11,9 @@ async (page, options = {}) => {
   page.on('response', r => { if (r.status() >= 400) report.errors.push(`${r.status()} ${r.url()}`); });
   async function restore(file) {
     if (await page.locator('dialog[open]').count()) await page.locator('dialog [data-ui="close-dialog"]').click();
-    await page.locator('.topbar [data-ui="settings"]').click();
+    const settings = page.locator('[data-ui="settings"]:visible').first();
+    check(await settings.count(), 'No visible settings entry for fixture restore');
+    await settings.click();
     if (!(await page.locator('#import-save').count())) await page.locator('dialog [data-ui="settings"]').click();
     await page.locator('#import-save').setInputFiles(`${out}/states/${file}.json`);
     await page.locator('dialog [data-ui="confirm-import"]').click();
