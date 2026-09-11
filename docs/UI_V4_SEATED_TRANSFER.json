@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "archiveName": "wo-yu-fei-sheng-ui-v4-seated-final.zip",
+  "zipBytes": 361657,
+  "sha256": "64525a954747aaae9e539adca6e8f0b921c107de0d598b0593bc26d221e070ef",
+  "manifestSha256": "b031d29e1d18e95ec2e496f27683a9970b0b51af79dba8943d37bd82a88a3da8",
+  "assets": 4,
+  "files": {
+    "jade-sword-seated.webp": "d657a04544e1ccb24d9d1a6073ab4aac4e3ecaee085943cec191a0d2218f9ebe",
+    "cloud-lotus-seated.webp": "c2d69217ebb0aee3ddc4e8c88d024f5b7a650dcfe72d08aff811f396d0b503fe",
+    "herbal-sage-seated.webp": "6a26ba77261ed64b03be3589b86e87cb1a3bdf295183c176cbe7a7667d0db653",
+    "jade-healer-seated.webp": "3543020b21ec2cef68c812ea2e7d0356a02208afc8e7be0dfc1a95c9930c848d"
+  }
+}

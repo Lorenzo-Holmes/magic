@@ -72,7 +72,9 @@ SHA-256：`972ae11e7cf9dbd76b928f83e7f31d04fc854b99486fa4aec7844da20510964a`。�
 
 UI-05 使用独立偏好键 `feisheng.appearance.v1`。人物页“更换形象”采用预览 → 确认 / 取消；预览不落盘，确认才保存 `{version:1, portraitId}`。切换四角色时本世存档和轮回册字符串保持不变，刷新恢复已确认外观；localStorage 拒绝写入时只保留本次会话选择并给出提示。v3.0.4 专项证据 `output/ui-v4-foundation/foundation-9kA4T4/` 共 28 张截图，四角色均实际渲染。
 
-UI-06 当前只完成“统一外壳”：修行与山海/人物/行囊共用雾白、暖玉和同一暗玉导航，中央修炼舞台允许保持深青黛。公共打坐剪影仍为同一项目已有资源；四角色没有配套坐姿，**不得写成四角色修行态已经完成**。
+UI-06 的四套配对坐姿已经生成并逐张核对身份：青衫剑修、流云仙修、丹道仙师、青莲医修各一张透明背景完整盘膝图；运行版统一压到 480×640 WebP。当前唯一未完成步骤是把 ChatGPT 侧的资源 ZIP 转存到 Windows 项目，因此运行时仍使用公共打坐剪影，**不得写成四角色修行态已经完成**。
+
+最终坐姿传输包：`wo-yu-fei-sheng-ui-v4-seated-final.zip`，**361,657 bytes**，SHA-256：`64525a954747aaae9e539adca6e8f0b921c107de0d598b0593bc26d221e070ef`。合同记录在 `docs/UI_V4_SEATED_TRANSFER.json`。新增 `tools/import-ui-v4-seated.cjs` 作为独立增量导入器，只允许四个固定文件和 `seated-manifest.json`，校验 ZIP 路径、CRC、文件 SHA、尺寸与 manifest 映射；不同内容拒绝覆盖，部分安装拒绝继续，导入失败会回滚本轮新建文件。对应 3 项单元测试均通过。
 
 ## UI-07 / UI-08：人物仙籍与随身宝匣已完成
 
