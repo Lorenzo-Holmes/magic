@@ -2,9 +2,12 @@
   'use strict';
   const manifest = root.FSArtManifest;
   if (!manifest) throw new Error('V3 artwork manifest must load before the art runtime');
+  const retired = new Set(['character.dao','prop.platform','prop.forge','prop.gate','prop.beast','prop.astrolabe','prop.pine','prop.pond']);
+  const runtimeIds = Object.freeze(Object.keys(manifest).filter(id=>!retired.has(id)));
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function asset(id) {
     const entry = manifest[id];
+    if(retired.has(id))throw new Error(`Retired artwork: ${id}`);
     if (!entry || !/^assets\/ui-v3\/[a-z-]+\/[a-z0-9-]+\.webp$/.test(entry.path)) throw new Error(`Unknown artwork: ${id}`);
     return entry;
   }
@@ -97,5 +100,5 @@
     // Labels and real actions remain usable; a failed decorative image does not
     // manufacture another URL, fetch external assets, or mutate the save.
   },true);
-  root.FSArt=Object.freeze({asset,img,item,utility,title,bindCamera,cameraGeometry,equipment,pills,materials});
+  root.FSArt=Object.freeze({asset,img,item,utility,title,bindCamera,cameraGeometry,equipment,pills,materials,runtimeIds});
 })(typeof globalThis !== 'undefined' ? globalThis : this);

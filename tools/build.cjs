@@ -10,7 +10,8 @@ const goalBytes = 3000000, maxBytes = 10000000;
 const out = path.join(root, 'dist'), release = path.join(root, 'release');
 fs.mkdirSync(out, { recursive: true }); fs.mkdirSync(release, { recursive: true });
 // Remove only explicitly retired build copies; source originals remain intact.
-for(const name of ['src/visual-theme.css','assets/ink-landscape.svg','assets/art/retreat-v2.1.webp','assets/art/atlas-v2.1.webp']){
+for(const name of ['src/visual-theme.css','assets/ink-landscape.svg','assets/art/retreat-v2.1.webp','assets/art/atlas-v2.1.webp',
+  'assets/ui-v3/characters/dao-body.webp','assets/ui-v3/props/platform.webp','assets/ui-v3/props/forge.webp','assets/ui-v3/props/gate.webp','assets/ui-v3/props/beast.webp','assets/ui-v3/props/astrolabe.webp','assets/ui-v3/props/pine.webp','assets/ui-v3/props/pond.webp']){
   const target=path.resolve(out,name);
   if(fs.existsSync(target)){
     const relative=path.relative(fs.realpathSync(out),fs.realpathSync(target));

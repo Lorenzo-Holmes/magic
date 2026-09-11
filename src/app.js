@@ -24,6 +24,7 @@
   dialog.classList.add('ui-dialog');
   dialog.dataset.surface='light';
   dialog.addEventListener('close',()=>{
+    window.FSUIAppearance?.cancel?.();
     activeEquipmentSlot=null;
     const key=dialogReturnTarget;dialogReturnTarget=null;
     if(key)[...app.querySelectorAll('button')].find(b=>b.dataset.ui===key.ui&&b.dataset.action===key.action&&b.dataset.id===key.id)?.focus({preventScroll:true});
@@ -553,6 +554,10 @@
     modal(`${G.SLOTS[slot]} · 此槽器物`,`<section class="v3-slot-detail" data-equipment-slot="${esc(slot)}"><p class="intro">仅显示本槽 ${candidates.length} 件器物。凡界装备不替代仙界五槽。</p>${occupied?'<p role="status">当前行旅或秘境未结束，暂只可查阅。</p>':''}${html||'<p class="intro">此槽尚无器物。历练与战斗所得将收进行囊。</p>'}${button('inventory','前往行囊',{ui:true,classes:'secondary full'})}</section>`);
     activeEquipmentSlot=slot;
   }
+  function appearanceModal() {
+    const A4=window.FSUIAppearance,current=A4.read(),preview=A4.pending()||current;
+    modal('更换道身形象',`<section class="ui-appearance-dialog" data-appearance-dialog><div class="ui-appearance-preview">${A4.image('standing','',preview.name,preview.id)}<span>${esc(preview.name)}</span></div><div class="ui-appearance-options" role="group" aria-label="可选道身">${A4.characters.map(c=>button('appearance-preview',`${A4.image('portrait','',c.name,c.id)}<span>${esc(c.name)}</span>`,{ui:true,id:c.id,classes:'ui-appearance-option',pressed:c.id===preview.id,aria:`预览${c.name}`})).join('')}</div><p class="ui-appearance-note">外观只保存在本设备，不改变修为、装备、战力、剧情或轮回册。当前四形象只有站姿和头像；修行坐姿仍使用公共修炼剪影。</p><div class="ui-appearance-actions">${button('appearance-cancel','取消',{ui:true,classes:'secondary'})}${button('appearance-confirm',preview.id===current.id?'保持此形象':'确认更换',{ui:true,classes:'primary'})}</div></section>`);
+  }
   function daoModal(){
     if(!state?.dao)return;
     const A=window.FSDao,p=A.preview(state.dao,state),f=state.dao.formed,rules=(f?.rules||p.rules).map(id=>A.RULES.find(r=>r.id===id));
@@ -735,6 +740,15 @@
         case 'skip-major':clearTimeout(majorTimer);majorLayer.classList.remove('visible');majorLayer.setAttribute('aria-hidden','true');majorLayer.replaceChildren();delete majorLayer.dataset.kind;break;
         case 'v3-bag-filter':UI3.setState('bagFilter',el.dataset.id||'all');render();break;
         case 'v3-forge-select':UI3.setState('forgeKind',el.dataset.kind||'pill');UI3.setState('forgeRecipe',el.dataset.id||'qi');pageTab='forge';render();break;
+        case 'appearance-open':window.FSUIAppearance.cancel();appearanceModal();break;
+        case 'appearance-preview':
+          try{window.FSUIAppearance.preview(el.dataset.id);appearanceModal();}
+          catch(error){announce(error.message||'无法预览道身外观。');}
+          break;
+        case 'appearance-confirm': {
+          const result=window.FSUIAppearance.confirm();dialog.close();render();announce(result.persisted?`已换用「${result.character.name}」外观。修为、装备与存档数值均未改变。`:`已在本次会话换用「${result.character.name}」，但浏览器未允许保存外观偏好。`);break;
+        }
+        case 'appearance-cancel':window.FSUIAppearance.cancel();dialog.close();break;
         case 'region':selectedRegion=el.dataset.id;render();break;
         case 'world-setup':modal('执掌一方天地',window.FSWorldUI.setup(state,button));break;
         case 'world-open':worldVisible=true;pageTab='practice';home=false;mortalSummary=false;render();break;

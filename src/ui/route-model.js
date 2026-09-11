@@ -11,7 +11,7 @@
     const v3Primary=!!(workspace&&!inWorld&&!inJourney&&(panel||(pageTab==='practice'&&state.phase==='playing'&&!inImmortal)));
     const context=inWorld?'creation':inImmortal?'immortal':'mortal';
     const view=home?'home':inJourney?`journey-${state.journey.active.nonce}-${state.journey.active.step}`:panel?`panel-${pageTab}`:inWorld?`creation-${state.world.phase}-${state.world.era}-${state.world.cursor}`:inImmortal?`immortal-${state.immortal.phase}`:state?.phase||'home';
-    return Object.freeze({workspace,inJourney,inWorld,inImmortal,panel,v3Primary,context,view,navCurrent:inJourney?'atlas':pageTab==='forge'?'practice':pageTab,surface:v3Primary&&['practice','forge'].includes(pageTab)?'dark':'light',scroll:v3Primary?'stage':'document'});
+    return Object.freeze({workspace,inJourney,inWorld,inImmortal,panel,v3Primary,context,view,navCurrent:inJourney?'atlas':pageTab==='forge'?'practice':pageTab,surface:v3Primary&&pageTab==='forge'?'dark':'light',scroll:v3Primary?'stage':'document'});
   }
   return Object.freeze({resolve});
 });

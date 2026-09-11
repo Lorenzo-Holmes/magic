@@ -28,6 +28,7 @@ async function restore(name) {
 }
 async function capture(label,width,height) {
   await page.setViewportSize({width,height});
+  await page.waitForFunction(()=>[...document.querySelectorAll('#app img[src]')].every(i=>i.complete&&i.naturalWidth>0));
   await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
   const sample=await page.evaluate(()=>{
     const main=document.querySelector('main'),nav=document.querySelector('nav[aria-label="主要功能"]');
@@ -59,6 +60,30 @@ async function capture(label,width,height) {
     for(const [w,h] of [[390,844],[320,568],[360,800],[430,932],[768,1024],[1280,900]]) await capture(state,w,h);
   }
   await restore('practice');await page.setViewportSize({width:390,height:844});
+  if(mode!=='before'){
+    assert.equal(await page.locator('[data-ui-shell]').getAttribute('data-surface'),'light','Practice shell should share the light shell with atlas/inventory/character');
+    const runBeforeAppearance=await page.evaluate(()=>localStorage.getItem('feisheng.run.v1'));
+    await page.locator('[data-ui="nav-panel"][data-id="character"]').click();
+    const ids=['jade-sword','cloud-lotus','herbal-sage','jade-healer'];
+    report.appearance=[];
+    for(const id of ids){
+      await page.locator('[data-ui="appearance-open"]').click();
+      const rawBefore=await page.evaluate(()=>localStorage.getItem('feisheng.appearance.v1'));
+      await page.locator(`[data-ui="appearance-preview"][data-id="${id}"]`).click();
+      assert.equal(await page.locator(`[data-ui="appearance-preview"][data-id="${id}"]`).getAttribute('aria-pressed'),'true');
+      assert.equal(await page.evaluate(()=>localStorage.getItem('feisheng.appearance.v1')),rawBefore,'Preview persisted unexpectedly');
+      const previewSrc=await page.locator('.ui-appearance-preview img').getAttribute('src');assert.ok(previewSrc.includes(id));
+      await page.locator('[data-ui="appearance-confirm"]').click();
+      const src=await page.locator('.v4-character-standing').getAttribute('src');assert.ok(src.includes(id));
+      assert.equal(await page.evaluate(()=>localStorage.getItem('feisheng.run.v1')),runBeforeAppearance);
+      const file=`character-${id}-390x844.png`;await page.screenshot({path:path.join(out,file)});report.screenshots.push(file);report.appearance.push({id,src,saveUnchanged:true});
+    }
+    await page.reload();await page.locator('[data-ui="continue"]').click();await page.locator('[data-ui="nav-panel"][data-id="character"]').click();
+    assert.ok((await page.locator('.v4-character-standing').getAttribute('src')).includes('jade-healer'));
+    assert.equal(await page.evaluate(()=>localStorage.getItem('feisheng.run.v1')),runBeforeAppearance);
+    report.appearancePersistence=true;
+    await page.locator('[data-ui="nav-panel"][data-id="practice"]').click();
+  }
   for(const tab of ['atlas','inventory','character']){
     await page.locator(`[data-ui="nav-panel"][data-id="${tab}"]`).click();await capture(tab,390,844);
   }

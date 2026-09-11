@@ -22,7 +22,7 @@ test('V4 行旅优先，导航不能替换强制行旅内容；两类装备页�
 });
 test('V4 首页/开局无游戏底栏，五个主要窗口都有正确 surface',()=>{
   for(const phase of ['talents','attributes'])assert.equal(R.resolve({state:{...s,phase},home:false}).workspace,false);
-  for(const [pageTab,surface]of [['practice','dark'],['forge','dark'],['atlas','light'],['inventory','light'],['character','light']]){
+  for(const [pageTab,surface]of [['practice','light'],['forge','dark'],['atlas','light'],['inventory','light'],['character','light']]){
     const r=R.resolve({state:s,home:false,pageTab});assert.equal(r.surface,surface);assert.ok(r.workspace&&r.v3Primary);
   }
 });

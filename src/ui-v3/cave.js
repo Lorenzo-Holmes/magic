@@ -1,6 +1,6 @@
 (function(root){
   'use strict';
-  const V=root.FSUIV3,A=root.FSArt;
+  const V=root.FSUIV3,A=root.FSArt,P=root.FSUIAppearance;
   // This is a cultivation room, not the estate map. All numbers and actions
   // remain owned by the existing engine; the inner-scene effect is decorative.
   V.register('CaveWindow',{
@@ -24,8 +24,9 @@
       const primary=ready
         ?button('breakthrough',`<b>破境</b><small>${esc(next?.name||'下一境')}</small>`,{classes:'pr-main-action is-ready',aria:`破境至${next?.name||'下一境'}`})
         :button('act',`<b>闭关</b><small>+${fmt(cultivate.xp||0)} 修为</small>`,{kind:'cultivate',classes:'pr-main-action',disabled:blocked,aria:`闭关修炼，获得 ${cultivate.xp||0} 修为，消耗 ${cultivate.years} 年寿元`});
+      const appearance=P.read();
       return `<section class="v3-window v3-cave-window practice-room${blocked?' is-blocked':''}${ready?' is-ready':''}" data-spirit="${spirit}">
-        <header class="pr-header"><div class="pr-identity"><small>修行 · 听松静室</small><strong>${esc(realm.name)}</strong></div><div class="pr-power"><small>战力</small>${powerFigure(E.power(state))}</div>${A.utility(button)}</header>
+        <header class="pr-header"><span class="pr-avatar">${P.image('portrait','',appearance.name,appearance.id)}</span><div class="pr-identity"><small>修行 · 听松静室</small><strong>${esc(realm.name)}</strong></div><div class="pr-power"><small>战力</small>${powerFigure(E.power(state))}</div>${A.utility(button)}</header>
         <div class="pr-resources"><span>道龄 ${state.age} / ${E.maxAge(state)}</span><span>元气 ${state.vitality}</span><span>盘缠 ${fmt(state.journey.silver)}</span><span>行粮 ${fmt(state.journey.supplies)}</span></div>
         <div class="pr-stage">
           <div class="pr-picture"><img class="v3-cave-bg pr-landscape" src="./assets/art/retreat-v2.1.webp" width="1536" height="1024" alt="水墨山间，一位修士独坐石台" decoding="async" draggable="false"><div class="pr-scene-wash" aria-hidden="true"></div></div>

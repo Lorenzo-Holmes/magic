@@ -1,0 +1,300 @@
+{
+  "schemaVersion": 1,
+  "bundleId": "v4-standing-portraits-20260911",
+  "status": "standing-and-avatars-only-seated-assets-pending",
+  "userVisualApproval": "pending",
+  "modelLabel": "Generated earlier in this conversation; exact model version not exposed",
+  "noReferenceGameAssets": true,
+  "assets": [
+    {
+      "id": "character.jade-sword.standing",
+      "path": "assets/ui-v4/characters/jade-sword-standing.webp",
+      "width": 480,
+      "height": 640,
+      "alpha": true,
+      "bytes": 106554,
+      "sha256": "16c7dda1ee0561e5af538bd437be4b890744666705945560744b8718bf2a9bb1",
+      "source": "翡翠流苏剑仙风姿.png",
+      "sourceSha256": "9808875f1103dde0038d1da2da2414eb39fb8d5c160d9f61b2ff40677e5a9033",
+      "sourceSize": [
+        1086,
+        1448
+      ],
+      "crop": [
+        0,
+        0,
+        1086,
+        1448
+      ],
+      "pivot": [
+        0.5,
+        1
+      ],
+      "lifecycle": "reviewed",
+      "review": "standing-and-portrait-contact-sheets-visually-inspected; user-approval-pending",
+      "pages": [
+        "character",
+        "appearance"
+      ],
+      "sourceType": "generated-earlier-in-this-conversation"
+    },
+    {
+      "id": "character.jade-sword.portrait",
+      "path": "assets/ui-v4/characters/jade-sword-portrait.webp",
+      "width": 119,
+      "height": 128,
+      "alpha": true,
+      "bytes": 8620,
+      "sha256": "490136c3533bdecba6f7e8e2f222c84c58050b543e51e9be2a5d3fd65e48cedb",
+      "source": "翡翠流苏剑仙风姿.png",
+      "sourceSha256": "9808875f1103dde0038d1da2da2414eb39fb8d5c160d9f61b2ff40677e5a9033",
+      "sourceSize": [
+        1086,
+        1448
+      ],
+      "crop": [
+        440,
+        70,
+        690,
+        340
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "lifecycle": "reviewed",
+      "review": "standing-and-portrait-contact-sheets-visually-inspected; user-approval-pending",
+      "pages": [
+        "character",
+        "appearance"
+      ],
+      "sourceType": "generated-earlier-in-this-conversation"
+    },
+    {
+      "id": "character.cloud-lotus.standing",
+      "path": "assets/ui-v4/characters/cloud-lotus-standing.webp",
+      "width": 480,
+      "height": 640,
+      "alpha": true,
+      "bytes": 112564,
+      "sha256": "71dce8244294f1690236a39f2242f1a289037dce9440768c346238330633f399",
+      "source": "翡翠流韵_风中仙姝.png",
+      "sourceSha256": "3fa1d8e4118f499e2564244b331791ed3c37c66cc75ee2a2e4e8558630c7a2f3",
+      "sourceSize": [
+        1086,
+        1448
+      ],
+      "crop": [
+        0,
+        0,
+        1086,
+        1448
+      ],
+      "pivot": [
+        0.5,
+        1
+      ],
+      "lifecycle": "reviewed",
+      "review": "standing-and-portrait-contact-sheets-visually-inspected; user-approval-pending",
+      "pages": [
+        "character",
+        "appearance"
+      ],
+      "sourceType": "generated-earlier-in-this-conversation"
+    },
+    {
+      "id": "character.cloud-lotus.portrait",
+      "path": "assets/ui-v4/characters/cloud-lotus-portrait.webp",
+      "width": 128,
+      "height": 128,
+      "alpha": true,
+      "bytes": 8908,
+      "sha256": "85301198bc0d20580ee804cd2a15c5c76d79699c8d2e72883eebb333256c734c",
+      "source": "翡翠流韵_风中仙姝.png",
+      "sourceSha256": "3fa1d8e4118f499e2564244b331791ed3c37c66cc75ee2a2e4e8558630c7a2f3",
+      "sourceSize": [
+        1086,
+        1448
+      ],
+      "crop": [
+        435,
+        75,
+        720,
+        360
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "lifecycle": "reviewed",
+      "review": "standing-and-portrait-contact-sheets-visually-inspected; user-approval-pending",
+      "pages": [
+        "character",
+        "appearance"
+      ],
+      "sourceType": "generated-earlier-in-this-conversation"
+    },
+    {
+      "id": "character.herbal-sage.standing",
+      "path": "assets/ui-v4/characters/herbal-sage-standing.webp",
+      "width": 480,
+      "height": 640,
+      "alpha": true,
+      "bytes": 122712,
+      "sha256": "c8971307093e3018003dd1d08aff9b297effe3366b7a73198bbe25cd226b5782",
+      "source": "仙风道骨炼丹宗师.png",
+      "sourceSha256": "41defff5a5d15d4e31caec1e684e2c91d35793e94d5828aa6a2d70735fabdb85",
+      "sourceSize": [
+        1086,
+        1448
+      ],
+      "crop": [
+        0,
+        0,
+        1086,
+        1448
+      ],
+      "pivot": [
+        0.5,
+        1
+      ],
+      "lifecycle": "reviewed",
+      "review": "standing-and-portrait-contact-sheets-visually-inspected; user-approval-pending",
+      "pages": [
+        "character",
+        "appearance"
+      ],
+      "sourceType": "generated-earlier-in-this-conversation"
+    },
+    {
+      "id": "character.herbal-sage.portrait",
+      "path": "assets/ui-v4/characters/herbal-sage-portrait.webp",
+      "width": 128,
+      "height": 128,
+      "alpha": true,
+      "bytes": 9432,
+      "sha256": "7282fa1ea9427ce404a5eeb1766aa254888de675d7584ec9cda020076637192f",
+      "source": "仙风道骨炼丹宗师.png",
+      "sourceSha256": "41defff5a5d15d4e31caec1e684e2c91d35793e94d5828aa6a2d70735fabdb85",
+      "sourceSize": [
+        1086,
+        1448
+      ],
+      "crop": [
+        420,
+        50,
+        705,
+        335
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "lifecycle": "reviewed",
+      "review": "standing-and-portrait-contact-sheets-visually-inspected; user-approval-pending",
+      "pages": [
+        "character",
+        "appearance"
+      ],
+      "sourceType": "generated-earlier-in-this-conversation"
+    },
+    {
+      "id": "character.jade-healer.standing",
+      "path": "assets/ui-v4/characters/jade-healer-standing.webp",
+      "width": 480,
+      "height": 640,
+      "alpha": true,
+      "bytes": 108912,
+      "sha256": "d461aa10253b74ed922cdc7e156cba861c16d0dbb5f97dc39bde0d6273ec14eb",
+      "source": "薄荷玉笛仙姬.png",
+      "sourceSha256": "15469c9cec72faf520c0b2485849cd2fcc80c57d9e83df69bb135b77bb02f502",
+      "sourceSize": [
+        1086,
+        1448
+      ],
+      "crop": [
+        0,
+        0,
+        1086,
+        1448
+      ],
+      "pivot": [
+        0.5,
+        1
+      ],
+      "lifecycle": "reviewed",
+      "review": "standing-and-portrait-contact-sheets-visually-inspected; user-approval-pending",
+      "pages": [
+        "character",
+        "appearance"
+      ],
+      "sourceType": "generated-earlier-in-this-conversation"
+    },
+    {
+      "id": "character.jade-healer.portrait",
+      "path": "assets/ui-v4/characters/jade-healer-portrait.webp",
+      "width": 128,
+      "height": 128,
+      "alpha": true,
+      "bytes": 8666,
+      "sha256": "8aa5937df68bc1ddf158cbabafc8baf8fd9f9dfa72d7180b44e554a1d3dfb849",
+      "source": "薄荷玉笛仙姬.png",
+      "sourceSha256": "15469c9cec72faf520c0b2485849cd2fcc80c57d9e83df69bb135b77bb02f502",
+      "sourceSize": [
+        1086,
+        1448
+      ],
+      "crop": [
+        430,
+        55,
+        740,
+        365
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "lifecycle": "reviewed",
+      "review": "standing-and-portrait-contact-sheets-visually-inspected; user-approval-pending",
+      "pages": [
+        "character",
+        "appearance"
+      ],
+      "sourceType": "generated-earlier-in-this-conversation"
+    }
+  ],
+  "characters": [
+    {
+      "id": "jade-sword",
+      "name": "青衫剑修",
+      "standing": "character.jade-sword.standing",
+      "portrait": "character.jade-sword.portrait",
+      "seated": null,
+      "status": "seated_asset_missing"
+    },
+    {
+      "id": "cloud-lotus",
+      "name": "流云仙修",
+      "standing": "character.cloud-lotus.standing",
+      "portrait": "character.cloud-lotus.portrait",
+      "seated": null,
+      "status": "seated_asset_missing"
+    },
+    {
+      "id": "herbal-sage",
+      "name": "丹道仙师",
+      "standing": "character.herbal-sage.standing",
+      "portrait": "character.herbal-sage.portrait",
+      "seated": null,
+      "status": "seated_asset_missing"
+    },
+    {
+      "id": "jade-healer",
+      "name": "青莲医修",
+      "standing": "character.jade-healer.standing",
+      "portrait": "character.jade-healer.portrait",
+      "seated": null,
+      "status": "seated_asset_missing"
+    }
+  ]
+}

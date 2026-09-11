@@ -17,7 +17,9 @@ function runtime() {
   sandbox.window=sandbox;
   vm.runInContext(fs.readFileSync(path.join(__dirname,'../src/ui/navigation.js'),'utf8'),sandbox);
   vm.runInContext(fs.readFileSync(path.join(__dirname,'../assets/ui-v3/manifest.js'),'utf8'),sandbox);
+  vm.runInContext(fs.readFileSync(path.join(__dirname,'../assets/ui-v4/manifest.js'),'utf8'),sandbox);
   vm.runInContext(fs.readFileSync(path.join(__dirname,'../src/ui-v3/art.js'),'utf8'),sandbox);
+  vm.runInContext(fs.readFileSync(path.join(__dirname,'../src/ui/appearance.js'),'utf8'),sandbox);
   for (const name of modules) {
     const filename = path.join(__dirname, '../src/ui-v3', `${name}.js`);
     vm.runInContext(fs.readFileSync(filename, 'utf8'), sandbox, { filename });

@@ -91,10 +91,11 @@ async function main() {
   // Decode every installed image, not merely those on the five empty screens.
   report.artworkDecode=await page.evaluate(async()=>{
     const results=[];
-    for(const [id,a] of Object.entries(FSArtManifest)){const image=new Image();image.src='./'+a.path;await image.decode();results.push({id,width:image.naturalWidth,height:image.naturalHeight,passed:image.naturalWidth===a.width&&image.naturalHeight===a.height});}
+    for(const id of FSArt.runtimeIds){const a=FSArtManifest[id],image=new Image();image.src='./'+a.path;await image.decode();results.push({id,width:image.naturalWidth,height:image.naturalHeight,passed:image.naturalWidth===a.width&&image.naturalHeight===a.height});}
     return results;
   });
-  assert.equal(report.artworkDecode.length,82);assert.ok(report.artworkDecode.every(x=>x.passed));
+  const runtimeArtCount=await page.evaluate(()=>FSArt.runtimeIds.length);
+  assert.equal(report.artworkDecode.length,runtimeArtCount);assert.ok(report.artworkDecode.every(x=>x.passed));
   await page.locator('[data-ui="nav-panel"][data-id="atlas"]').click();
   const cameraBefore=await page.locator('.v3-map-viewport').getAttribute('data-camera-scale');
   await page.locator('[data-camera="in"]').click();
@@ -144,14 +145,14 @@ async function main() {
   // Failure injection has a separate context and is not mixed with normal-load errors.
   const failureContext=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
   await failureContext.addInitScript(raw=>localStorage.setItem('feisheng.run.v1',raw),fixture);
-  await failureContext.route('**/dao-body.webp',route=>route.abort());
+  await failureContext.route('**/jade-sword-standing.webp',route=>route.abort());
   const fallback=await failureContext.newPage();await fallback.goto(baseURL);await fallback.locator('[data-ui="continue"]').click();await fallback.locator('[data-ui="nav-panel"][data-id="character"]').click();
-  await fallback.locator('.v3-character-portrait.v3-art-failed').waitFor({state:'attached'});
+  await fallback.locator('.v4-character-standing.ui-v4-art-failed').waitFor({state:'attached'});
   await fallback.locator('[data-ui="v3-equipment-slot"][data-id="weapon"]').click();
   assert.equal(await fallback.locator('[data-equipment-slot="weapon"]').count(),1);
   assert.equal(await fallback.evaluate(()=>localStorage.getItem('feisheng.run.v1')),fixture);
   await fallback.screenshot({path:path.join(out,'intentional-portrait-failure.png')});await failureContext.close();
-  report.intentionalFailure={asset:'character.dao',fallback:true,actionsStillWork:true,saveUnchanged:true};
+  report.intentionalFailure={asset:'character.jade-sword.standing',fallback:true,actionsStillWork:true,saveUnchanged:true};
   report.passed = true;
 }
 main().catch(async error => {
