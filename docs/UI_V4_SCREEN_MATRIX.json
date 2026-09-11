@@ -1,0 +1,21 @@
+{
+  "schemaVersion":1,
+  "scope":"actual routes before UI-03 migration",
+  "screens":[
+    {"id":"home","source":"homeView","navigation":"none","scroll":"document","theme":"light"},
+    {"id":"talents/attributes","source":"talentsView/attributesView","navigation":"none","scroll":"document","theme":"light"},
+    {"id":"practice","source":"CaveWindow","navigation":"UI3.renderHud","scroll":"bounded stage","theme":"dark","state":"mortal playing"},
+    {"id":"atlas","source":"WorldMapWindow","navigation":"UI3.renderHud","scroll":"map camera + route list","theme":"light"},
+    {"id":"inventory","source":"BaggageWindow","navigation":"UI3.renderHud","scroll":"item list","theme":"light"},
+    {"id":"character","source":"CharacterWindow","navigation":"UI3.renderHud","scroll":"bounded stage","theme":"light"},
+    {"id":"forge","source":"ForgeWindow","navigation":"UI3.renderHud","scroll":"recipe lists","theme":"dark scene + light panel"},
+    {"id":"journey","source":"FSJourneyUI.active","navigation":"FSWorkbench","scroll":"legacy main","theme":"light","leave":"original engine locks actions"},
+    {"id":"encounter","source":"eventView in CaveWindow","navigation":"UI3.renderHud","scroll":"event sheet","leave":"blocking engine conditions"},
+    {"id":"draft/mutation/fusion/tribulation/ending","source":"app.js retained renderers","navigation":"FSWorkbench","scroll":"legacy main/document","theme":"light"},
+    {"id":"immortal","source":"immortalView/evolutionView","navigation":"FSWorkbench","scroll":"legacy main/document","theme":"light with inherited light text bug"},
+    {"id":"creation","source":"FSWorldUI.view","navigation":"FSWorkbench","scroll":"legacy main/document","theme":"light"},
+    {"id":"dialogs","source":"app.js modal","navigation":"underlying page inert","scroll":"single native dialog","theme":"light","focus":"restore trigger"},
+    {"id":"major/combat presentation","source":"presentation layers","navigation":"covered temporarily","scroll":"none","leave":"skip then restore"}
+  ],
+  "requiredTransitions":["mortal-character-mortal","immortal-inventory-immortal","creation-inventory-creation","creation-return-immortal","mortal-summary-return-immortal","journey-navigation-return"]
+}
