@@ -20,7 +20,13 @@ UI-00～17 已在 v3.0.8 完成并发布；该版本的 GitHub main 与 Cloudfla
 
 固定 fixture 新增 `immortal-world-edge`，必须真实推进到第 4 界且完成此界印证后才能生成。专项验收 `output/ui-v4-foundation/foundation-UgJH8i/` 生成 38 张截图，覆盖 320/360/390/430/768/1280；390×844 和 320×568 的正式构图已人工检查。对比度门槛仍为 4.5:1，渐变资源牌由截图人工检查，纯色承托层继续自动测量；点击命中与 reducer 真实提交均通过。
 
-v3.0.9 全量 Node 为 **228/228**；正式包浏览器 smoke + visual + extension 合计 **540** 次布局检查和 **12** 次弹窗布局检查，控制台错误、失败请求、外部请求均为 0，仙界进化扩展测试通过。候选包 `release/wo-yu-fei-sheng-v3.0.9.zip` 为 **2,935,393 bytes**，159 个生产文件，source / dist / ZIP 一致；SHA-256：`c0b35cf3d76d8a60631c8bdfe265bea3946e234820dad6a4338e17ee918cf3ac`。本候选已同步 `feat/world-edge-v4-refine` 供核验；尚未合并 main 或部署 Cloudflare。
+v3.0.9 全量 Node 为 **228/228**；正式包浏览器 smoke + visual + extension 合计 **540** 次布局检查和 **12** 次弹窗布局检查，控制台错误、失败请求、外部请求均为 0，仙界进化扩展测试通过。正式包 `release/wo-yu-fei-sheng-v3.0.9.zip` 为 **2,935,393 bytes**，159 个生产文件，source / dist / ZIP 一致；SHA-256：`c0b35cf3d76d8a60631c8bdfe265bea3946e234820dad6a4338e17ee918cf3ac`。
+
+### v3.0.9 正式发布
+
+用户继续发布流程后，`feat/world-edge-v4-refine` 以 fast-forward 合并到 `main` 并推送 `origin/main`。部署源提交：`f61ff59f64f14e26c55e70bf2f66d9ae5dfd1964`。随后从 `main` 重新执行 `build` 与 `verify:release`，包大小与 SHA 与候选验收完全一致。
+
+Cloudflare Worker `magic` 部署成功，Version ID：`8243fdbc-600b-41df-9d0f-b13ac828f1d7`，线上地址：`https://magic.1106314996.workers.dev`。线上 HTTP 复验确认主页返回 200 且包含 `v3.0.9`；`src/ui/immortal-v4.css`、`src/app.js`、`src/scenes.js` 均返回 200，内容 SHA 与本地 `dist` 完全一致。OAuth 仅请求 `account:read`、`user:read`、`workers_scripts:write`，部署完成后已执行 `wrangler logout`。
 
 ## 实际实现
 

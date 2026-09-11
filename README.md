@@ -1,6 +1,6 @@
-# 我欲飞升 · v3.0.9「界域主舞台」候选
+# 我欲飞升 · v3.0.9「界域主舞台」
 
-`feat/world-edge-v4-refine` 基于已发布的 v3.0.8 继续深化仙界四界模板。本轮把“世界边缘”及仙城废墟、星海遗迹、法则裂谷统一为界域主舞台：五界路签、资源牌、法则卡、五槽进化主条、1+2×2 行动卡与猎物档案共享同一结构；原五槽、印证、炼化、调息、碎片与狩猎 reducer 不变。v3.0.8 仍是当前线上正式版，v3.0.9 仅为已通过技术回归的候选，尚未合并 `main` 或部署 Cloudflare。进度与证据见 [UI V4 执行记录](docs/UI_V4_PROGRESS.md) 和 [任务状态](docs/UI_V4_EXECUTION_STATE.json)。
+v3.0.9 已正式发布。`feat/world-edge-v4-refine` 基于 v3.0.8 深化仙界四界模板，并已 fast-forward 合并到 `main`、推送 GitHub、部署 Cloudflare。世界边缘、仙城废墟、星海遗迹、法则裂谷统一为界域主舞台：五界路签、资源牌、法则卡、五槽进化主条、1+2×2 行动卡与猎物档案共享同一结构；原五槽、印证、炼化、调息、碎片与狩猎 reducer 不变。线上地址：`https://magic.1106314996.workers.dev`。进度与证据见 [UI V4 执行记录](docs/UI_V4_PROGRESS.md) 和 [任务状态](docs/UI_V4_EXECUTION_STATE.json)。
 
 v3.0.2 的修炼室布局继续保留：独坐修士、内景、修为与破境条件、中央闭关/破境操作；丹器、灵兽和山门位于洞府事务。历史设计依据见 [修行页视觉重构](docs/PRACTICE_VISUAL_REDESIGN.md)。原引擎、玩法、存档及两类装备体系均保持。
 

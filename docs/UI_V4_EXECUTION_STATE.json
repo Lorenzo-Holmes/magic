@@ -5,8 +5,8 @@
   "branch": "feat/world-edge-v4-refine",
   "baseline": "14afd1cb692aab778a5c649289f62064dc6ae099",
   "candidateVersion": "3.0.9",
-  "scope": "UI-00..17 were completed and published in v3.0.8; this branch is a post-release realm-template refinement for immortal evolution worlds, technically complete and awaiting visual approval",
-  "visualApproval": "pending_for_v3.0.9_world_template",
+  "scope": "UI-00..17 were completed and published in v3.0.8; the post-release realm-template refinement was completed, reviewed, fast-forwarded to main and deployed as v3.0.9",
+  "visualApproval": "accepted_for_v3.0.9_publish_sequence",
   "tasks": [
     {"id":"UI-00","implementation":"complete","technical":"passed","checkpoint":"b7b2899"},
     {"id":"UI-01","implementation":"complete","technical":"passed","visual":"pending"},
@@ -28,7 +28,7 @@
     {"id":"UI-17","implementation":"complete","technical":"passed","note":"feat/ui-v4-unified was fast-forwarded to main, origin/main was pushed, v3.0.8 was rebuilt and verified, then Cloudflare Worker magic was deployed and key production URLs returned HTTP 200","dependsOn":["UI-16"],"requires":"explicit publish authorization"}
   ],
   "postReleaseRefinements": [
-    {"id":"UI-V4-R1","implementation":"complete","technical":"passed","visual":"pending","note":"immortal evolution worlds now share a larger realm hero, five-world road strip, icon-led resource rail, law panel, prominent five-slot evolution strip, 1+2x2 action hierarchy and creature/gate dossier cards; original evolution reducer, costs, RNG and save transitions are unchanged"}
+    {"id":"UI-V4-R1","implementation":"complete","technical":"passed","visual":"published","note":"immortal evolution worlds now share a larger realm hero, five-world road strip, icon-led resource rail, law panel, prominent five-slot evolution strip, 1+2x2 action hierarchy and creature/gate dossier cards; original evolution reducer, costs, RNG and save transitions are unchanged"}
   ],
   "evidence": {
     "before":"output/ui-v4-foundation/before-nmrop1",
@@ -71,7 +71,13 @@
     "rawProductionBytes":3457804,
     "productionFiles":159,
     "sourceDistZipIdentical":true,
-    "testedZipSha256":"c0b35cf3d76d8a60631c8bdfe265bea3946e234820dad6a4338e17ee918cf3ac"
+    "testedZipSha256":"c0b35cf3d76d8a60631c8bdfe265bea3946e234820dad6a4338e17ee918cf3ac",
+    "deployedZipBytes":2935393,
+    "deployedZipSha256":"c0b35cf3d76d8a60631c8bdfe265bea3946e234820dad6a4338e17ee918cf3ac",
+    "deployedSourceCommit":"f61ff59f64f14e26c55e70bf2f66d9ae5dfd1964",
+    "cloudflareVersionId":"8243fdbc-600b-41df-9d0f-b13ac828f1d7",
+    "productionUrl":"https://magic.1106314996.workers.dev",
+    "productionHttpVerification":"passed"
   },
   "preserveUntracked":["docs/CULTIVATION_REDESIGN_V4.md"],
   "reviewCommit":"a231101cd75582d275cdfc81f3a18099a5284d41",
@@ -79,7 +85,7 @@
   "mainMerge":"fast_forward_to_d4282cf76a8aa4238b7d13f557b441e5bd85cda9",
   "cloudflare":"deployed_magic_version_23794e08-aa2f-4623-8160-948d8f56badf",
   "candidateReviewCommit":"4e1b3f387b91198f31300033196e650b3e74792f",
-  "candidatePush":"origin_feature_branch_synced",
-  "candidateMainMerge":"not_executed",
-  "candidateCloudflare":"not_executed"
+  "candidatePush":"origin_feature_branch_and_main_synced",
+  "candidateMainMerge":"fast_forward_to_f61ff59f64f14e26c55e70bf2f66d9ae5dfd1964",
+  "candidateCloudflare":"deployed_magic_version_8243fdbc-600b-41df-9d0f-b13ac828f1d7"
 }
