@@ -1,0 +1,18 @@
+.v4-atlas-window{background:#e8e6da}
+.v4-atlas-stage{border-top:1px solid #c0b18e;border-bottom:1px solid #b7a784;box-shadow:inset 0 -18px 26px #f2eddf33}
+.v4-atlas-caption{position:absolute;left:12px;bottom:12px;z-index:4;display:grid;min-width:112px;padding:7px 10px;background:#f1ecdfe6;border:1px solid #b7a276;box-shadow:0 4px 14px #324a4130;color:#3e5549;pointer-events:none}
+.v4-atlas-caption small{font-size:10px;letter-spacing:2px;color:#8a6a3e}.v4-atlas-caption strong{font:20px/1.25 var(--ui-font-title);font-weight:400}.v4-atlas-caption span{font-size:11px;color:#6e7468}
+.v4-atlas-tools{min-height:48px;padding:3px 8px;background:#e9e3d5}.v4-atlas-tools>span{font-family:var(--ui-font-title);letter-spacing:1px;color:#6b6559}
+.v4-atlas-dossier{background:#efeadf url('../../assets/ui-v3/panels/paper.webp') center/360px auto}
+.v4-atlas-dossier-head{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:9px;padding:7px 10px}
+.v4-region-seal{width:42px;height:42px;display:grid;place-items:center;border:1px solid #9c8051;border-radius:50%;font:19px var(--ui-font-title);color:#76572d;background:#e4d8bf;box-shadow:inset 0 0 0 3px #f4eee1}
+.v4-region-copy{min-width:0}.v4-region-copy small{font-size:10px;letter-spacing:1px}.v4-region-copy h3{font-size:19px}.v4-region-copy p{font-size:11px;color:#6e6c60;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v4-atlas-dossier-head label{display:grid;gap:2px;font-size:10px;text-align:right}.v4-atlas-dossier-head select{min-width:84px;max-width:96px;min-height:40px!important;background:#f4efe4}
+.v4-route-list{padding:0 8px 5px}.v4-route-card{grid-template-columns:34px minmax(0,1fr) auto!important;gap:8px!important;min-height:72px;margin:5px 0;padding:7px 8px!important;background:#f5f0e4c7;border:1px solid #b9aa8a!important;box-shadow:inset 3px 0 0 #7c9480}
+.v4-route-card[data-risk="watch"]{box-shadow:inset 3px 0 0 #b09157}.v4-route-card[data-risk="danger"]{box-shadow:inset 3px 0 0 #9d5b4c}
+.v4-route-index{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:#dde4d8;border:1px solid #9cad95;color:#496351;font:15px var(--ui-font-title)}
+.v4-route-copy{display:grid;min-width:0}.v4-route-heading{display:flex;align-items:center;gap:6px}.v4-route-heading b{font-size:15px!important}.v4-route-copy>span{font-size:11px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.v4-route-copy>small{font-size:10px!important}
+.v4-risk-mark{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;font-size:11px;background:#dfe5da;color:#42604d}.v4-risk-mark.watch{background:#e4d9bc;color:#765f37}.v4-risk-mark.danger{background:#ead4cf;color:#82463d}
+#app .v4-route-start{min-width:58px!important;min-height:44px!important;border:1px solid #879c8d;background:#edf0e8;color:#345346}
+.v4-atlas-secondary{border-top:1px solid #b8aa89}.v4-atlas-secondary .v3-map-secondary-action{background:#e8e0d0;color:#4d634f}
+@media(max-height:650px){.v4-atlas-caption{display:none}.v4-atlas-dossier-head{grid-template-columns:36px minmax(0,1fr) auto;padding-block:4px}.v4-region-seal{width:34px;height:34px;font-size:16px}.v4-region-copy p{display:none}.v4-route-card{min-height:60px;margin:3px 0;padding-block:4px!important}.v4-route-index{width:26px;height:26px}.v4-route-copy>small{display:none}}

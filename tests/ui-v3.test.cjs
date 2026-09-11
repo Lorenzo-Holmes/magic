@@ -169,6 +169,23 @@ test('V3 行囊筛选和炼器预览只改变界面，不改存档', () => {
   assert.equal(E.serialize(state), original);
 });
 
+test('V4 山海图志只重组地志与路签，不改行旅状态或可用动作',()=>{
+  const V=runtime(),state=entered(),ctx=context(V,state),before=E.serialize(state);
+  const html=V.render('WorldMapWindow',ctx);
+  assert.match(html,/v4-atlas-window/);assert.match(html,/v4-atlas-dossier/);assert.match(html,/v4-route-card/);
+  assert.equal(ctx.buttons.filter(button=>button.action==='journey-start').length,J.ROUTES.filter(route=>route.region===J.REGIONS[0].id).length);
+  assert.equal(E.serialize(state),before);
+});
+
+test('V4 丹器方簿只重组炉台、材匣和丹方，不改炼制状态',()=>{
+  const V=runtime(),state=fullMaterials(entered()),ctx=context(V,state),before=E.serialize(state);
+  V.setState('forgeKind','pill');V.setState('forgeRecipe','qi');
+  const html=V.render('ForgeWindow',ctx);
+  assert.match(html,/v4-forge-window/);assert.match(html,/v4-material-rack/);assert.match(html,/v4-formulary/);assert.match(html,/v4-needs/);
+  assert.ok(ctx.buttons.some(button=>button.action==='craft-pill'));
+  assert.equal(E.serialize(state),before);
+});
+
 test('修行室只有一个主操作，不再渲染五个建筑或整屏洞府照片',()=>{
   const V=runtime(),s=entered(),ctx=context(V,s),before=E.serialize(s);
   const html=V.render('CaveWindow',ctx);
