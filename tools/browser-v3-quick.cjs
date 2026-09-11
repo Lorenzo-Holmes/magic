@@ -5,7 +5,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
 const root = path.resolve(__dirname, '..');
-const baseURL = 'http://127.0.0.1:4317';
+const baseURL = process.env.FS_UI_BASE_URL || 'http://127.0.0.1:4317';
+if(new URL(baseURL).hostname!=='127.0.0.1')throw new Error('Browser quick acceptance only supports isolated local previews.');
 const evidenceRoot = path.join(root, 'output/playwright/ui-v3');
 fs.mkdirSync(evidenceRoot, { recursive: true });
 const out = fs.mkdtempSync(path.join(evidenceRoot, 'quick-'));
@@ -131,8 +132,15 @@ async function main() {
   await page.locator('[data-action="equipment-equip"][data-id="gear-art11"]').click();
   await page.locator('dialog [data-ui="close-dialog"]').click();
   await page.locator('[data-ui="nav-panel"][data-id="inventory"]').click();
-  assert.equal(await page.locator('[data-item-id]').count(),12);
-  await page.locator('.v3-baggage-scroll').evaluate(el=>el.scrollTop=el.scrollHeight);
+  assert.equal(await page.locator('[data-ui="v3-bag-select"][data-id^="equipment:"]').count(),12);
+  const bagSave=await page.evaluate(()=>localStorage.getItem('feisheng.run.v1'));
+  const firstBagId=await page.locator('[data-ui="v3-bag-select"]').nth(0).getAttribute('data-id');
+  const secondBagId=await page.locator('[data-ui="v3-bag-select"]').nth(1).getAttribute('data-id');
+  assert.notEqual(firstBagId,secondBagId);
+  await page.locator('[data-ui="v3-bag-select"]').nth(1).click();
+  assert.equal(await page.locator('[data-ui="v3-bag-select"]').nth(1).getAttribute('aria-pressed'),'true');
+  assert.equal(await page.evaluate(()=>localStorage.getItem('feisheng.run.v1')),bagSave,'Selecting a treasure cell changed gameplay save');
+  await page.locator('.v4-treasure-grid').evaluate(el=>el.scrollTop=el.scrollHeight);
   await inspect('inventory-full-scroll-end');
   await page.locator('[data-ui="forge"]').click();
   await page.locator('[data-ui="v3-forge-select"][data-id="qi"]').click();
@@ -140,7 +148,7 @@ async function main() {
   const crafted=await page.evaluate(()=>JSON.parse(localStorage.getItem('feisheng.run.v1')));
   assert.equal(crafted.crafting.materials['spirit-herb'],7);assert.equal(crafted.crafting.materials['spirit-dew'],8);assert.equal(crafted.crafting.pills.qi.length,2);
   await inspect('forge-crafted');
-  report.liveActions={syntheticFixture:true,fullInventory:12,slotFilter:true,unequip:true,equip:true,craftCosts:true};
+  report.liveActions={syntheticFixture:true,fullInventory:12,treasureSelectionReadOnly:true,slotFilter:true,unequip:true,equip:true,craftCosts:true};
   assert.deepEqual(report.errors,[]);
   // Failure injection has a separate context and is not mixed with normal-load errors.
   const failureContext=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});

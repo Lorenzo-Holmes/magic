@@ -738,7 +738,8 @@
         case 'practice-pills':UI3.setState('bagFilter','pills');pageTab='inventory';home=false;worldVisible=false;dialog.close();render();break;
         case 'v3-equipment-slot':equipmentSlotModal(el.dataset.id);break;
         case 'skip-major':clearTimeout(majorTimer);majorLayer.classList.remove('visible');majorLayer.setAttribute('aria-hidden','true');majorLayer.replaceChildren();delete majorLayer.dataset.kind;break;
-        case 'v3-bag-filter':UI3.setState('bagFilter',el.dataset.id||'all');render();break;
+        case 'v3-bag-filter':UI3.setState('bagFilter',el.dataset.id||'all');UI3.setState('bagSelected','');render();break;
+        case 'v3-bag-select':UI3.setState('bagSelected',el.dataset.id||'');render();break;
         case 'v3-forge-select':UI3.setState('forgeKind',el.dataset.kind||'pill');UI3.setState('forgeRecipe',el.dataset.id||'qi');pageTab='forge';render();break;
         case 'appearance-open':window.FSUIAppearance.cancel();appearanceModal();break;
         case 'appearance-preview':

@@ -3,7 +3,7 @@
   // This is a synchronous, replace-on-render registry, not a Unity/Lua loader.
   // The gameplay reducer and both save keys remain owned by app.js.
   const windows = new Map();
-  const localState = { bagFilter: 'all', forgeRecipe: 'qi', forgeKind: 'pill' };
+  const localState = { bagFilter: 'all', bagSelected: '', forgeRecipe: 'qi', forgeKind: 'pill' };
   const filters = new Set(['all', 'equipment', 'pills', 'materials', 'supplies']);
   let active = null, hudRenderer = null, renders = 0, releases = 0;
 
@@ -77,6 +77,7 @@
   function getState(key) { return localState[key]; }
   function setState(key, value) {
     const valid = key === 'bagFilter' ? filters.has(value)
+      : key === 'bagSelected' ? (value === '' || /^(?:equipment|pills|materials|supplies):[a-z0-9-]{1,80}$/.test(value))
       : key === 'forgeKind' ? ['pill', 'weapon'].includes(value)
       : key === 'forgeRecipe' ? typeof value === 'string' && /^[a-z0-9-]{1,64}$/.test(value)
       : false;

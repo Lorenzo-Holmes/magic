@@ -102,8 +102,10 @@ test('V3 不吞掉绑定和清理错误，未知窗口与重复注册明确失�
 test('V3 仅接受明确的界面偏好，品质索引夹取为完整名称', () => {
   const V = runtime();
   for (const filter of ['all', 'equipment', 'pills', 'materials', 'supplies']) V.setState('bagFilter', filter);
+  V.setState('bagSelected','equipment:gear-abc123');V.setState('bagSelected','');
   assert.throws(() => V.setState('__proto__', {}), /Invalid/);
   assert.throws(() => V.setState('bagFilter', 'unknown'), /Invalid/);
+  assert.throws(() => V.setState('bagSelected', 'equipment:<script>'), /Invalid/);
   assert.throws(() => V.setState('forgeKind', 'unknown'), /Invalid/);
   assert.equal(V.rarityName(2.8), '玄');
   assert.equal(V.rarityName(Infinity), '凡');
