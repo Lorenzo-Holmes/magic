@@ -59,6 +59,11 @@ async (page, options = {}) => {
           // Its port itself must remain in the page. HUD and other controls are
           // still checked normally; V3 hit tests independently inspect buttons.
           const camera=el.closest('.v3-art-canvas'),port=camera?.parentElement;
+          // A decorative photo crop may exceed its port, never its controls.
+          if(el.matches('img.pr-landscape')){
+            const port=el.closest('.pr-picture'),p=port?.getBoundingClientRect();
+            if(p&&p.left>=-1&&p.right<=innerWidth+1&&['hidden','clip'].includes(getComputedStyle(port).overflowX))return false;
+          }
           if(port&&port.matches('.v3-cave-viewport,.v3-map-viewport')){
             const p=port.getBoundingClientRect(),style=getComputedStyle(port);
             if(p.left>=-1&&p.right<=innerWidth+1&&['hidden','clip'].includes(style.overflowX))return false;

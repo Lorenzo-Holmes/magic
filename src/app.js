@@ -329,27 +329,12 @@
     const waiting=E.isBlocking(state),arrivalMemory=state.event?.id==='arrival'?M.eventMemory(meta,state,'arrival'):null;
     return `<section class="cultivation-view ${waiting?'has-encounter':''}">${cultivationScene(waiting,quest)}${waiting?eventView():`<div class="quiet-record"><span>草庐手记</span><p>${esc(state.event?.text||'山中风起，今日也可以向外走走。')}</p></div>`}${arrivalMemory?`<p class="legacy-echo">${esc(arrivalMemory)}</p>`:''}${actionsView()}${window.FSJourneyUI.foundation(state,button)}<div class="play-bottom"><span>选择之后，进度自动留存。</span>${button('character','查看此生命途 →',{ui:true,classes:'text-button'})}</div></section>`;
   }
-  function v3CaveCommands() {
-    if(state.secretRealm?.active){
-      const active=state.secretRealm.active, config=R.REALMS.find(r=>r.id===active.realmId);
-      return `<div class="v3-context-status"><span>秘境 ${active.floor}/${active.floors}</span><b>${esc(config?.name||'秘境')}</b></div>${button('secret-realm','返回秘境',{ui:true,classes:'v3-context-primary'})}`;
-    }
-    if(E.canBreak(state))return `<div class="v3-context-status"><span>修为圆满 · 根基已稳</span><b>破境在即</b></div>${button('breakthrough',`破境 · ${D.REALMS[state.realm+1].name}`,{classes:'v3-context-primary'})}`;
-    if(state.journey.enabled&&state.realm<9&&state.xp>=D.REALMS[state.realm].threshold&&!J.ready(state.journey,state.realm))return `<div class="v3-context-status"><span>修为已满</span><b>尚欠此境见闻</b></div>${button('atlas','去山海稳固根基',{ui:true,classes:'v3-context-primary'})}`;
-    const items=[];
-    if(E.canChallengeBoss(state))items.push(button('challenge-boss','寻三眼妖王',{classes:'v3-context-primary'}));
-    if(state.realm>=4&&state.realm<=8&&!state.realmProofs.includes(state.realm))items.push(button('seek-proof','寻天地印证',{classes:'v3-context-secondary',disabled:!E.canSeekProof(state)}));
-    if(state.realm<9&&E.canCultivateToReady(state))items.push(button('cultivate-to-ready','闭关至桎梏',{classes:'v3-context-secondary'}));
-    if(!items.length)return'';
-    const foundation=state.journey.enabled&&state.realm<9?`${state.journey.foundation[state.realm]} / ${J.required(state.realm)}`:'旧法';
-    return `<div class="v3-context-status"><span>此境根基</span><b>${foundation}</b></div>${items.join('')}`;
-  }
   function v3PrimaryView(tab) {
     const common={state,D,E,G,K,B,J,button,small,esc,fmt,powerFigure,selectedRegion,journeyKit};
     if(tab==='practice'){
       const waiting=E.isBlocking(state), arrivalMemory=state.event?.id==='arrival'?M.eventMemory(meta,state,'arrival'):null;
       const memory=arrivalMemory?`<span class="v3-scene-memory legacy-echo">${esc(arrivalMemory)}</span>`:'';
-      return UI3.render('CaveWindow',{...common,quest:currentQuest(),waiting,eventHtml:waiting?eventView():'',contextHtml:waiting?'':v3CaveCommands(),memoryHtml:memory,tutorialHtml:tutorialNote()});
+      return UI3.render('CaveWindow',{...common,quest:currentQuest(),waiting,eventHtml:waiting?eventView():'',memoryHtml:memory,tutorialHtml:tutorialNote()});
     }
     if(tab==='atlas')return UI3.render('WorldMapWindow',common);
     if(tab==='inventory')return UI3.render('BaggageWindow',common);
@@ -493,6 +478,7 @@
     const warning = warningText();
     const vista = home ? '' : `<div class="world-vista" aria-hidden="true"><span>${esc(scene.title)}</span><small>${esc(scene.subtitle)}</small></div>`;
     const v3Primary=!!(!home&&state&&!['talents','attributes'].includes(state.phase)&&!inWorld&&!inJourney&&(['atlas','inventory','character','forge'].includes(pageTab)||(pageTab==='practice'&&state.phase==='playing'&&!inImmortal)));
+    document.body.classList.toggle('practice-focus',v3Primary&&pageTab==='practice');
     if(!v3Primary)UI3.deactivate();
     const body = home ? homeView() : v3Primary?v3PrimaryView(pageTab):inJourney?window.FSJourneyUI.active(state,button):panel?(pageTab==='atlas'?window.FSJourneyUI.atlas(state,button,selectedRegion,journeyKit):window.FSJourneyUI.hub(state,button,pageTab)):inWorld ? window.FSWorldUI.view(state.world,button) : inImmortal ? immortalView() : state.phase === 'talents' ? talentsView() : state.phase === 'attributes' ? attributesView() : state.phase === 'playing' ? playingView() : state.phase === 'draft' ? draftView() : state.phase === 'mutation' ? mutationView() : state.phase === 'fusion' ? fusionView() : state.phase === 'tribulation' ? tribulationView() : endingView();
     const workspace = !home && state && !['talents','attributes'].includes(state.phase);
@@ -752,6 +738,7 @@
         case 'practice': pageTab='practice';home=false;mortalSummary=false;worldVisible=false;dialog.close();render();document.getElementById('main').focus({preventScroll:true});break;
         case 'atlas':case 'inventory':case 'character':pageTab=el.dataset.ui==='nav-panel'?el.dataset.id:el.dataset.ui;home=false;worldVisible=false;dialog.close();render();break;
         case 'forge':pageTab='forge';home=false;worldVisible=false;dialog.close();render();break;
+        case 'practice-pills':UI3.setState('bagFilter','pills');pageTab='inventory';home=false;worldVisible=false;dialog.close();render();break;
         case 'v3-equipment-slot':equipmentSlotModal(el.dataset.id);break;
         case 'skip-major':clearTimeout(majorTimer);majorLayer.classList.remove('visible');majorLayer.setAttribute('aria-hidden','true');majorLayer.replaceChildren();delete majorLayer.dataset.kind;break;
         case 'v3-bag-filter':UI3.setState('bagFilter',el.dataset.id||'all');render();break;

@@ -163,3 +163,33 @@ test('V3 行囊筛选和炼器预览只改变界面，不改存档', () => {
   }
   assert.equal(E.serialize(state), original);
 });
+
+test('修行室只有一个主操作，不再渲染五个建筑或整屏洞府照片',()=>{
+  const V=runtime(),s=entered(),ctx=context(V,s),before=E.serialize(s);
+  const html=V.render('CaveWindow',ctx);
+  assert.match(html,/practice-room/);assert.doesNotMatch(html,/v3-building|v3-prop-anchor|scene\.cave/);
+  const primary=ctx.buttons.filter(b=>b.classes?.includes('pr-main-action'));
+  assert.equal(primary.length,1);assert.equal(primary[0].action,'act');assert.equal(primary[0].kind,'cultivate');
+  assert.ok(ctx.buttons.some(b=>b.action==='practice-pills'&&b.ui));
+  assert.ok(ctx.buttons.some(b=>b.action==='forge'&&b.ui));
+  assert.equal(E.serialize(s),before);
+});
+
+test('修行室以引擎条件决定破境主操作，修为满但根基不足不伪造可破境',()=>{
+  const V=runtime(),s=entered();s.flags.pythonSeen=true;s.xp=D.REALMS[0].threshold;
+  let ctx=context(V,s);V.render('CaveWindow',ctx);
+  assert.equal(E.canBreak(s),false);assert.ok(!ctx.buttons.some(b=>b.action==='breakthrough'));
+  s.journey.foundation[0]=J.required(0);assert.equal(E.canBreak(s),true);
+  ctx=context(V,s);V.render('CaveWindow',ctx);
+  assert.equal(ctx.buttons.filter(b=>b.classes?.includes('pr-main-action')).length,1);
+  assert.ok(ctx.buttons.some(b=>b.action==='breakthrough'));
+});
+
+test('遭遇或秘境占用时禁用修炼及寻机缘，保留真实返回入口',()=>{
+  const V=runtime(),s=E.transition(entered(),{type:'cultivate-to-ready'});
+  assert.equal(E.isBlocking(s),true);let ctx=context(V,s);V.render('CaveWindow',ctx);
+  assert.ok(ctx.buttons.filter(b=>!b.ui).every(b=>b.disabled));
+  const occupied=entered();occupied.secretRealm.active={floor:1};ctx=context(V,occupied);V.render('CaveWindow',ctx);
+  assert.ok(ctx.buttons.filter(b=>!b.ui).every(b=>b.disabled));
+  assert.ok(ctx.buttons.some(b=>b.action==='secret-realm'&&b.ui));
+});

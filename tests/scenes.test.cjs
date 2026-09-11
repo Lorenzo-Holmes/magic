@@ -78,11 +78,12 @@ test('全部正式背景存在、为轻量自包含 SVG 且进入生产白名单
   }
 });
 test('生产清单唯一且不携带截图、文档、字体或开发依赖', () => {
-  assert.equal(files.length, 131); assert.equal(new Set(files).size, files.length);
+  assert.equal(files.length, 133); assert.equal(new Set(files).size, files.length);
   assert.ok(files.includes('src/ink-theme.css'));
   assert.ok(files.includes('src/scene-ui.css'));
   assert.ok(files.includes('assets/ui-v3/scenes/cave.webp')&&files.includes('assets/ui-v3/scenes/world.webp'));
-  assert.ok(!files.some(file=>file.startsWith('assets/art/')));
+  assert.deepEqual(files.filter(file=>file.startsWith('assets/art/')), ['assets/art/retreat-v2.1.webp']);
+  assert.ok(files.includes('src/ui-v3/practice.css'));
   for (const file of files) {
     assert.ok(fs.existsSync(path.join(root, file)), file);
     assert.doesNotMatch(file, /\.\.|^\/|output|tests|docs|README|node_modules|\.(png|gif|mp4|woff2?|ttf)$/i);

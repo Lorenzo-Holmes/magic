@@ -5,7 +5,9 @@ function art(){const c=vm.createContext({});c.window=c;for(const file of ['asset
 test('82 个本地美术切片保持来源清单哈希，全部在运行清单中',()=>{
   const m=require('../assets/ui-v3/manifest.json'),files=require('../tools/production-files.cjs');assert.equal(m.assets.length,82);
   for(const a of m.assets){const bytes=fs.readFileSync(path.join(root,a.path));assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),a.sha256);assert.ok(files.includes(a.path));}
-  assert.ok(!files.some(f=>/assets\/art\//.test(f)));
+  // Only the project-owned seated meditation scene is readmitted for the new
+  // cultivation room; the retired atlas and all source sheets remain excluded.
+  assert.deepEqual(files.filter(f=>/^assets\/art\//.test(f)), ['assets/art/retreat-v2.1.webp']);
 });
 test('所有真实装备、丹方和材料均有明确类别图标映射，未知 ID 拒绝',()=>{
   const A=art();for(const d of require('../src/equipment.js').ITEMS)assert.ok(A.asset(A.item('equipment',d.id)));
