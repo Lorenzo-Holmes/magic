@@ -2,7 +2,7 @@
 
 原任务：《我欲飞升_前端实施清单_UIV4_v1.1.md》。原文件 SHA-256：`4aff156c77a0137e1b1febcdc4b1ddb7f69dd7c7b6cd03f200e8d49718b633d3`。
 
-本批次从 `14afd1c` 建立 `feat/ui-v4-unified`，当前候选显示版本为 `3.0.5`。UI-00～05 已完成；UI-07 人物仙籍化和 UI-08 行囊宝匣化已完成并通过密集/短屏验收。四套配对坐姿仍缺失，因此 UI-06 的“四角色修行态”明确未完成。这不是 18 项全部完成或已经发布的 V4。
+本批次从 `14afd1c` 建立 `feat/ui-v4-unified`，当前候选显示版本为 `3.0.6`。UI-00～08 已完成并保持玩法引擎不变：四角色已有头像、站姿与配对盘膝坐姿，人物页外观确认会同步到修行页；UI-07 人物仙籍化和 UI-08 行囊宝匣化也已通过密集/短屏验收。UI-09～17 仍待执行，因此这不是 18 项全部完成或已经发布的 V4。
 
 ## 实际实现
 
@@ -28,7 +28,7 @@ UI-03 已把两条游戏外壳合并到 route-model / shell；旧 Workbench 导�
 
 另验证 21 个滚动到可见位置后的控件中心/内缩边缘命中；三个章节往返的原存档字符串不变；仙界缓炼的 DOM 操作结果与原引擎一致；创世返回、凡界回看、行旅占用及关闭弹窗返回焦点通过。组件展示另有 38 项检查。
 
-共享基础阶段曾通过 215/215；在四道身、人物仙籍和行囊宝匣完成后，v3.0.5 最终全量 Node 为 **219/219**。原基础日志仍保留在 `output/ui-v4-foundation/verification-LIPflo/`，本轮最终 Node 日志为 `output/ui-v4-node-v305-final2.log`。行旅仿真仍沿用已通过的 1200 个合法行动样本，玩法引擎未因外观和行囊展示修改。
+共享基础阶段曾通过 215/215；在四道身、人物仙籍、行囊宝匣与四套修行坐姿完成后，v3.0.6 最终全量 Node 为 **222/222**。原基础日志仍保留在 `output/ui-v4-foundation/verification-LIPflo/`，本轮最终 Node 日志为 `output/ui-v4-node-v306-final.log`。行旅仿真仍沿用已通过的 1200 个合法行动样本，玩法引擎未因外观和行囊展示修改。
 
 ## 保留的失败与验证边界
 
@@ -51,30 +51,32 @@ UI-03 已把两条游戏外壳合并到 route-model / shell；旧 Workbench 导�
 | 实体设备 | 尚未测试；安全区等为浏览器模拟 |
 | 用户视觉 | pending；没有把技术通过当成用户认可 |
 
-v3.0.5 完整浏览器证据：`output/playwright/v3.0.5/runs/acceptance-l4wi1j/`。主线完成并飞升；browser-smoke、browser-visual、browser-extension 均通过。总布局检查 **540**，弹窗布局检查 **12**；正常用例控制台错误、失败请求、外部请求均为 0。正式同包测试 SHA-256 与构建报告一致。
+v3.0.6 完整浏览器证据：`output/playwright/v3.0.6/runs/acceptance-3mPDZO/`。主线完成并飞升；browser-smoke、browser-visual、browser-extension 均通过。总布局检查 **540**，弹窗布局检查 **12**；正常用例控制台错误、失败请求、外部请求均为 0。正式同包测试 SHA-256 与构建报告一致。
 
-本地包：`release/wo-yu-fei-sheng-v3.0.5.zip`。
-ZIP **2,850,259 bytes**，原始生产文件 **3,336,542 bytes**，**150** 个生产文件。
-SHA-256：`9f8e8de0f98c82f2045ac0e7ddaf6ddb2f4af42bade8ff5bb367d42d32b6fa2a`。
+本地包：`release/wo-yu-fei-sheng-v3.0.6.zip`。
+ZIP **2,922,243 bytes**，原始生产文件 **3,409,059 bytes**，**153** 个生产文件。
+SHA-256：`dd408f7c1b75c9bcf2ebba4d702f844b9e297afe3e434e957ed7a105d2b247e4`。
 
 新人物资源已经进入正式包，但同时退役了旧的单男性 `dao-body` 与 7 个不再使用的洞府分层，因此 ZIP 仍低于 3 MB 内部预算。原始人物 PNG、联系表、测试证据和传输 ZIP 不进入生产包。
 
 复查本批全部技术步骤用 `node tools/run-ui-v4-foundation.cjs`。一次性的续接脚本归档在 tail 证据目录，不作为通用执行工具。源码专项使用 `FS_UI_BASE_URL=http://127.0.0.1:4318`；当前 4318 服务已加载新生产清单，不能把另一个旧 4317 进程当成新版验证。
 
-## UI-04 / UI-05：站姿与头像已实装，坐姿仍缺
+## UI-04 / UI-05 / UI-06：四道身三态已实装
 
-`wo-yu-fei-sheng-ui-v4-characters.zip` 已由用户保存并通过固定 SHA/CRC/manifest 校验，8 张资源已导入 `assets/ui-v4/`：四张站姿、四张头像。视觉联系表与实际人物页均已查看；用户最终视觉认可仍为 pending。包内仍没有四张配对坐姿。
+`wo-yu-fei-sheng-ui-v4-characters.zip` 已由用户保存并通过固定 SHA/CRC/manifest 校验，四张站姿和四张头像进入 `assets/ui-v4/`；随后 `wo-yu-fei-sheng-ui-v4-seated-final.zip` 也通过固定 SHA/CRC/path/manifest 校验，四张 480×640 透明坐姿已增量导入。视觉联系表、人物页以及四张实际修行页截图均已查看；用户最终视觉认可仍为 pending。
 
 资源包：`wo-yu-fei-sheng-ui-v4-characters.zip`，489,937 bytes。
 SHA-256：`972ae11e7cf9dbd76b928f83e7f31d04fc854b99486fa4aec7844da20510964a`。交付 ZIP 采用固定条目时间戳以便重复构建；以该最终交付摘要为准。
 
-新导入器仍独立于固定 82 项的 V3 导入器，校验 ZIP 路径、CRC、SHA-256、资源清单及静态 manifest.js 内容；拒绝覆盖不同的已有素材。正式生产清单只接入仍在使用的 V3 图与 8 张 V4 人物图。
+两个 V4 导入器都独立于固定 82 项的 V3 导入器，校验 ZIP 路径、CRC、SHA-256、资源清单与固定角色映射；拒绝覆盖不同的已有素材。正式生产清单接入仍在使用的 V3 图与 12 张 V4 人物图。
 
 UI-05 使用独立偏好键 `feisheng.appearance.v1`。人物页“更换形象”采用预览 → 确认 / 取消；预览不落盘，确认才保存 `{version:1, portraitId}`。切换四角色时本世存档和轮回册字符串保持不变，刷新恢复已确认外观；localStorage 拒绝写入时只保留本次会话选择并给出提示。v3.0.4 专项证据 `output/ui-v4-foundation/foundation-9kA4T4/` 共 28 张截图，四角色均实际渲染。
 
-UI-06 的四套配对坐姿已经生成并逐张核对身份：青衫剑修、流云仙修、丹道仙师、青莲医修各一张透明背景完整盘膝图；运行版统一压到 480×640 WebP。当前唯一未完成步骤是把 ChatGPT 侧的资源 ZIP 转存到 Windows 项目，因此运行时仍使用公共打坐剪影，**不得写成四角色修行态已经完成**。
+UI-06 的四套配对坐姿已经逐张核对身份并正式接入：青衫剑修、流云仙修、丹道仙师、青莲医修各一张透明背景完整盘膝图；运行版统一为 480×640 WebP。确认人物外观后，修行页读取同一 `feisheng.appearance.v1` 偏好并渲染对应 `seated` 资源；切换过程中本世存档不变。坐姿资源或站姿资源被故障注入阻断时，界面会回退而不阻断修炼/装备操作。
 
-最终坐姿传输包：`wo-yu-fei-sheng-ui-v4-seated-final.zip`，**361,657 bytes**，SHA-256：`64525a954747aaae9e539adca6e8f0b921c107de0d598b0593bc26d221e070ef`。合同记录在 `docs/UI_V4_SEATED_TRANSFER.json`。新增 `tools/import-ui-v4-seated.cjs` 作为独立增量导入器，只允许四个固定文件和 `seated-manifest.json`，校验 ZIP 路径、CRC、文件 SHA、尺寸与 manifest 映射；不同内容拒绝覆盖，部分安装拒绝继续，导入失败会回滚本轮新建文件。对应 3 项单元测试均通过。
+最终坐姿传输包：`wo-yu-fei-sheng-ui-v4-seated-final.zip`，**361,657 bytes**，SHA-256：`64525a954747aaae9e539adca6e8f0b921c107de0d598b0593bc26d221e070ef`。合同记录在 `docs/UI_V4_SEATED_TRANSFER.json`。`tools/import-ui-v4-seated.cjs` 只允许四个固定文件和 `seated-manifest.json`，校验 ZIP 路径、CRC、文件 SHA、尺寸与 manifest 映射；不同内容拒绝覆盖，部分安装拒绝继续，导入失败会回滚本轮新建文件。对应 3 项单元测试均通过。
+
+为了把四套坐姿纳入正式包而不放宽 3 MB 内部门槛，历史整屏修炼图 `assets/art/retreat-v2.1.webp` 已退出生产白名单；修行舞台复用正式包中已有的云海道台背景，并在其上叠加角色坐姿。最终 ZIP 仍为 2.92 MB。
 
 ## UI-07 / UI-08：人物仙籍与随身宝匣已完成
 

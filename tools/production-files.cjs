@@ -11,7 +11,7 @@ module.exports = Object.freeze([
   'src/journey.js', 'src/journey-ui.js', 'src/ink-theme.css', 'src/scene-ui.css', 'src/ui-v3.css',
   'src/ui-v3/core.js', 'src/ui-v3/hud.js', 'src/ui-v3/cave.js', 'src/ui-v3/world-map.js', 'src/ui-v3/baggage.js', 'src/ui-v3/character.js', 'src/ui-v3/forge.js',
   'src/ui-v3/art.js','src/ui-v3-legacy.css','assets/ui-v3/manifest.js',
-  'src/ui-v3/practice.css','assets/art/retreat-v2.1.webp','assets/ui-v4/manifest.js',
+  'src/ui-v3/practice.css','assets/ui-v4/manifest.js',
   ...v3Assets,...v4Assets,
   'assets/bg/realm-nascent.svg', 'assets/bg/realm-void.svg', 'assets/bg/realm-tribulation.svg', 'assets/bg/realm-ascension.svg'
 ]);

@@ -6,9 +6,9 @@ test('V3 源素材保持来源哈希，已退役角色与洞府分层不进入�
   const m=require('../assets/ui-v3/manifest.json'),files=require('../tools/production-files.cjs');assert.equal(m.assets.length,82);
   const retired=new Set(['character.dao','prop.platform','prop.forge','prop.gate','prop.beast','prop.astrolabe','prop.pine','prop.pond']);
   for(const a of m.assets){const bytes=fs.readFileSync(path.join(root,a.path));assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),a.sha256);assert.equal(files.includes(a.path),!retired.has(a.id),a.id);}
-  // Only the project-owned seated meditation scene is readmitted for the new
-  // cultivation room; the retired atlas and all source sheets remain excluded.
-  assert.deepEqual(files.filter(f=>/^assets\/art\//.test(f)), ['assets/art/retreat-v2.1.webp']);
+  // V4 cultivation now reuses an installed scene plus per-character seated art;
+  // source sheets and historical whole-screen art stay out of the production ZIP.
+  assert.deepEqual(files.filter(f=>/^assets\/art\//.test(f)), []);
 });
 test('所有真实装备、丹方和材料均有明确类别图标映射，未知 ID 拒绝',()=>{
   const A=art();for(const d of require('../src/equipment.js').ITEMS)assert.ok(A.asset(A.item('equipment',d.id)));

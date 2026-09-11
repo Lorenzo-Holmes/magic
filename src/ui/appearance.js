@@ -3,10 +3,10 @@
   if(!manifest)throw Error('V4 appearance manifest must load before appearance.js');
   const KEY='feisheng.appearance.v1',VERSION=1;
   const characters=Object.freeze([
-    Object.freeze({id:'jade-sword',name:'青衫剑修',standing:'character.jade-sword.standing',portrait:'character.jade-sword.portrait',seated:null}),
-    Object.freeze({id:'cloud-lotus',name:'流云仙修',standing:'character.cloud-lotus.standing',portrait:'character.cloud-lotus.portrait',seated:null}),
-    Object.freeze({id:'herbal-sage',name:'丹道仙师',standing:'character.herbal-sage.standing',portrait:'character.herbal-sage.portrait',seated:null}),
-    Object.freeze({id:'jade-healer',name:'青莲医修',standing:'character.jade-healer.standing',portrait:'character.jade-healer.portrait',seated:null})
+    Object.freeze({id:'jade-sword',name:'青衫剑修',standing:'character.jade-sword.standing',portrait:'character.jade-sword.portrait',seated:'character.jade-sword.seated'}),
+    Object.freeze({id:'cloud-lotus',name:'流云仙修',standing:'character.cloud-lotus.standing',portrait:'character.cloud-lotus.portrait',seated:'character.cloud-lotus.seated'}),
+    Object.freeze({id:'herbal-sage',name:'丹道仙师',standing:'character.herbal-sage.standing',portrait:'character.herbal-sage.portrait',seated:'character.herbal-sage.seated'}),
+    Object.freeze({id:'jade-healer',name:'青莲医修',standing:'character.jade-healer.standing',portrait:'character.jade-healer.portrait',seated:'character.jade-healer.seated'})
   ]);
   const byId=Object.freeze(Object.fromEntries(characters.map(c=>[c.id,c]))),fallback=characters[0];
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

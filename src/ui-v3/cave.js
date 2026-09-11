@@ -29,7 +29,8 @@
         <header class="pr-header"><span class="pr-avatar">${P.image('portrait','',appearance.name,appearance.id)}</span><div class="pr-identity"><small>修行 · 听松静室</small><strong>${esc(realm.name)}</strong></div><div class="pr-power"><small>战力</small>${powerFigure(E.power(state))}</div>${A.utility(button)}</header>
         <div class="pr-resources"><span>道龄 ${state.age} / ${E.maxAge(state)}</span><span>元气 ${state.vitality}</span><span>盘缠 ${fmt(state.journey.silver)}</span><span>行粮 ${fmt(state.journey.supplies)}</span></div>
         <div class="pr-stage">
-          <div class="pr-picture"><img class="v3-cave-bg pr-landscape" src="./assets/art/retreat-v2.1.webp" width="1536" height="1024" alt="水墨山间，一位修士独坐石台" decoding="async" draggable="false"><div class="pr-scene-wash" aria-hidden="true"></div></div>
+          <div class="pr-picture">${A.img('scene.character','v3-cave-bg pr-landscape','云海静室')}<div class="pr-scene-wash" aria-hidden="true"></div></div>
+          <div class="pr-seated-wrap" data-character="${appearance.id}">${P.image('seated','pr-seated',`${appearance.name}盘膝修炼`,appearance.id)}</div>
           <div class="pr-inner-scene" aria-hidden="true"><i class="pr-orbit"></i><i class="pr-orbit pr-orbit-second"></i><span class="pr-inner-core"></span><i class="pr-mote m1"></i><i class="pr-mote m2"></i><i class="pr-mote m3"></i></div>
           <div class="pr-inner-caption"><small>此境内景</small><span>${spiritName}</span></div>
           <div class="pr-room-tools">${button('practice-pills','服丹',{ui:true,classes:'pr-side-entry',aria:'打开行囊丹药分类'})}<details class="pr-affairs"><summary>洞府事务</summary><div>${button('atlas','山门 · 出行',{ui:true,classes:'pr-affair'})}${button('forge','丹器阁',{ui:true,classes:'pr-affair'})}${button('spirit-beast','灵兽居',{ui:true,classes:'pr-affair'})}${button('journal','修行命册',{ui:true,classes:'pr-affair'})}</div></details></div>

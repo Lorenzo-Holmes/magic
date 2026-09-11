@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "bundleId": "v4-standing-portraits-20260911",
-  "status": "standing-and-avatars-only-seated-assets-pending",
+  "bundleId": "v4-character-portraits-complete-20260911",
+  "status": "standing-avatar-seated-complete",
   "userVisualApproval": "pending",
   "modelLabel": "Generated earlier in this conversation; exact model version not exposed",
   "noReferenceGameAssets": true,
@@ -261,6 +261,62 @@
         "appearance"
       ],
       "sourceType": "generated-earlier-in-this-conversation"
+    },
+    {
+      "id": "character.jade-sword.seated",
+      "path": "assets/ui-v4/characters/jade-sword-seated.webp",
+      "width": 480,
+      "height": 640,
+      "alpha": true,
+      "bytes": 88616,
+      "sha256": "d657a04544e1ccb24d9d1a6073ab4aac4e3ecaee085943cec191a0d2218f9ebe",
+      "pivot": [0.5,1],
+      "lifecycle": "reviewed",
+      "review": "paired seated cultivation portrait visually inspected; user-approval-pending",
+      "pages": ["practice"],
+      "sourceType": "generated-in-this-conversation"
+    },
+    {
+      "id": "character.cloud-lotus.seated",
+      "path": "assets/ui-v4/characters/cloud-lotus-seated.webp",
+      "width": 480,
+      "height": 640,
+      "alpha": true,
+      "bytes": 94838,
+      "sha256": "c2d69217ebb0aee3ddc4e8c88d024f5b7a650dcfe72d08aff811f396d0b503fe",
+      "pivot": [0.5,1],
+      "lifecycle": "reviewed",
+      "review": "paired seated cultivation portrait visually inspected; user-approval-pending",
+      "pages": ["practice"],
+      "sourceType": "generated-in-this-conversation"
+    },
+    {
+      "id": "character.herbal-sage.seated",
+      "path": "assets/ui-v4/characters/herbal-sage-seated.webp",
+      "width": 480,
+      "height": 640,
+      "alpha": true,
+      "bytes": 84024,
+      "sha256": "6a26ba77261ed64b03be3589b86e87cb1a3bdf295183c176cbe7a7667d0db653",
+      "pivot": [0.5,1],
+      "lifecycle": "reviewed",
+      "review": "paired seated cultivation portrait visually inspected; user-approval-pending",
+      "pages": ["practice"],
+      "sourceType": "generated-in-this-conversation"
+    },
+    {
+      "id": "character.jade-healer.seated",
+      "path": "assets/ui-v4/characters/jade-healer-seated.webp",
+      "width": 480,
+      "height": 640,
+      "alpha": true,
+      "bytes": 92828,
+      "sha256": "3543020b21ec2cef68c812ea2e7d0356a02208afc8e7be0dfc1a95c9930c848d",
+      "pivot": [0.5,1],
+      "lifecycle": "reviewed",
+      "review": "paired seated cultivation portrait visually inspected; user-approval-pending",
+      "pages": ["practice"],
+      "sourceType": "generated-in-this-conversation"
     }
   ],
   "characters": [
@@ -269,32 +325,32 @@
       "name": "青衫剑修",
       "standing": "character.jade-sword.standing",
       "portrait": "character.jade-sword.portrait",
-      "seated": null,
-      "status": "seated_asset_missing"
+      "seated": "character.jade-sword.seated",
+      "status": "complete"
     },
     {
       "id": "cloud-lotus",
       "name": "流云仙修",
       "standing": "character.cloud-lotus.standing",
       "portrait": "character.cloud-lotus.portrait",
-      "seated": null,
-      "status": "seated_asset_missing"
+      "seated": "character.cloud-lotus.seated",
+      "status": "complete"
     },
     {
       "id": "herbal-sage",
       "name": "丹道仙师",
       "standing": "character.herbal-sage.standing",
       "portrait": "character.herbal-sage.portrait",
-      "seated": null,
-      "status": "seated_asset_missing"
+      "seated": "character.herbal-sage.seated",
+      "status": "complete"
     },
     {
       "id": "jade-healer",
       "name": "青莲医修",
       "standing": "character.jade-healer.standing",
       "portrait": "character.jade-healer.portrait",
-      "seated": null,
-      "status": "seated_asset_missing"
+      "seated": "character.jade-healer.seated",
+      "status": "complete"
     }
   ]
 }

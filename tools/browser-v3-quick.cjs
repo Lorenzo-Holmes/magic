@@ -154,13 +154,19 @@ async function main() {
   const failureContext=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
   await failureContext.addInitScript(raw=>localStorage.setItem('feisheng.run.v1',raw),fixture);
   await failureContext.route('**/jade-sword-standing.webp',route=>route.abort());
+  await failureContext.route('**/jade-sword-seated.webp',route=>route.abort());
   const fallback=await failureContext.newPage();await fallback.goto(baseURL);await fallback.locator('[data-ui="continue"]').click();await fallback.locator('[data-ui="nav-panel"][data-id="character"]').click();
   await fallback.locator('.v4-character-standing.ui-v4-art-failed').waitFor({state:'attached'});
   await fallback.locator('[data-ui="v3-equipment-slot"][data-id="weapon"]').click();
   assert.equal(await fallback.locator('[data-equipment-slot="weapon"]').count(),1);
+  await fallback.locator('dialog [data-ui="close-dialog"]').click();
+  await fallback.locator('[data-ui="nav-panel"][data-id="practice"]').click();
+  await fallback.locator('.pr-seated.ui-v4-art-failed').waitFor({state:'attached'});
+  assert.equal(await fallback.locator('.pr-seated-wrap[data-art-fallback="true"]').count(),1);
+  assert.equal(await fallback.locator('.pr-main-action:not(:disabled)').count(),1);
   assert.equal(await fallback.evaluate(()=>localStorage.getItem('feisheng.run.v1')),fixture);
-  await fallback.screenshot({path:path.join(out,'intentional-portrait-failure.png')});await failureContext.close();
-  report.intentionalFailure={asset:'character.jade-sword.standing',fallback:true,actionsStillWork:true,saveUnchanged:true};
+  await fallback.screenshot({path:path.join(out,'intentional-character-art-failure.png')});await failureContext.close();
+  report.intentionalFailure={assets:['character.jade-sword.standing','character.jade-sword.seated'],fallback:true,actionsStillWork:true,saveUnchanged:true};
   report.passed = true;
 }
 main().catch(async error => {

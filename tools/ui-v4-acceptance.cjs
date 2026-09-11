@@ -76,7 +76,14 @@ async function capture(label,width,height) {
       await page.locator('[data-ui="appearance-confirm"]').click();
       const src=await page.locator('.v4-character-standing').getAttribute('src');assert.ok(src.includes(id));
       assert.equal(await page.evaluate(()=>localStorage.getItem('feisheng.run.v1')),runBeforeAppearance);
-      const file=`character-${id}-390x844.png`;await page.screenshot({path:path.join(out,file)});report.screenshots.push(file);report.appearance.push({id,src,saveUnchanged:true});
+      const file=`character-${id}-390x844.png`;await page.screenshot({path:path.join(out,file)});report.screenshots.push(file);
+      await page.locator('[data-ui="nav-panel"][data-id="practice"]').click();
+      await page.waitForFunction(()=>{const i=document.querySelector('.pr-seated');return i?.complete&&i.naturalWidth>0;});
+      const seated=await page.locator('.pr-seated').getAttribute('src');assert.ok(seated.includes(id)&&seated.includes('-seated.webp'));
+      assert.equal(await page.evaluate(()=>localStorage.getItem('feisheng.run.v1')),runBeforeAppearance);
+      const practiceFile=`practice-${id}-390x844.png`;await page.screenshot({path:path.join(out,practiceFile)});report.screenshots.push(practiceFile);
+      report.appearance.push({id,src,seated,saveUnchanged:true});
+      await page.locator('[data-ui="nav-panel"][data-id="character"]').click();
     }
     await page.reload();await page.locator('[data-ui="continue"]').click();await page.locator('[data-ui="nav-panel"][data-id="character"]').click();
     assert.ok((await page.locator('.v4-character-standing').getAttribute('src')).includes('jade-healer'));
