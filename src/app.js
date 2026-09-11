@@ -420,7 +420,7 @@
     } else if (i.phase === 'dead') {
       content = `${act('retry', `从飞升落点重试${small('重置本次仙界探索 · 保留凡界成就')}`, { classes: 'primary full' })}`;
     }
-    return `<section class="immortal-view"><p class="eyebrow">仙界序章 · 下界仙域</p><h2>${titles[i.phase]}</h2>
+    return `<section class="immortal-view immortal-phase-${esc(i.phase)}"><p class="eyebrow">仙界序章 · 下界仙域</p><h2>${titles[i.phase]}</h2>
       <div class="immortal-stats"><div><span>仙界势能</span><b>${powerFigure(I.power(i))}</b></div><div><span>仙躯 · 元气</span><b>${i.level} 重 · ${i.health}/100</b></div><div><span>仙元</span><b>${fmt(i.essence)}</b></div><div><span>法则碎片</span><b>${fmt(i.fragments)}</b></div></div>
       <div class="chosen-line"><span>凡界道途</span><b>${esc(M.PATHS[i.lineage].name)}</b>${law ? `<span>此界法则</span><b>${esc(law.name)}</b>` : ''}</div>
       <section class="event-sheet"><div class="event-kicker"><span>仙界第 ${i.days} 日</span><span>${i.devours} 次吞噬</span></div><p class="story-lead">${esc(i.note)}</p>${content}</section>
@@ -463,7 +463,7 @@
     }
     const slots = `<details class="evolution-build"><summary>五槽进化 · ${Object.values(e.slots).filter(Boolean).length}/5 <span>查看、升级与融合</span></summary><div class="slot-list">${Object.entries(V.SLOTS).map(([key,name])=>{const item=e.slots[key],t=item&&trait(item.id);return `<div class="slot-row"><span>${name}</span><div><b>${t?esc(t.name):'空槽'}${item?` · ${item.level} 阶`:''}</b><p>${t?esc(bonusText(t,item.level)):'可从下一次吞噬选择新的力量。'}</p></div>${act('upgrade',item&&item.level<5?`升级 · ${item.level+2} 碎片`:'无法升级',{id:key,disabled:i.phase!=='world'||!item||item.level>=5||i.fragments<item.level+2})}</div>`;}).join('')}</div><h3>融合线索</h3><div class="immortal-actions">${V.RECIPES.map(r=>{const available=V.recipes(i).some(x=>x.id===r.id);return act('fuse',`${esc(r.name)}${small(`${r.needs.map(id=>trait(id).name).join(' + ')} · ${r.cost} 碎片${r.catalyst?' · 法则引子保留':''}`)}`,{id:r.id,disabled:i.phase!=='world'||!available||i.fragments<r.cost});}).join('')}</div></details>`;
     const creationEntry=e.completed?`<div class="creation-entry">${button(state.world?'world-open':'world-setup',state.world?'返回自己创造的天地':'我即天道 · 开辟天地',{ui:true,classes:'primary full'})}</div>`:'';
-    return `<section class="immortal-view evolution-view">${creationEntry}<p class="eyebrow">${e.endless?'无尽诸天':'仙界进化'} · 第 ${esc(e.layer)} 界 · ${world.rank}</p><h2>${title}</h2>
+    return `<section class="immortal-view evolution-view evolution-phase-${esc(i.phase)}">${creationEntry}<p class="eyebrow">${e.endless?'无尽诸天':'仙界进化'} · 第 ${esc(e.layer)} 界 · ${world.rank}</p><h2>${title}</h2>
       <div class="world-road">${V.WORLDS.map((w,n)=>`<span class="${n===0||e.cleared.includes(n)?'lit':''}">${w.name}</span>`).join('')}</div>
       <div class="immortal-stats"><div><span>当前势能 · 数量级</span><b>${quantityFigure(V.power(i))}</b></div><div><span>元气 · 本界炼化</span><b>${i.health}/100 · ${e.refinement} 重</b></div><div><span>仙元</span><b>${fmt(i.essence)}</b></div><div><span>碎片</span><b>${fmt(i.fragments)}</b></div></div>
       <p class="world-affix">${esc(affix.name)} · ${esc(affix.text)}<br>仙兽法则：${e.enemyLaws.map(id=>window.FSImmortal.LAWS.find(l=>l.id===id).name).map(esc).join(' × ')}。锋芒使敌势能 +8%，不灭 +10%，破妄形成幻象；同源法则使你的守界破局更强。</p>${slots}

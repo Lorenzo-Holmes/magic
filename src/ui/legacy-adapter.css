@@ -3,7 +3,7 @@
 #app .ui-shell .ui-document {color:var(--text-primary);}
 #app .ui-shell .ui-document :is(h1,h2,h3,h4,b,strong,.story-lead,.intro,.button-note,.chosen-line,.resource-identity) {color:var(--text-primary);text-shadow:none;}
 #app .ui-shell .ui-document :is(p,small,.eyebrow,.footnote,.world-affix,.world-road span,.slot-row>span) {color:var(--text-secondary);}
-#app .ui-shell .ui-document :is(.immortal-view,.creation-view,.ending-view,.breakthrough-view,.tribulation-view) {background:none;padding:0;}
+#app .ui-shell .ui-document :is(.ending-view,.breakthrough-view,.tribulation-view) {background:none;padding:0;}
 #app .ui-shell .ui-document .immortal-view>h2 {font:500 28px/1.4 var(--ui-font-title);margin:8px 0 16px;letter-spacing:1px;}
 #app .ui-shell .ui-document .immortal-stats {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:16px;border:1px solid var(--border-subtle);border-radius:8px;background:var(--surface-panel);margin:16px 0;}
 #app .ui-shell .ui-document .immortal-stats>div:nth-child(-n+2){grid-column:auto;}

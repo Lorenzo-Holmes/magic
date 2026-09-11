@@ -16,4 +16,7 @@
   --ui-hit:44px; --ui-nav-height:76px; --ui-stage-width:540px;
   --ui-radius-panel:8px; --ui-radius-tab:6px; --ui-radius-label:4px;
   --ui-layer-content:1; --ui-layer-nav:40; --ui-layer-dialog:100;
+  --ui-motion-1:120ms; --ui-motion-2:180ms; --ui-motion-3:520ms;
+  --ui-ease-out:cubic-bezier(.2,.7,.25,1); --ui-ease-soft:ease-in-out;
+  --ui-ambient-breathe:7s; --ui-ambient-orbit:48s; --ui-ambient-fire:3s;
 }

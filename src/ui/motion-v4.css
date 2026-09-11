@@ -1,0 +1,15 @@
+/* Motion 1 = press/focus feedback, Motion 2 = panels/state changes,
+   Motion 3 = one-shot emphasis. Ambient loops remain slow and decorative. */
+#app .ui-shell :is(.ui-button,.v3-hud-tab,.v3-map-node,.v4-treasure-cell,.v3-recipe-tab,.v4-route-card,summary){transition:background-color var(--ui-motion-1) var(--ui-ease-out),border-color var(--ui-motion-1) var(--ui-ease-out),color var(--ui-motion-1) var(--ui-ease-out),box-shadow var(--ui-motion-1) var(--ui-ease-out),transform var(--ui-motion-1) var(--ui-ease-out)}
+#app .ui-shell :is(.ui-button,.v3-hud-tab,.v4-treasure-cell,.v3-recipe-tab):active:not(:disabled){transform:translateY(1px)}
+dialog.ui-dialog.scroll-dialog{animation:v4-dialog-in var(--ui-motion-2) var(--ui-ease-out) both}
+.v4-route-card,.v4-need-chip,.journal-status,.sect-card,.beast-card,.craft-card,.forge-card{transition:background-color var(--ui-motion-2) var(--ui-ease-out),border-color var(--ui-motion-2) var(--ui-ease-out)}
+#app .practice-room .pr-inner-core{animation-duration:var(--ui-ambient-breathe)}
+#app .practice-room .pr-orbit{animation-duration:var(--ui-ambient-orbit)}
+#app .practice-room .pr-orbit-second{animation-duration:33s}
+#app .v3-furnace-fire{animation-duration:var(--ui-ambient-fire)}
+@keyframes v4-dialog-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){
+  #app .ui-shell *,#app .ui-shell *::before,#app .ui-shell *::after,dialog.ui-dialog,dialog.ui-dialog *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  #app .ui-shell :is(.ui-button,.v3-hud-tab,.v4-treasure-cell,.v3-recipe-tab):active:not(:disabled){transform:none!important}
+}
