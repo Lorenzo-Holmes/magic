@@ -5,8 +5,8 @@
   "branch": "feat/ui-v4-unified",
   "baseline": "14afd1cb692aab778a5c649289f62064dc6ae099",
   "candidateVersion": "3.0.8",
-  "scope": "UI-00..15 complete; immortal/creation visual migration, jade-scroll auxiliary systems, motion unification, legacy cleanup and full release regression complete; UI-16 visual approval pending; UI-17 publish pending",
-  "visualApproval": "pending",
+  "scope": "UI-00..17 complete; V4 visual unification, release regression, GitHub main fast-forward and Cloudflare production deployment complete",
+  "visualApproval": "user_approved_by_publish_request",
   "tasks": [
     {"id":"UI-00","implementation":"complete","technical":"passed","checkpoint":"b7b2899"},
     {"id":"UI-01","implementation":"complete","technical":"passed","visual":"pending"},
@@ -24,8 +24,8 @@
     {"id":"UI-13","implementation":"complete","technical":"passed","note":"V4 semantic motion durations are centralized; cultivation/furnace/aura feedback use the shared levels and all V4 transitions/animations collapse under prefers-reduced-motion","dependsOn":["UI-06","UI-10","UI-11","UI-12"]},
     {"id":"UI-14","implementation":"complete","technical":"passed","note":"retired immortal/creation legacy background and padding overrides were removed; static tests lock stylesheet order and verify every V4 CSS url resolves","dependsOn":["UI-06","UI-07","UI-08","UI-09","UI-10","UI-11","UI-12","UI-13"]},
     {"id":"UI-15","implementation":"complete","technical":"passed","note":"v3.0.8 full Node, deterministic simulations, build, source/dist/ZIP verification and packaged browser smoke/visual/extension regression passed","dependsOn":["UI-14"]},
-    {"id":"UI-16","implementation":"pending_user_visual_approval","technical":"passed","note":"technical and screenshot gates pass; user visual acceptance is intentionally not inferred","dependsOn":["UI-15"]},
-    {"id":"UI-17","implementation":"not_started","technical":"not_tested","dependsOn":["UI-16"],"requires":"explicit publish authorization"}
+    {"id":"UI-16","implementation":"complete","technical":"passed","note":"assistant visual audit passed and the user subsequently issued an explicit publish instruction, which is recorded as release approval","dependsOn":["UI-15"]},
+    {"id":"UI-17","implementation":"complete","technical":"passed","note":"feat/ui-v4-unified was fast-forwarded to main, origin/main was pushed, v3.0.8 was rebuilt and verified, then Cloudflare Worker magic was deployed and key production URLs returned HTTP 200","dependsOn":["UI-16"],"requires":"explicit publish authorization"}
   ],
   "evidence": {
     "before":"output/ui-v4-foundation/before-nmrop1",
@@ -48,11 +48,17 @@
     "zipBytes":2931645,
     "rawProductionBytes":3437873,
     "productionFiles":159,
-    "testedZipSha256":"ef258358c052887498e74b6c36326a5f2a9627b9512c727cadf1f7186a9472fc"
+    "testedZipSha256":"ef258358c052887498e74b6c36326a5f2a9627b9512c727cadf1f7186a9472fc",
+    "deployedZipBytes":2931744,
+    "deployedZipSha256":"c71c93a2850a3891de93a6648df12a97ce7b1d008dae06790a495877c44727e3",
+    "deployedSourceCommit":"d4282cf76a8aa4238b7d13f557b441e5bd85cda9",
+    "cloudflareVersionId":"23794e08-aa2f-4623-8160-948d8f56badf",
+    "productionUrl":"https://magic.1106314996.workers.dev",
+    "productionHttpVerification":"passed"
   },
   "preserveUntracked":["docs/CULTIVATION_REDESIGN_V4.md"],
   "reviewCommit":"a231101cd75582d275cdfc81f3a18099a5284d41",
-  "push":"feature_branch_synced_to_origin",
-  "mainMerge":"not_executed",
-  "cloudflare":"not_executed"
+  "push":"origin_main_synced",
+  "mainMerge":"fast_forward_to_d4282cf76a8aa4238b7d13f557b441e5bd85cda9",
+  "cloudflare":"deployed_magic_version_23794e08-aa2f-4623-8160-948d8f56badf"
 }

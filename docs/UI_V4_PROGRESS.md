@@ -2,6 +2,14 @@
 
 原任务：《我欲飞升_前端实施清单_UIV4_v1.1.md》。原文件 SHA-256：`4aff156c77a0137e1b1febcdc4b1ddb7f69dd7c7b6cd03f200e8d49718b633d3`。
 
+## v3.0.8 正式发布
+
+用户在最终视觉核验后明确下达“发布”指令。`feat/ui-v4-unified` 已以 fast-forward 合并到 `main`，并推送 `origin/main`。部署源提交为 `d4282cf76a8aa4238b7d13f557b441e5bd85cda9`。
+
+发布前从 `main` 重新执行构建与 `verify:release`，通过 source / dist / ZIP 一致性校验。实际部署 ZIP 为 **2,931,744 bytes**，SHA-256 为 `c71c93a2850a3891de93a6648df12a97ce7b1d008dae06790a495877c44727e3`。Cloudflare Worker `magic` 部署成功，Version ID：`23794e08-aa2f-4623-8160-948d8f56badf`，线上地址：`https://magic.1106314996.workers.dev`。
+
+线上 HTTP 复验确认主页返回 200 并包含 `v3.0.8`；`immortal-v4.css`、`creation-v4.css`、`systems-v4.css` 以及 `jade-sword-seated.webp` 均返回 200。Wrangler OAuth 本轮仅请求 `account:read`、`user:read`、`workers_scripts:write`，部署后已执行 `wrangler logout` 清理登录状态。
+
 本批次从 `14afd1c` 建立 `feat/ui-v4-unified`，当前候选显示版本为 `3.0.8`。UI-00～15 已完成并保持玩法引擎不变：四角色三态、人物仙籍、行囊宝匣、山海图志、丹器方簿、仙界云台、创世天书、玉册辅助系统、统一动效与旧样式清理均已完成。UI-16 等待用户视觉核验，UI-17 仍需明确发布授权，因此当前不是已发布版本。
 
 ## 实际实现
