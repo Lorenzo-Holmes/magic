@@ -78,7 +78,8 @@
   "push":"origin_main_synced",
   "mainMerge":"fast_forward_to_d4282cf76a8aa4238b7d13f557b441e5bd85cda9",
   "cloudflare":"deployed_magic_version_23794e08-aa2f-4623-8160-948d8f56badf",
-  "candidatePush":"not_executed",
+  "candidateReviewCommit":"4e1b3f387b91198f31300033196e650b3e74792f",
+  "candidatePush":"origin_feature_branch_synced",
   "candidateMainMerge":"not_executed",
   "candidateCloudflare":"not_executed"
 }

@@ -20,7 +20,7 @@ UI-00～17 已在 v3.0.8 完成并发布；该版本的 GitHub main 与 Cloudfla
 
 固定 fixture 新增 `immortal-world-edge`，必须真实推进到第 4 界且完成此界印证后才能生成。专项验收 `output/ui-v4-foundation/foundation-UgJH8i/` 生成 38 张截图，覆盖 320/360/390/430/768/1280；390×844 和 320×568 的正式构图已人工检查。对比度门槛仍为 4.5:1，渐变资源牌由截图人工检查，纯色承托层继续自动测量；点击命中与 reducer 真实提交均通过。
 
-v3.0.9 全量 Node 为 **228/228**；正式包浏览器 smoke + visual + extension 合计 **540** 次布局检查和 **12** 次弹窗布局检查，控制台错误、失败请求、外部请求均为 0，仙界进化扩展测试通过。候选包 `release/wo-yu-fei-sheng-v3.0.9.zip` 为 **2,935,393 bytes**，159 个生产文件，source / dist / ZIP 一致；SHA-256：`c0b35cf3d76d8a60631c8bdfe265bea3946e234820dad6a4338e17ee918cf3ac`。本候选尚未推送功能分支、合并 main 或部署 Cloudflare。
+v3.0.9 全量 Node 为 **228/228**；正式包浏览器 smoke + visual + extension 合计 **540** 次布局检查和 **12** 次弹窗布局检查，控制台错误、失败请求、外部请求均为 0，仙界进化扩展测试通过。候选包 `release/wo-yu-fei-sheng-v3.0.9.zip` 为 **2,935,393 bytes**，159 个生产文件，source / dist / ZIP 一致；SHA-256：`c0b35cf3d76d8a60631c8bdfe265bea3946e234820dad6a4338e17ee918cf3ac`。本候选已同步 `feat/world-edge-v4-refine` 供核验；尚未合并 main 或部署 Cloudflare。
 
 ## 实际实现
 
