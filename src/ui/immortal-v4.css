@@ -17,3 +17,127 @@
 #app .ui-shell[data-context="immortal"] .world-road{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid #b9ad91;background:#e8e1d4}.world-road span{padding:5px 4px;text-align:center;border-right:1px solid #c7baa0}.world-road span:last-child{border-right:0}.world-road .lit{background:#dce4d8;color:#3b584b!important}
 #app .ui-shell[data-context="immortal"] .evolution-build{padding:0 12px 10px}.evolution-build summary{padding:12px 0;border-bottom:1px solid #b9ac8f}.slot-row{grid-template-columns:50px minmax(0,1fr) auto!important;align-items:center}.slot-row>button{grid-column:auto!important;min-width:78px}
 @media(max-width:420px){#app .ui-shell[data-context="immortal"] .immortal-view{padding-top:145px}#app .ui-shell[data-context="immortal"] .immortal-view::before{height:134px;background-position:center 35%}#app .ui-shell[data-context="immortal"] .immortal-view>.eyebrow{top:14px}#app .ui-shell[data-context="immortal"] .immortal-view>h2{top:38px;font-size:23px}.immortal-view::after{display:none!important}#app .ui-shell[data-context="immortal"] .immortal-stats{grid-template-columns:repeat(2,1fr)}#app .ui-shell[data-context="immortal"] .immortal-stats>div{border-bottom:1px solid #c6baa0}#app .ui-shell[data-context="immortal"] .chosen-line{grid-template-columns:auto 1fr}.slot-row{grid-template-columns:42px minmax(0,1fr)!important}.slot-row>button{grid-column:2!important}}
+
+/* Evolution field template: one visual language for all four post-prologue worlds. */
+#app .ui-shell[data-context="immortal"] .evolution-view{padding-top:232px}
+#app .ui-shell[data-context="immortal"] .evolution-view::before{height:218px;background:
+  linear-gradient(180deg,#0d2b3470 0,#0d2b3417 50%,#ede8dc 100%),
+  linear-gradient(90deg,#0c292e45,transparent 34%,transparent 70%,#f0e8d322),
+  url('../../assets/ui-v3/scenes/breakthrough.webp') center 38%/cover no-repeat}
+#app .ui-shell[data-context="immortal"] .evolution-view::after{top:45px;left:auto;right:18px;width:116px;height:116px;border-color:#f5e7bf55;box-shadow:0 0 50px #d7be7c26,inset 0 0 28px #f2ddaa10}
+#app .ui-shell[data-context="immortal"] .evolution-view>.eyebrow{top:24px;left:18px;background:#14363cd9;border-left-color:#d3b66f;padding:4px 8px;font-weight:600}
+#app .ui-shell[data-context="immortal"] .evolution-view>h2{top:57px;left:18px;padding:8px 13px 7px;background:#12353cdb;border-left-color:#d9bd74;font-size:31px;letter-spacing:3px}
+#app .ui-shell[data-context="immortal"] .evolution-hero-note{position:absolute!important;z-index:2!important;left:20px;top:112px;max-width:min(360px,72%);margin:0;padding:5px 9px;background:#f0ead9d9;border-left:2px solid #a78d54;color:#405a50!important;font:12px/1.6 var(--ui-font-title);letter-spacing:1px}
+
+#app .ui-shell[data-context="immortal"] .evolution-view .world-road{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;margin:0 0 12px;border:1px solid #b7a984;border-top:2px solid #ad915a;background:#e8e1d2;overflow:hidden}
+#app .ui-shell[data-context="immortal"] .evolution-view .world-road span{display:flex;min-width:0;min-height:52px;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:5px 3px;border-right:1px solid #c8bda5;color:#716956!important;background:#ece6d9;opacity:.72}
+#app .ui-shell[data-context="immortal"] .evolution-view .world-road span:last-child{border-right:0}
+#app .ui-shell[data-context="immortal"] .evolution-view .world-road span i{font:9px/1.3 var(--ui-font-body);font-style:normal;color:#94876d}
+#app .ui-shell[data-context="immortal"] .evolution-view .world-road span b{font:12px/1.35 var(--ui-font-title);font-weight:500;color:#5c594f;white-space:nowrap}
+#app .ui-shell[data-context="immortal"] .evolution-view .world-road span.lit{opacity:1;background:#e2e6d9}
+#app .ui-shell[data-context="immortal"] .evolution-view .world-road span.current{position:relative;opacity:1;background:linear-gradient(180deg,#2e625b,#244f4a);box-shadow:inset 0 0 0 1px #d7bd7a66}
+#app .ui-shell[data-context="immortal"] .evolution-view .world-road span.current:after{content:"";position:absolute;left:22%;right:22%;bottom:0;height:2px;background:#d9be78}
+#app .ui-shell[data-context="immortal"] .evolution-view .world-road span.current :is(i,b){color:#fff4da!important}
+#app .ui-shell[data-context="immortal"] .evolution-view .world-road span.locked{opacity:.48;filter:saturate(.55)}
+
+#app .ui-shell[data-context="immortal"] .evolution-view .evolution-stats{border-color:#b9a77d;border-top:0;background:#f2ede0;margin-bottom:12px}
+#app .ui-shell[data-context="immortal"] .evolution-view .evolution-stats>div{position:relative;min-height:82px;padding:10px 8px 9px 48px;border-color:#c6b999;background:linear-gradient(135deg,#f6f2e8,#ece4d3)}
+#app .ui-shell[data-context="immortal"] .evolution-view .evolution-stats>div:before{position:absolute;left:9px;top:14px;display:grid;place-items:center;width:30px;height:30px;border:1px solid #a88b55;border-radius:50%;background:#e7dfc9;color:#315950;font:15px var(--ui-font-title);box-shadow:inset 0 0 0 3px #f5f0e4}
+#app .ui-shell[data-context="immortal"] .evolution-view .evolution-stats>[data-stat="power"]::before{content:"势"}
+#app .ui-shell[data-context="immortal"] .evolution-view .evolution-stats>[data-stat="health"]::before{content:"气";color:#376d76}
+#app .ui-shell[data-context="immortal"] .evolution-view .evolution-stats>[data-stat="essence"]::before{content:"元";color:#56816d}
+#app .ui-shell[data-context="immortal"] .evolution-view .evolution-stats>[data-stat="fragment"]::before{content:"晶";color:#4d6685}
+#app .ui-shell[data-context="immortal"] .evolution-view .evolution-stats b{font-size:18px!important;white-space:normal}
+#app .ui-shell[data-context="immortal"] .evolution-view .evolution-stats small{display:block;margin-top:2px;font-size:9px;color:#8b816d!important}
+
+#app .ui-shell[data-context="immortal"] .evolution-law-panel{display:grid;grid-template-columns:120px minmax(0,1fr);gap:6px 16px;margin:0 0 14px;padding:11px 13px 12px;border:1px solid #c2b79e;border-left:3px solid #7f9b87;background:linear-gradient(90deg,#e0e6da,#f1ecdf 42%);color:#3e554c}
+#app .ui-shell[data-context="immortal"] .evolution-law-panel>div{grid-row:1/3;display:flex;flex-direction:column;justify-content:center;border-right:1px solid #c5baa0;padding-right:12px}
+#app .ui-shell[data-context="immortal"] .evolution-law-panel>div span{font-size:9px!important;letter-spacing:2px;color:#8a744c!important}
+#app .ui-shell[data-context="immortal"] .evolution-law-panel>div b{font:17px/1.5 var(--ui-font-title);color:#36594e!important}
+#app .ui-shell[data-context="immortal"] .evolution-law-panel p{margin:0;font-size:12px;line-height:1.65;color:#4e554d!important}
+#app .ui-shell[data-context="immortal"] .evolution-law-panel small{font-size:10px;line-height:1.55;color:#746d61!important}
+
+#app .ui-shell[data-context="immortal"] .evolution-view .evolution-build{padding:0;margin:0 0 14px;border:1px solid #b49a63;border-radius:3px;background:#f2ecdf;overflow:hidden}
+#app .ui-shell[data-context="immortal"] .evolution-view .evolution-build>summary{display:grid;grid-template-columns:38px auto minmax(0,1fr) 20px;align-items:center;gap:8px;min-height:58px;padding:8px 12px;border:0;background:linear-gradient(90deg,#163f42,#245a55);color:#fff3d4;list-style:none;cursor:pointer}
+#app .ui-shell[data-context="immortal"] .evolution-view .evolution-build>summary::-webkit-details-marker{display:none}
+#app .ui-shell[data-context="immortal"] .evolution-view .evolution-build>summary .evo-build-symbol{display:grid;place-items:center;width:34px;height:34px;border:1px solid #d8be7a88;border-radius:50%;background:#d5bf7f20;color:#f1d58b;font-size:18px}
+#app .ui-shell[data-context="immortal"] .evolution-view .evolution-build>summary b{font:17px var(--ui-font-title);font-weight:600;color:#fff2cf!important}
+#app .ui-shell[data-context="immortal"] .evolution-view .evolution-build>summary>span:not(.evo-build-symbol){font:11px var(--ui-font-body);color:#d7d7c8!important;text-align:left}
+#app .ui-shell[data-context="immortal"] .evolution-view .evolution-build>summary>i{font-style:normal;font-size:24px;color:#dbc17d;transition:transform var(--ui-motion-1)}
+#app .ui-shell[data-context="immortal"] .evolution-view .evolution-build[open]>summary>i{transform:rotate(90deg)}
+#app .ui-shell[data-context="immortal"] .evolution-view .evolution-build>.slot-list{padding:0 12px}
+#app .ui-shell[data-context="immortal"] .evolution-view .evolution-build>h3{margin:14px 12px 4px}
+#app .ui-shell[data-context="immortal"] .evolution-view .evolution-build>.immortal-actions{margin:6px 12px 12px}
+
+#app .ui-shell[data-context="immortal"] .evolution-phase-world>.event-sheet{margin:0;padding:0;border:0;background:transparent;box-shadow:none}
+#app .ui-shell[data-context="immortal"] .evolution-phase-world>.event-sheet>.story-lead{margin:0 0 12px;padding:11px 13px;border-left:2px solid #aa915d;background:#ece5d6;color:#5a5b50!important;font-size:12px;line-height:1.75}
+#app .ui-shell[data-context="immortal"] .evo-goal-card{margin:0 0 14px!important;padding:14px 14px 14px 55px!important;border:1px solid #c2b69c!important;border-top:2px solid #ad925c!important;background:#f2ecdf!important}
+#app .ui-shell[data-context="immortal"] .evo-goal-card:before{content:"当前\A目标";white-space:pre;left:10px;top:14px;padding-right:8px;border-right:1px solid #c5baa1;writing-mode:vertical-rl;font-size:9px;line-height:1.3}
+#app .ui-shell[data-context="immortal"] .evo-goal-card>b{font:18px/1.5 var(--ui-font-title);color:#2f5148!important}
+#app .ui-shell[data-context="immortal"] .evo-goal-card>p{margin-top:5px;font-size:11px;line-height:1.75;color:#68665c!important}
+
+#app .ui-shell[data-context="immortal"] .evo-action-panel{margin:0 0 18px}
+#app .ui-shell[data-context="immortal"] .evo-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+#app .ui-shell[data-context="immortal"] .evo-action-grid .evo-action{display:grid;grid-template-columns:38px minmax(0,1fr);align-items:center;gap:8px;min-height:74px;margin:0!important;padding:9px 10px!important;text-align:left;letter-spacing:0;background:#f1ecdf!important;border-color:#a99d83!important;color:#335148!important}
+#app .ui-shell[data-context="immortal"] .evo-action-grid .evo-action--main{grid-column:1/-1;grid-template-columns:46px minmax(0,1fr) 20px;min-height:74px;background:linear-gradient(90deg,#314f48,#27453f)!important;border-color:#b39a61!important;color:#fff3d8!important;box-shadow:inset 0 0 0 1px #e2ca8b24!important}
+#app .ui-shell[data-context="immortal"] .evo-action-grid .evo-action--main:disabled{background:#ded8c9!important;color:#777065!important;border-style:dashed!important}
+#app .ui-shell[data-context="immortal"] .evo-action-grid .evo-action--refine{border-color:#9a8a68!important}
+#app .ui-shell[data-context="immortal"] .evo-action-mark{display:grid;place-items:center;width:34px;height:34px;border:1px solid #9a8862;border-radius:50%;background:#e2dac7;color:#365c53;font:15px var(--ui-font-title)}
+#app .ui-shell[data-context="immortal"] .evo-action--main .evo-action-mark{width:42px;height:42px;border-color:#d2b871;background:#d8c17b18;color:#f3d891}
+#app .ui-shell[data-context="immortal"] .evo-action b{display:block;color:inherit!important;font:16px/1.35 var(--ui-font-title)}
+#app .ui-shell[data-context="immortal"] .evo-action .button-note{margin-top:3px;color:#756f61!important;font-size:10px;line-height:1.45}
+#app .ui-shell[data-context="immortal"] .evo-action--main .button-note{color:#dbd7c7!important}
+#app .ui-shell[data-context="immortal"] .evo-action>i{font-style:normal;font-size:23px;color:#d8bd77}
+
+#app .ui-shell[data-context="immortal"] .evo-hunt-section{margin:0 0 14px}
+#app .ui-shell[data-context="immortal"] .evo-section-heading{display:flex;align-items:end;justify-content:space-between;gap:14px;margin:0 0 8px;padding:0 2px 7px;border-bottom:1px solid #c0b49b}
+#app .ui-shell[data-context="immortal"] .evo-section-heading span{display:block;font:18px var(--ui-font-title);color:#315449!important;letter-spacing:2px}
+#app .ui-shell[data-context="immortal"] .evo-section-heading b{display:block;margin-top:2px;font:10px var(--ui-font-body);font-weight:400;color:#90784d!important}
+#app .ui-shell[data-context="immortal"] .evo-section-heading>small{font-size:9px;color:#817b6f!important;text-align:right}
+#app .ui-shell[data-context="immortal"] .evo-hunt-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+#app .ui-shell[data-context="immortal"] .evo-hunt-card{display:grid!important;grid-template-columns:46px minmax(0,1fr) 18px;align-items:center;gap:8px;min-height:88px;margin:0!important;padding:9px 10px!important;text-align:left!important;letter-spacing:0!important;background:#f4efe4!important;border-color:#b5aa91!important;color:#38534b!important}
+#app .ui-shell[data-context="immortal"] .evo-hunt-card--gate{grid-column:1/-1;background:linear-gradient(90deg,#e8dec8,#f5efe2)!important;border-color:#a78b54!important}
+#app .ui-shell[data-context="immortal"] .evo-hunt-card:disabled{opacity:1!important;background:#e6e0d3!important;color:#777166!important;border-style:dashed!important}
+#app .ui-shell[data-context="immortal"] .evo-hunt-icon{display:grid;width:42px;height:42px;place-items:center;border:1px solid #a9966f;border-radius:50%;background:radial-gradient(circle,#ede5d1 45%,#d7ceb7);color:#31594f;box-shadow:inset 0 0 0 3px #f7f1e5}
+#app .ui-shell[data-context="immortal"] .evo-hunt-icon:before{font:18px var(--ui-font-title)}
+#app .ui-shell[data-context="immortal"] .evo-hunt-icon--beast:before{content:"兽"}.evo-hunt-icon--illusion:before{content:"幻"}.evo-hunt-icon--gate:before{content:"界"}
+#app .ui-shell[data-context="immortal"] .evo-hunt-copy{min-width:0}
+#app .ui-shell[data-context="immortal"] .evo-hunt-copy b{display:block;color:#2e5047!important;font:16px/1.35 var(--ui-font-title);overflow-wrap:anywhere}
+#app .ui-shell[data-context="immortal"] .evo-hunt-copy small{display:block;margin-top:2px;color:#6f685b!important;font-size:10px;line-height:1.45}
+#app .ui-shell[data-context="immortal"] .evo-hunt-copy em{display:block;margin-top:3px;color:#957c50;font-style:normal;font-size:9px;line-height:1.35}
+#app .ui-shell[data-context="immortal"] .evo-hunt-card>i{font-style:normal;font-size:22px;color:#9a8052}
+#app .ui-shell[data-context="immortal"] .evo-hunt-card--danger{border-left:3px solid #9f5f54!important}.evo-hunt-card--even{border-left:3px solid #a98d58!important}.evo-hunt-card--safe{border-left:3px solid #708f7e!important}
+
+@media(max-width:420px){
+  #app .ui-shell[data-context="immortal"] .evolution-view{padding-top:190px}
+  #app .ui-shell[data-context="immortal"] .evolution-view::before{height:180px;background-position:center 34%}
+  #app .ui-shell[data-context="immortal"] .evolution-view>.eyebrow{top:13px;left:10px;font-size:8px}
+  #app .ui-shell[data-context="immortal"] .evolution-view>h2{top:42px;left:10px;font-size:25px}
+  #app .ui-shell[data-context="immortal"] .evolution-hero-note{left:11px;top:91px;max-width:80%;font-size:10px}
+  #app .ui-shell[data-context="immortal"] .evolution-view .world-road span{min-height:46px;padding-inline:1px}
+  #app .ui-shell[data-context="immortal"] .evolution-view .world-road span i{display:none}
+  #app .ui-shell[data-context="immortal"] .evolution-view .world-road span b{font-size:10px;white-space:normal;text-align:center}
+  #app .ui-shell[data-context="immortal"] .evolution-view .evolution-stats>div{min-height:70px;padding:8px 6px 7px 41px}
+  #app .ui-shell[data-context="immortal"] .evolution-view .evolution-stats>div:before{left:7px;top:11px;width:26px;height:26px;font-size:12px}
+  #app .ui-shell[data-context="immortal"] .evolution-view .evolution-stats b{font-size:15px!important}
+  #app .ui-shell[data-context="immortal"] .evolution-law-panel{grid-template-columns:92px minmax(0,1fr);gap:5px 10px;padding:9px 10px}
+  #app .ui-shell[data-context="immortal"] .evolution-law-panel>div b{font-size:14px}
+  #app .ui-shell[data-context="immortal"] .evolution-law-panel p{font-size:10px}
+  #app .ui-shell[data-context="immortal"] .evolution-law-panel small{font-size:9px}
+  #app .ui-shell[data-context="immortal"] .evolution-view .evolution-build>summary{grid-template-columns:30px auto minmax(0,1fr) 15px;gap:6px;min-height:52px;padding:7px 8px}
+  #app .ui-shell[data-context="immortal"] .evolution-view .evolution-build>summary .evo-build-symbol{width:28px;height:28px;font-size:14px}
+  #app .ui-shell[data-context="immortal"] .evolution-view .evolution-build>summary b{font-size:14px}
+  #app .ui-shell[data-context="immortal"] .evolution-view .evolution-build>summary>span:not(.evo-build-symbol){font-size:9px}
+  #app .ui-shell[data-context="immortal"] .evo-action-grid .evo-action{min-height:68px;grid-template-columns:32px minmax(0,1fr);padding:7px 8px!important}
+  #app .ui-shell[data-context="immortal"] .evo-action-grid .evo-action--main{grid-template-columns:38px minmax(0,1fr) 16px}
+  #app .ui-shell[data-context="immortal"] .evo-action-mark{width:29px;height:29px;font-size:12px}
+  #app .ui-shell[data-context="immortal"] .evo-action--main .evo-action-mark{width:35px;height:35px}
+  #app .ui-shell[data-context="immortal"] .evo-action b{font-size:13px}
+  #app .ui-shell[data-context="immortal"] .evo-action .button-note{font-size:8px}
+  #app .ui-shell[data-context="immortal"] .evo-hunt-grid{grid-template-columns:1fr}
+  #app .ui-shell[data-context="immortal"] .evo-hunt-card--gate{grid-column:auto}
+  #app .ui-shell[data-context="immortal"] .evo-hunt-card{min-height:72px;grid-template-columns:38px minmax(0,1fr) 15px;padding:7px 8px!important}
+  #app .ui-shell[data-context="immortal"] .evo-hunt-icon{width:34px;height:34px}.evo-hunt-icon:before{font-size:15px!important}
+  #app .ui-shell[data-context="immortal"] .evo-hunt-copy b{font-size:14px}
+  #app .ui-shell[data-context="immortal"] .evo-section-heading>small{display:none}
+}

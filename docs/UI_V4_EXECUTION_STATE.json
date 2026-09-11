@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "sourcePlan": "我欲飞升_前端实施清单_UIV4_v1.1.md",
   "sourcePlanSha256": "4aff156c77a0137e1b1febcdc4b1ddb7f69dd7c7b6cd03f200e8d49718b633d3",
-  "branch": "feat/ui-v4-unified",
+  "branch": "feat/world-edge-v4-refine",
   "baseline": "14afd1cb692aab778a5c649289f62064dc6ae099",
-  "candidateVersion": "3.0.8",
-  "scope": "UI-00..17 complete; V4 visual unification, release regression, GitHub main fast-forward and Cloudflare production deployment complete",
-  "visualApproval": "user_approved_by_publish_request",
+  "candidateVersion": "3.0.9",
+  "scope": "UI-00..17 were completed and published in v3.0.8; this branch is a post-release realm-template refinement for immortal evolution worlds, technically complete and awaiting visual approval",
+  "visualApproval": "pending_for_v3.0.9_world_template",
   "tasks": [
     {"id":"UI-00","implementation":"complete","technical":"passed","checkpoint":"b7b2899"},
     {"id":"UI-01","implementation":"complete","technical":"passed","visual":"pending"},
@@ -26,6 +26,9 @@
     {"id":"UI-15","implementation":"complete","technical":"passed","note":"v3.0.8 full Node, deterministic simulations, build, source/dist/ZIP verification and packaged browser smoke/visual/extension regression passed","dependsOn":["UI-14"]},
     {"id":"UI-16","implementation":"complete","technical":"passed","note":"assistant visual audit passed and the user subsequently issued an explicit publish instruction, which is recorded as release approval","dependsOn":["UI-15"]},
     {"id":"UI-17","implementation":"complete","technical":"passed","note":"feat/ui-v4-unified was fast-forwarded to main, origin/main was pushed, v3.0.8 was rebuilt and verified, then Cloudflare Worker magic was deployed and key production URLs returned HTTP 200","dependsOn":["UI-16"],"requires":"explicit publish authorization"}
+  ],
+  "postReleaseRefinements": [
+    {"id":"UI-V4-R1","implementation":"complete","technical":"passed","visual":"pending","note":"immortal evolution worlds now share a larger realm hero, five-world road strip, icon-led resource rail, law panel, prominent five-slot evolution strip, 1+2x2 action hierarchy and creature/gate dossier cards; original evolution reducer, costs, RNG and save transitions are unchanged"}
   ],
   "evidence": {
     "before":"output/ui-v4-foundation/before-nmrop1",
@@ -56,9 +59,26 @@
     "productionUrl":"https://magic.1106314996.workers.dev",
     "productionHttpVerification":"passed"
   },
+  "candidateEvidence": {
+    "targeted":"output/ui-v4-foundation/foundation-UgJH8i",
+    "targetedScreenshots":38,
+    "finalNode":"output/ui-v4-node-v309-final.log",
+    "nodeTests":228,
+    "browser":"output/playwright/v3.0.9/runs/acceptance-RWaBcl",
+    "layoutChecks":540,
+    "dialogLayoutChecks":12,
+    "zipBytes":2935393,
+    "rawProductionBytes":3457804,
+    "productionFiles":159,
+    "sourceDistZipIdentical":true,
+    "testedZipSha256":"c0b35cf3d76d8a60631c8bdfe265bea3946e234820dad6a4338e17ee918cf3ac"
+  },
   "preserveUntracked":["docs/CULTIVATION_REDESIGN_V4.md"],
   "reviewCommit":"a231101cd75582d275cdfc81f3a18099a5284d41",
   "push":"origin_main_synced",
   "mainMerge":"fast_forward_to_d4282cf76a8aa4238b7d13f557b441e5bd85cda9",
-  "cloudflare":"deployed_magic_version_23794e08-aa2f-4623-8160-948d8f56badf"
+  "cloudflare":"deployed_magic_version_23794e08-aa2f-4623-8160-948d8f56badf",
+  "candidatePush":"not_executed",
+  "candidateMainMerge":"not_executed",
+  "candidateCloudflare":"not_executed"
 }

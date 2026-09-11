@@ -19,6 +19,7 @@ function create() {
     if (s.immortal.phase === 'world') {
       remember('immortal-world', s);
       if (Object.values(s.immortal.evolution.slots).filter(Boolean).length === 5 && s.immortal.evolution.refinement >= 1) remember('immortal-five-slots', s);
+      if (s.immortal.evolution.world === 4 && s.immortal.evolution.proof) remember('immortal-world-edge', s);
     }
   }}).state;
   remember('immortal-ending', immortal);
@@ -27,6 +28,7 @@ function create() {
   simulate(230001, 'body', { journey:true, onStep(s) { if (s.journey.active) remember('journey', s); } });
   for (const s of Object.values(states)) E.validate(s);
   if (!states['immortal-five-slots']) throw new Error('No earned five-slot state');
+  if (!states['immortal-world-edge']) throw new Error('No earned world-edge state');
   return states;
 }
 module.exports = { create };

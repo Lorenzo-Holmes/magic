@@ -55,7 +55,7 @@ async function capture(label,width,height) {
   page=await context.newPage();page.setDefaultTimeout(15000);
   page.on('pageerror',e=>report.errors.push(e.message));
   page.on('requestfailed',r=>report.failures.push(r.url()));
-  for(const state of ['practice','immortal-five-slots','creation']) {
+  for(const state of ['practice','immortal-five-slots','immortal-world-edge','creation']) {
     await restore(state);
     for(const [w,h] of [[390,844],[320,568],[360,800],[430,932],[768,1024],[1280,900]]) await capture(state,w,h);
   }
@@ -97,7 +97,7 @@ async function capture(label,width,height) {
   await page.locator('[data-ui="nav-panel"][data-id="inventory"]').click();await page.locator('[data-ui="forge"]').click();await capture('forge',390,844);
   if(mode!=='before'){
     report.routes=[];
-    for(const name of ['practice','immortal-five-slots','creation']){
+    for(const name of ['practice','immortal-five-slots','immortal-world-edge','creation']){
       await restore(name);
       const raw=await page.evaluate(()=>localStorage.getItem('feisheng.run.v1'));
       const context=await page.locator('[data-ui-shell]').getAttribute('data-context');
@@ -120,10 +120,14 @@ async function capture(label,width,height) {
     assert.ok(await page.locator('[data-action="journey-resolve"]').count());
     assert.equal(await page.evaluate(()=>localStorage.getItem('feisheng.run.v1')),journey);
     report.journeyCannotBeBypassed=true;
-    await restore('immortal-five-slots');
+    await restore('immortal-world-edge');
     await page.setViewportSize({width:390,height:844});
+    assert.equal(await page.locator('.evolution-view>h2').innerText(),'世界边缘');
+    assert.equal(await page.locator('.world-road [aria-current="step"] b').innerText(),'世界边缘');
+    assert.equal(await page.locator('.evo-action-grid .evo-action--main').count(),1);
+    assert.ok(await page.locator('.evo-hunt-card').count()>=3);
     await page.locator('.evolution-build summary').click();
-    report.contrast=await probes.contrast(page,'.ui-document .immortal-view h2,.ui-document .immortal-goal b,.ui-document .story-lead,.ui-document .immortal-actions button,.ui-document .immortal-actions .button-note,.ui-document .slot-row button');
+    report.contrast=await probes.contrast(page,'.ui-document .immortal-view h2,.ui-document .immortal-goal b,.ui-document .story-lead,.ui-document .immortal-actions button,.ui-document .immortal-actions .button-note,.ui-document .slot-row button,.ui-document .evo-action:not(.evo-action--main),.ui-document .evo-hunt-card:not(.evo-hunt-card--gate)');
     assert.ok(report.contrast.length>20);
     for(const c of report.contrast){assert.ok(c.flatOpaqueSurface,`Unmeasured texture behind ${c.text}`);assert.equal(c.opacity,1);assert.ok(c.ratio>=4.5,`Low contrast ${c.ratio}: ${c.text}`);assert.ok(c.font>=12);}
     report.hits=await probes.hitTargets(page,'.evolution-build button,.event-sheet button,.ui-navigation button');
