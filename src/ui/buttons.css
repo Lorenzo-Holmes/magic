@@ -1,0 +1,24 @@
+/* Only semantic actions receive ui-button. Image hotspots and number links keep
+   their layout contracts; their surfaces are migrated independently. */
+.ui-gallery .ui-button, #app .ui-shell button.ui-button, dialog.ui-dialog button.ui-button {
+  min-width:var(--ui-hit);min-height:var(--ui-hit);padding:10px 14px;margin:0;
+  border:1px solid var(--border-control);border-image:none;border-radius:var(--ui-radius-tab);
+  background:var(--surface-panel);color:var(--text-action);font-size:var(--ui-text-sm);
+  line-height:1.5;letter-spacing:0;box-shadow:inset 0 1px 0 #ffffff18;
+  text-shadow:none;cursor:pointer;opacity:1;filter:none;transition:background-color .12s,border-color .12s;
+}
+.ui-gallery .ui-button--primary, #app .ui-shell button.ui-button--primary, dialog.ui-dialog button.ui-button--primary {
+  background:var(--surface-action);color:var(--text-primary);border-color:var(--text-action);border-bottom-width:2px;font-weight:600;
+}
+.ui-gallery .ui-button--quiet, #app .ui-shell button.ui-button--quiet, dialog.ui-dialog button.ui-button--quiet {border-color:transparent;background:transparent;box-shadow:none;}
+.ui-gallery .ui-button--danger, #app .ui-shell button.ui-button--danger, dialog.ui-dialog button.ui-button--danger {border-color:var(--text-danger);color:var(--text-danger);}
+.ui-gallery .ui-button:hover:not(:disabled), #app .ui-shell button.ui-button:hover:not(:disabled), dialog.ui-dialog button.ui-button:hover:not(:disabled) {background:var(--surface-inset);}
+.ui-gallery .ui-button:active:not(:disabled), #app .ui-shell button.ui-button:active:not(:disabled), dialog.ui-dialog button.ui-button:active:not(:disabled) {box-shadow:inset 0 2px 3px #07131a33;}
+.ui-gallery .ui-button:disabled, #app .ui-shell button.ui-button:disabled, dialog.ui-dialog button.ui-button:disabled {
+  opacity:1;filter:none;background:var(--surface-inset);color:var(--text-disabled);border-style:dashed;border-color:var(--border-control);box-shadow:none;cursor:not-allowed;
+}
+.ui-gallery .ui-button :is(span,small,p,h3,b), #app .ui-shell button.ui-button :is(span,small,p,h3,b), dialog.ui-dialog button.ui-button :is(span,small,p,h3,b) {color:inherit;opacity:1;}
+.ui-gallery .ui-button .ui-button-note, #app .ui-shell button.ui-button :is(.button-note,small), dialog.ui-dialog button.ui-button :is(.button-note,small) {color:var(--text-secondary);font-size:var(--ui-text-xs);}
+.ui-gallery .ui-button:disabled *, #app .ui-shell button.ui-button:disabled *, dialog.ui-dialog button.ui-button:disabled * {color:var(--text-disabled);}
+.ui-gallery :is(button,summary):focus-visible, #app .ui-shell :is(button,summary,select):focus-visible, dialog.ui-dialog :is(button,summary,select):focus-visible {outline:2px solid var(--focus-ring);outline-offset:-3px;}
+@media(prefers-reduced-motion:reduce){.ui-button{transition:none;}}

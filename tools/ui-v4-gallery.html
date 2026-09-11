@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UI V4 组件验收 · 开发用，不进入发布包</title>
+<link rel="stylesheet" href="../src/ui/tokens.css"><link rel="stylesheet" href="../src/ui/theme.css">
+<link rel="stylesheet" href="../src/ui/typography.css"><link rel="stylesheet" href="../src/ui/panels.css"><link rel="stylesheet" href="../src/ui/buttons.css">
+<style>
+body{margin:0;background:#ced4cf;font:14px/1.6 var(--ui-font-body)}.ui-gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-width:1000px;margin:auto;gap:16px;padding:16px}
+.gallery-surface{min-width:0;padding:16px;background:var(--surface-canvas);color:var(--text-primary)}.gallery-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.gallery-grid .ui-button{width:100%;min-width:44px}.gallery-surface>.ui-panel{margin:16px 0}.ui-button span{color:inherit}.gallery-surface small{font-size:12px}.gallery-title{max-width:1000px;margin:16px auto;padding:0 16px}.ui-button[data-demo="pressed"]{box-shadow:inset 0 2px 3px #07131a33}.ui-button[data-demo="focus"]{outline:2px solid var(--focus-ring);outline-offset:-3px}.ui-button[data-demo="hover"]{background:var(--surface-inset)}@media(max-width:600px){.ui-gallery{grid-template-columns:1fr}}
+</style><script defer src="../src/ui/components.js"></script><script defer src="./ui-v4-gallery.js"></script></head>
+<body><header class="gallery-title"><h1>青黛 · 玉册</h1><p>UI-02 组件展示。用于核对明暗表面、长文案、费用和交互状态，不是游戏页面。</p></header><main id="gallery" class="ui-gallery"></main></body></html>

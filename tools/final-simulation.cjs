@@ -14,7 +14,9 @@ const root = path.resolve(__dirname, '..');
 const version = require('../package.json').version;
 function mean(values) { return values.reduce((a,b)=>a+b,0) / values.length; }
 function run() {
-  assert.match(version, /^(?:1|2)\.\d+\.\d+$/, 'Unsupported release version');
+  // V3 changes presentation, not the classic compatibility simulation contract.
+  assert.match(version, /^(?:1|2|3)\.\d+\.\d+$/, 'Unsupported release version');
+  assert.equal(require('../src/scenes.js').VERSION, version, 'Release/scenes version mismatch');
   const perPath = {}, allMortalTurns = [], allImmortalTurns = [];
   for (const strategy of PATHS) {
     const mortalTurns = [], immortalTurns = [], powers = [], ages = [];

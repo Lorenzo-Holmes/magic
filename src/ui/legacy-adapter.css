@@ -1,0 +1,38 @@
+/* Transitional map for UI-01..03. Remove each rule only when its old template
+   has moved to the shared component. No gameplay logic or global white wash. */
+#app .ui-shell .ui-document {color:var(--text-primary);}
+#app .ui-shell .ui-document :is(h1,h2,h3,h4,b,strong,.story-lead,.intro,.button-note,.chosen-line,.resource-identity) {color:var(--text-primary);text-shadow:none;}
+#app .ui-shell .ui-document :is(p,small,.eyebrow,.footnote,.world-affix,.world-road span,.slot-row>span) {color:var(--text-secondary);}
+#app .ui-shell .ui-document :is(.immortal-view,.creation-view,.ending-view,.breakthrough-view,.tribulation-view) {background:none;padding:0;}
+#app .ui-shell .ui-document .immortal-view>h2 {font:500 28px/1.4 var(--ui-font-title);margin:8px 0 16px;letter-spacing:1px;}
+#app .ui-shell .ui-document .immortal-stats {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:16px;border:1px solid var(--border-subtle);border-radius:8px;background:var(--surface-panel);margin:16px 0;}
+#app .ui-shell .ui-document .immortal-stats>div:nth-child(-n+2){grid-column:auto;}
+#app .ui-shell .ui-document .immortal-stats span {font-size:12px;color:var(--text-secondary);}
+#app .ui-shell .ui-document .immortal-stats b {font:20px/1.5 var(--ui-font-title);color:var(--text-primary);}
+#app .ui-shell .ui-document .number-button {color:var(--text-primary);font:inherit;min-height:44px;white-space:normal;}
+#app .ui-shell .ui-document :is(.event-sheet,.immortal-goal,.enemy-card,.pressure-note,.world-projection,.evolution-build) {background:var(--surface-panel);color:var(--text-primary);border:1px solid var(--border-subtle);border-radius:8px;padding:16px;margin:16px 0;box-shadow:none;}
+#app .ui-shell .ui-document :is(.event-sheet,.immortal-goal) {border-top:2px solid var(--accent-ornament);}
+#app .ui-shell .ui-document :is(.story-lead,.immortal-goal p,.pressure-note p) {font:14px/1.7 var(--ui-font-body);color:var(--text-primary);}
+#app .ui-shell .ui-document .immortal-goal b {font:18px/1.5 var(--ui-font-title);color:var(--text-primary);}
+#app .ui-shell .ui-document .immortal-actions {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:stretch;margin:12px 0;}
+#app .ui-shell .ui-document .immortal-actions>.primary, #app .ui-shell .ui-document .immortal-actions>.trace-route, #app .ui-shell .ui-document .immortal-actions>.law-card {grid-column:1/-1;}
+#app .ui-shell .ui-document .immortal-actions button {min-width:0;width:100%;min-height:56px;font-size:14px;}
+#app .ui-shell .ui-document .immortal-actions .button-note {font:12px/1.5 var(--ui-font-body);}
+#app .ui-shell .ui-document .immortal-subtitle {font-size:18px;margin:24px 0 8px;}
+#app .ui-shell .ui-document .world-road {display:flex;flex-wrap:wrap;gap:4px 8px;margin:12px 0;border:0;}
+#app .ui-shell .ui-document .world-road span {font-size:12px;opacity:1;}
+#app .ui-shell .ui-document .world-road .lit {color:var(--text-action);font-weight:600;}
+#app .ui-shell .ui-document .evolution-build summary {font:16px/1.5 var(--ui-font-title);color:var(--text-action);min-height:44px;cursor:pointer;}
+#app .ui-shell .ui-document .evolution-build summary>span {font:12px var(--ui-font-body);color:var(--text-secondary);}
+#app .ui-shell .ui-document .slot-row {display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;margin:0;padding:12px 0;border-bottom:1px solid var(--border-subtle);}
+#app .ui-shell .ui-document .slot-row>button {grid-column:2;}
+#app .ui-shell .ui-document .slot-row :is(b,p) {font-size:14px;line-height:1.5;}
+#app .ui-shell .ui-document .world-affix {font-size:12px;line-height:1.7;}
+/* Light event sheets remain light even inside the dark cultivation room. */
+#app .ui-shell .pr-encounter {--surface-panel:var(--ui-mist-100);--surface-inset:var(--ui-mist-200);--text-primary:var(--ui-text-ink);--text-secondary:var(--ui-text-brown);--text-action:var(--ui-jade-650);--text-disabled:var(--ui-text-dim);--border-control:#7c786d;}
+#app .ui-shell .practice-room button:disabled {opacity:1;filter:none;color:var(--text-disabled);}
+dialog.ui-dialog.scroll-dialog {background:var(--surface-panel);border:1px solid var(--border-control);border-top:2px solid var(--accent-ornament);border-radius:8px;box-shadow:0 8px 32px #07131a44;color:var(--text-primary);}
+dialog.ui-dialog .dialog-head {background:var(--surface-panel);color:var(--text-primary);border-bottom:1px solid var(--border-subtle);}
+dialog.ui-dialog :is(h2,h3,h4,strong,b,.story-lead) {color:var(--text-primary);}
+dialog.ui-dialog :is(p,small,.intro,.button-note,.footnote) {color:var(--text-secondary);font-size:14px;line-height:1.6;}
+dialog.ui-dialog :is(small,.button-note,.footnote){font-size:12px;}

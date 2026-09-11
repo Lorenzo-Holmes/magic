@@ -3,7 +3,8 @@
 const fs = require('node:fs'), path = require('node:path'), assert = require('node:assert/strict'), crypto = require('node:crypto');
 const root = path.resolve(__dirname, '..');
 const mode = process.argv.includes('--baseline') ? 'before' : 'foundation';
-const baseURL = 'http://127.0.0.1:4317';
+const baseURL = process.env.FS_UI_BASE_URL || 'http://127.0.0.1:4317';
+assert.equal(new URL(baseURL).hostname,'127.0.0.1','Only isolated local previews are allowed');
 const base = path.join(root, 'output/ui-v4-foundation'); fs.mkdirSync(base, { recursive:true });
 const out = fs.mkdtempSync(path.join(base, mode + '-'));
 const tmp = path.join(root, '.cache/tmp'); fs.mkdirSync(tmp, { recursive:true });
@@ -14,6 +15,7 @@ const installed = candidates.find(p=>fs.existsSync(path.join(p,'package.json')))
 assert.ok(installed, 'Project-local Playwright required; no implicit installation');
 const sha = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const states = require('./ui-v4-fixtures.cjs').create();
+const probes = require('./ui-v4-probes.cjs');
 const report = { scope:'UI-00..03 foundation only; not full V4, ZIP, or physical-device acceptance', mode, out, passed:false, screenshots:[], colors:[], layouts:[], errors:[], failures:[], states:{} };
 for (const [name,state] of Object.entries(states)) { const raw=JSON.stringify(state); fs.writeFileSync(path.join(out,name+'.json'),raw);report.states[name]={seed:state.seed,revision:state.revision,sha256:sha(raw)}; }
 report.sourceHashes = Object.fromEntries(require('./production-files.cjs').map(f=>[f,sha(fs.readFileSync(path.join(root,f)))]));
@@ -54,13 +56,67 @@ async function capture(label,width,height) {
   page.on('requestfailed',r=>report.failures.push(r.url()));
   for(const state of ['practice','immortal-five-slots','creation']) {
     await restore(state);
-    for(const [w,h] of [[390,844],[320,568],[1280,900]]) await capture(state,w,h);
+    for(const [w,h] of [[390,844],[320,568],[360,800],[430,932],[768,1024],[1280,900]]) await capture(state,w,h);
   }
   await restore('practice');await page.setViewportSize({width:390,height:844});
   for(const tab of ['atlas','inventory','character']){
     await page.locator(`[data-ui="nav-panel"][data-id="${tab}"]`).click();await capture(tab,390,844);
   }
   await page.locator('[data-ui="nav-panel"][data-id="inventory"]').click();await page.locator('[data-ui="forge"]').click();await capture('forge',390,844);
+  if(mode!=='before'){
+    report.routes=[];
+    for(const name of ['practice','immortal-five-slots','creation']){
+      await restore(name);
+      const raw=await page.evaluate(()=>localStorage.getItem('feisheng.run.v1'));
+      const context=await page.locator('[data-ui-shell]').getAttribute('data-context');
+      for(const tab of ['character','inventory','practice'])await page.locator(`[data-ui="nav-panel"][data-id="${tab}"]`).click();
+      assert.equal(await page.locator('[data-ui-shell]').getAttribute('data-context'),context);
+      assert.equal(await page.evaluate(()=>localStorage.getItem('feisheng.run.v1')),raw);
+      assert.equal(await page.locator('[data-ui-nav="unified"]').count(),1);
+      report.routes.push({name,context,readOnly:true});
+    }
+    await page.locator('[data-ui="world-return"]').click();
+    assert.equal(await page.locator('[data-ui-shell]').getAttribute('data-context'),'immortal');
+    await page.locator('[data-ui="mortal-summary"]').click();
+    assert.equal(await page.locator('[data-ui-shell]').getAttribute('data-context'),'mortal');
+    await page.locator('[data-ui="immortal-continue"]').click();
+    assert.equal(await page.locator('[data-ui-shell]').getAttribute('data-context'),'immortal');
+    report.explicitReturns=true;
+    await restore('journey');
+    const journey=await page.evaluate(()=>localStorage.getItem('feisheng.run.v1'));
+    await page.locator('[data-ui="nav-panel"][data-id="character"]').click();
+    assert.ok(await page.locator('[data-action="journey-resolve"]').count());
+    assert.equal(await page.evaluate(()=>localStorage.getItem('feisheng.run.v1')),journey);
+    report.journeyCannotBeBypassed=true;
+    await restore('immortal-five-slots');
+    await page.setViewportSize({width:390,height:844});
+    await page.locator('.evolution-build summary').click();
+    report.contrast=await probes.contrast(page,'.ui-document .immortal-view h2,.ui-document .immortal-goal b,.ui-document .story-lead,.ui-document .immortal-actions button,.ui-document .immortal-actions .button-note,.ui-document .slot-row button');
+    assert.ok(report.contrast.length>20);
+    for(const c of report.contrast){assert.ok(c.flatOpaqueSurface,`Unmeasured texture behind ${c.text}`);assert.equal(c.opacity,1);assert.ok(c.ratio>=4.5,`Low contrast ${c.ratio}: ${c.text}`);assert.ok(c.font>=12);}
+    report.hits=await probes.hitTargets(page,'.evolution-build button,.event-sheet button,.ui-navigation button');
+    for(const h of report.hits)assert.ok(h.w>=43.9&&h.h>=43.9&&h.inside&&h.points.every(Boolean),`Hit test failed: ${JSON.stringify(h)}`);
+    await page.locator('.evolution-build summary').click();
+    await page.locator('[data-action="immortal-evolution-cultivate"]').scrollIntoViewIfNeeded();
+    await page.screenshot({path:path.join(out,'immortal-actions-390.png')});report.screenshots.push('immortal-actions-390.png');
+    const expected=await page.evaluate(()=>FSEngine.serialize(FSEngine.transition(FSEngine.deserialize(localStorage.getItem('feisheng.run.v1')),{type:'immortal-evolution-cultivate'})));
+    await page.locator('[data-action="immortal-evolution-cultivate"]').click();
+    assert.equal(await page.evaluate(()=>localStorage.getItem('feisheng.run.v1')),expected);
+    report.gameActionStillUsesReducer=true;
+    await page.locator('[data-journal-source="immortal"] summary').click();
+    assert.ok((await page.locator('[data-journal-source="immortal"]').innerText()).includes('仙界第'));
+    await page.locator('.topbar [data-ui="settings"]').click();
+    assert.equal(await page.locator('dialog[open]').getAttribute('data-surface'),'light');
+    await page.locator('dialog [data-ui="close-dialog"]').click();
+    await page.waitForFunction(()=>document.activeElement?.dataset.ui==='settings');
+    report.dialogSurfaceAndFocus=true;
+    await page.goto(require('node:url').pathToFileURL(path.join(root,'tools/ui-v4-gallery.html')).href);
+    await page.setViewportSize({width:1000,height:960});
+    const gallery=await probes.contrast(page,'.ui-gallery button,.ui-gallery .ui-button-note,.ui-gallery [role="alert"]');
+    for(const c of gallery)assert.ok(c.ratio>=4.5&&c.opacity===1&&c.flatOpaqueSurface,`Gallery ${c.text}: ${c.ratio}`);
+    report.gallery={checks:gallery.length,passed:true};
+    await page.screenshot({path:path.join(out,'component-gallery.png'),fullPage:true});report.screenshots.push('component-gallery.png');
+  }
   assert.deepEqual(report.errors,[]);assert.deepEqual(report.failures,[]);report.passed=true;
 })().catch(e=>{report.error=e.stack;process.exitCode=1;}).finally(async()=>{
   if(browser)await browser.close();fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));

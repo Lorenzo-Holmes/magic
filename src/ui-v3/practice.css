@@ -58,9 +58,7 @@ body.practice-focus #world{opacity:0;pointer-events:none}
 #app .practice-room .pr-encounter{background:#e6e5d9;border:1px solid #aab4a6;border-image:none;max-height:calc(100% - 92px);bottom:6px;box-shadow:0 8px 36px #0007;color:#293e41}
 #app .practice-room .pr-encounter :is(button,.button-note){color:#294345;background:#dae0d7;border:1px solid #94a696}
 #app .practice-room .pr-encounter :is(p,h2,h3,strong,b,small){color:#293e41}
-body.practice-focus .v3-hud{background:#152933;border-top:1px solid #8ba0a360;box-shadow:none}
-body.practice-focus .v3-hud:before{display:none}body.practice-focus .v3-hud-tab{color:#9eafb0;background:none!important;border-right:1px solid #a2b9b519}
-body.practice-focus .v3-hud-tab img{filter:grayscale(1);opacity:.65;width:38px;height:42px}body.practice-focus .v3-hud-tab.is-current{color:#e2dfc5;border-top:2px solid #b7c7b8}body.practice-focus .v3-hud-tab.is-current img{filter:grayscale(.65);opacity:1}
+/* Navigation belongs to src/ui/navigation.css on every page. */
 @keyframes pr-breathe{0%,100%{opacity:.65;transform:scale(.94)}50%{opacity:1;transform:scale(1.06)}}
 @keyframes pr-turn{to{transform:rotate(335deg)}}
 @media(max-height:700px){#app .practice-room{grid-template-rows:auto auto minmax(140px,1fr) auto auto auto}.pr-header{padding-top:calc(4px + env(safe-area-inset-top,0px));padding-bottom:4px}.pr-identity strong{font-size:20px}.pr-resources{padding:3px 12px}.pr-inner-scene{width:90px;height:90px;top:29%}.pr-inner-core{inset:29px}.pr-inner-caption{display:none}.pr-scene-caption{bottom:4px;font-size:16px}.pr-scene-caption small{display:none}.pr-progress{padding:6px 12px 0}.pr-progress-heading b{font-size:16px}.pr-action-dock{grid-template-columns:minmax(0,1fr) 86px minmax(0,1fr);padding:1px 12px 6px}#app .practice-room .pr-main-action{width:66px;height:66px}#app .practice-room .pr-main-action b{font-size:21px}.pr-journal{padding:2px 12px;min-height:46px}.pr-room-tools{top:6px}.pr-special{max-height:48px;overflow:auto}}

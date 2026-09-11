@@ -1,0 +1,19 @@
+/* Primitive values live here. Surfaces assign their semantic meaning in theme.css. */
+:root {
+  --ui-ink-950:#07131a; --ui-ink-900:#0e1d25; --ui-ink-850:#122733;
+  --ui-mist-100:#f3f1e8; --ui-mist-150:#ece8dc; --ui-mist-200:#e3decf;
+  --ui-jade-300:#9ab8ae; --ui-jade-600:#486a61; --ui-jade-650:#45665e;
+  --ui-gold-300:#d8c18a; --ui-gold-500:#b68f49;
+  --ui-verm-500:#9f463d; --ui-verm-light:#eeaca1; --ui-aura-300:#bbd9e6;
+  --ui-text-ink:#2d2b26; --ui-text-brown:#5c574d; --ui-text-dim:#656054;
+  --ui-text-white:#f6f1e6; --ui-text-fog:#c4cbc5; --ui-text-soft:#9caaa1;
+  --ui-space-1:4px; --ui-space-2:8px; --ui-space-3:12px; --ui-space-4:16px;
+  --ui-space-5:20px; --ui-space-6:24px; --ui-space-8:32px;
+  --ui-text-xs:12px; --ui-text-sm:14px; --ui-text-md:16px; --ui-text-lg:18px;
+  --ui-title-sm:22px; --ui-title-lg:28px;
+  --ui-font-body:"Microsoft YaHei","PingFang SC",sans-serif;
+  --ui-font-title:"Songti SC","STSong","Noto Serif CJK SC","SimSun",serif;
+  --ui-hit:44px; --ui-nav-height:76px; --ui-stage-width:540px;
+  --ui-radius-panel:8px; --ui-radius-tab:6px; --ui-radius-label:4px;
+  --ui-layer-content:1; --ui-layer-nav:40; --ui-layer-dialog:100;
+}

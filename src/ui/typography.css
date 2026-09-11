@@ -1,0 +1,7 @@
+.ui-shell,.ui-gallery,.ui-dialog {font:var(--ui-text-sm)/1.6 var(--ui-font-body);color:var(--text-primary);}
+.ui-shell :is(h1,h2,h3,h4),.ui-dialog :is(h2,h3,h4),.ui-gallery :is(h1,h2,h3) {font-family:var(--ui-font-title);font-weight:500;line-height:1.4;}
+.ui-shell :is(button,input,select,textarea),.ui-dialog :is(button,input,select,textarea) {font-family:var(--ui-font-body);}
+.ui-shell :is(p,span,b,strong),.ui-dialog :is(p,span,b,strong) {overflow-wrap:anywhere;}
+.ui-shell .ui-eyebrow,.ui-dialog .ui-eyebrow {font-size:var(--ui-text-xs);letter-spacing:1px;color:var(--text-secondary);}
+.ui-button :is(.ui-button-note,.button-note),.ui-button>small {display:block;font:var(--ui-text-xs)/1.5 var(--ui-font-body);letter-spacing:0;margin-top:4px;}
+.ui-number {font-variant-numeric:tabular-nums;}

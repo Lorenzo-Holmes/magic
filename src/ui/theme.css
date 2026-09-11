@@ -1,0 +1,22 @@
+body[data-ui-foundation="v4"], [data-surface="light"] {
+  color-scheme:light;
+  --surface-canvas:var(--ui-mist-150); --surface-panel:var(--ui-mist-100);
+  --surface-inset:var(--ui-mist-200); --surface-action:#dce5df;
+  --text-primary:var(--ui-text-ink); --text-secondary:var(--ui-text-brown);
+  --text-disabled:var(--ui-text-dim); --text-action:var(--ui-jade-650);
+  --text-danger:var(--ui-verm-500); --accent-ornament:var(--ui-gold-500);
+  --border-control:#7c786d; --border-subtle:#c4bdac; --focus-ring:#486a61;
+}
+[data-surface="dark"] {
+  color-scheme:dark;
+  --surface-canvas:var(--ui-ink-900); --surface-panel:var(--ui-ink-850);
+  --surface-inset:#19333e; --surface-action:#243f46;
+  --text-primary:var(--ui-text-white); --text-secondary:var(--ui-text-fog);
+  --text-disabled:var(--ui-text-soft); --text-action:var(--ui-aura-300);
+  --text-danger:var(--ui-verm-light); --accent-ornament:var(--ui-gold-300);
+  --border-control:#7b9996; --border-subtle:#455d60; --focus-ring:#bbd9e6;
+}
+body[data-ui-foundation="v4"] {background:var(--surface-canvas);color:var(--text-primary);}
+body[data-ui-foundation="v4"]:has(.ui-shell) {background:#ced4cf;}
+body[data-ui-foundation="v4"]:has(.ui-shell[data-surface="dark"]) {background:var(--ui-ink-900);}
+body[data-ui-foundation="v4"]:has(.ui-shell)>#world {opacity:0;pointer-events:none;}

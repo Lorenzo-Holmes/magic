@@ -20,6 +20,9 @@
   let worldVisible=true;
   let pageTab='practice', selectedRegion='forest', journeyKit='rope', activeEquipmentSlot=null, dialogReturnTarget=null;
   document.body.dataset.artUi='v3';
+  document.body.dataset.uiFoundation='v4';
+  dialog.classList.add('ui-dialog');
+  dialog.dataset.surface='light';
   dialog.addEventListener('close',()=>{
     activeEquipmentSlot=null;
     const key=dialogReturnTarget;dialogReturnTarget=null;
@@ -112,7 +115,8 @@
   function button(action, label, options = {}) {
     const { id, choice, kind, delta, disabled = false, classes = '', ui = false, aria = '', pressed } = options;
     const attrs = `${id ? ` data-id="${esc(id)}"` : ''}${choice ? ` data-choice="${esc(choice)}"` : ''}${kind ? ` data-kind="${esc(kind)}"` : ''}${delta ? ` data-delta="${delta}"` : ''}`;
-    return `<button type="button" class="${classes}" data-${ui ? 'ui' : 'action'}="${action}"${attrs}${state ? ` data-revision="${state.revision}"` : ''}${aria ? ` aria-label="${esc(aria)}"` : ''}${pressed !== undefined ? ` aria-pressed="${pressed}"` : ''}${disabled ? ' disabled' : ''}>${label}</button>`;
+    const sharedClasses=window.FSUIComponents.actionClasses(action,options);
+    return `<button type="button" class="${classes}${sharedClasses?' '+sharedClasses:''}" data-${ui ? 'ui' : 'action'}="${action}"${attrs}${state ? ` data-revision="${state.revision}"` : ''}${aria ? ` aria-label="${esc(aria)}"` : ''}${pressed !== undefined ? ` aria-pressed="${pressed}"` : ''}${disabled ? ' disabled' : ''}>${label}</button>`;
   }
   const small = text => `<span class="button-note">${esc(text)}</span>`;
   function powerFigure(value) {
@@ -467,36 +471,24 @@
   }
   function render() {
     const previousScroll=document.getElementById('main')?.scrollTop||0;
-    const inWorld=!!(state?.world&&worldVisible&&!mortalSummary&&!home);
-    const inImmortal = !!(state?.immortal && !mortalSummary);
+    const route=window.FSUIRoute.resolve({state,home,pageTab,worldVisible,mortalSummary});
+    const {inWorld,inImmortal,inJourney,panel,v3Primary,workspace,view}=route;
     const shown = mortalSummary && state?.immortal ? { ...state, immortal: null } : state;
     sound.scene(shown, home);
-    const inJourney=!!state?.journey?.active;
-    const panel=!home&&!inWorld&&!inJourney&&state&&!['talents','attributes'].includes(state.phase)&&pageTab!=='practice';
-    const view = home ? 'home' : inJourney?`journey-${state.journey.active.nonce}-${state.journey.active.step}`:panel?`panel-${pageTab}`:inWorld ? `creation-${state.world.phase}-${state.world.era}-${state.world.cursor}` : inImmortal ? `immortal-${state.immortal.phase}` : state.phase;
     const scene = world.update(shown, home);
     const warning = warningText();
     const vista = home ? '' : `<div class="world-vista" aria-hidden="true"><span>${esc(scene.title)}</span><small>${esc(scene.subtitle)}</small></div>`;
-    const v3Primary=!!(!home&&state&&!['talents','attributes'].includes(state.phase)&&!inWorld&&!inJourney&&(['atlas','inventory','character','forge'].includes(pageTab)||(pageTab==='practice'&&state.phase==='playing'&&!inImmortal)));
     document.body.classList.toggle('practice-focus',v3Primary&&pageTab==='practice');
     if(!v3Primary)UI3.deactivate();
     const body = home ? homeView() : v3Primary?v3PrimaryView(pageTab):inJourney?window.FSJourneyUI.active(state,button):panel?(pageTab==='atlas'?window.FSJourneyUI.atlas(state,button,selectedRegion,journeyKit):window.FSJourneyUI.hub(state,button,pageTab)):inWorld ? window.FSWorldUI.view(state.world,button) : inImmortal ? immortalView() : state.phase === 'talents' ? talentsView() : state.phase === 'attributes' ? attributesView() : state.phase === 'playing' ? playingView() : state.phase === 'draft' ? draftView() : state.phase === 'mutation' ? mutationView() : state.phase === 'fusion' ? fusionView() : state.phase === 'tribulation' ? tribulationView() : endingView();
-    const workspace = !home && state && !['talents','attributes'].includes(state.phase);
     const note=!v3Primary&&!panel&&!inJourney?tutorialNote():'',content=v3Primary?body:state?.phase==='playing'&&!home&&!inImmortal?body.replace('</section>',`</section>${note}`):`${note}${body}`;
-    const main = `<main id="main" tabindex="-1" data-view="${view}">${vista}${content}</main>`;
+    const journal=workspace&&!v3Primary?window.FSUIComponents.journal(state,route.context,button):'';
+    const main = `<main id="main" class="${workspace&&!v3Primary?'ui-document':'ui-stage'}" tabindex="-1" data-view="${view}" data-surface="${route.surface}">${workspace&&!v3Primary?header():''}${vista}${content}${journal}</main>`;
     const footer = `<footer class="app-footer"><span>我欲飞升 · v${S.VERSION}</span><span>本地运行 / 无付费抽取</span></footer>${warning ? `<div class="storage-warning" role="alert">${esc(warning)}</div>` : ''}`;
-    if(workspace&&v3Primary){
-      const navCurrent=pageTab==='forge'?'practice':pageTab;
-      app.innerHTML=`<div class="shell game-shell" data-ui-generation="v3" data-screen="${esc(view)}"><div class="content-shell">${main}${UI3.renderHud({state,button},navCurrent)}${warning?`<div class="storage-warning" role="alert">${esc(warning)}</div>`:''}</div></div>`;
-      UI3.commit(app,{state,pageTab});
-    } else if(workspace){
-      const W=window.FSWorkbench,i=inImmortal?state.immortal:null;
-      const materials=Object.values(state.crafting?.materials||{}).reduce((a,b)=>a+b,0);
-      const rows=i?[{glyph:'元',label:'仙元',value:F.short(i.essence),note:'修炼与重构'},{glyph:'则',label:'法则碎片',value:fmt(i.fragments),note:'凝法与进化'},{glyph:'气',label:'元气',value:`${i.health} / 100`,note:'仙躯状态'},{glyph:'界',label:'当前界层',value:i.evolution?.layer||'序章',note:`仙界第 ${i.days} 日`}]:[{glyph:'气',label:'元气',value:`${state.vitality} / 100`,note:'当前状态'},{glyph:'年',label:'寿元',value:`${state.age} / ${E.maxAge(state)}`,note:'一世修行'},{glyph:'灵',label:'灵兽精华',value:fmt(state.spiritBeast?.essence||0),note:'结契与进化'},{glyph:'丹',label:'丹器材料',value:fmt(materials),note:'八类材料合计'}];
-      const identity={title:i?'仙界 · 诸天行旅':`${find(D.ROOTS,state.root)?.name||'凡人'} · ${find(D.ORIGINS,state.origin)?.name||'此生命途'}`,detail:i?`凡界道基长存 · ${D.REALMS[state.realm].name}`:`${D.REALMS[state.realm].name} · 此世第 ${state.actions||1} 段道途`};
-      if(!i){rows.splice(2,2,{glyph:'钱',label:'盘缠',value:state.journey.silver,note:'行路与整装'},{glyph:'粮',label:'行粮',value:`${state.journey.supplies}/12`,note:state.journey.wounds?`伤势 ${state.journey.wounds}/3`:'暂无伤势'});}
-      if(inWorld){const w=state.world;rows.splice(0,rows.length,{glyph:'生',label:'生机',value:w.vitality,note:'天地兴衰'},{glyph:'序',label:'秩序',value:w.order,note:'众生共处'},{glyph:'纪',label:'纪元',value:w.era,note:'持续书写'},{glyph:'史',label:'史册',value:w.history.length,note:'最近二十四段'});Object.assign(identity,{title:'自创天地 · 我即天道',detail:w.projection.name});}
-      app.innerHTML=`<div class="shell game-shell" data-screen="${esc(view)}"><div class="content-shell">${header()}${W.resources(rows,identity)}<div class="game-layout">${W.navigation('left',state,button,inJourney?'atlas':pageTab)}${main}${W.navigation('right',state,button,pageTab)}</div>${footer}</div></div>`;
+    if(workspace){
+      app.innerHTML=window.FSUIShell.render({route,main,nav:UI3.renderHud({state,button},route.navCurrent),warning});
+      window.FSUIShell.prepare(app);
+      if(v3Primary)UI3.commit(app,{state,pageTab});
     }else app.innerHTML = `<div class="shell" data-screen="${esc(view)}">${rail()}<div class="content-shell">${header()}${main}${footer}</div></div>`;
     if (view !== previousView) { window.scrollTo({ top: 0, behavior: 'instant' }); previousView = view; }
     else document.getElementById('main').scrollTop=previousScroll;
@@ -735,9 +727,9 @@
     const el = event.target.closest('button'); if (!el || el.disabled) return;
     if (el.dataset.ui) {
       switch (el.dataset.ui==='nav-panel'?el.dataset.id:el.dataset.ui) {
-        case 'practice': pageTab='practice';home=false;mortalSummary=false;worldVisible=false;dialog.close();render();document.getElementById('main').focus({preventScroll:true});break;
-        case 'atlas':case 'inventory':case 'character':pageTab=el.dataset.ui==='nav-panel'?el.dataset.id:el.dataset.ui;home=false;worldVisible=false;dialog.close();render();break;
-        case 'forge':pageTab='forge';home=false;worldVisible=false;dialog.close();render();break;
+        case 'practice': pageTab='practice';home=false;dialog.close();render();document.getElementById('main').focus({preventScroll:true});break;
+        case 'atlas':case 'inventory':case 'character':pageTab=el.dataset.ui==='nav-panel'?el.dataset.id:el.dataset.ui;home=false;dialog.close();render();break;
+        case 'forge':pageTab='forge';home=false;dialog.close();render();break;
         case 'practice-pills':UI3.setState('bagFilter','pills');pageTab='inventory';home=false;worldVisible=false;dialog.close();render();break;
         case 'v3-equipment-slot':equipmentSlotModal(el.dataset.id);break;
         case 'skip-major':clearTimeout(majorTimer);majorLayer.classList.remove('visible');majorLayer.setAttribute('aria-hidden','true');majorLayer.replaceChildren();delete majorLayer.dataset.kind;break;
@@ -745,14 +737,14 @@
         case 'v3-forge-select':UI3.setState('forgeKind',el.dataset.kind||'pill');UI3.setState('forgeRecipe',el.dataset.id||'qi');pageTab='forge';render();break;
         case 'region':selectedRegion=el.dataset.id;render();break;
         case 'world-setup':modal('执掌一方天地',window.FSWorldUI.setup(state,button));break;
-        case 'world-open':worldVisible=true;home=false;mortalSummary=false;render();break;
+        case 'world-open':worldVisible=true;pageTab='practice';home=false;mortalSummary=false;render();break;
         case 'world-return':worldVisible=false;render();break;
         case 'quantity-detail': {
           const [m,e] = el.dataset.id.split('|');
           modal('势能的数量级', `<p class="exact-number">${esc(window.FSQuantity.format({m:Number(m),e},true))}</p><p class="intro">保留 12 位有效数字与精确的十进制指数。超出普通数值范围后继续使用科学计数，不把它转成 Infinity，也不宣称无限整数精度。</p>`); break;
         }
-        case 'immortal-continue': mortalSummary = false; home = false; render(); break;
-        case 'mortal-summary': mortalSummary = true; render(); break;
+        case 'immortal-continue': mortalSummary = false; home = false; pageTab='practice';worldVisible=false;render(); break;
+        case 'mortal-summary': mortalSummary = true; pageTab='practice';render(); break;
         case 'immortal-journal':
           if (state?.immortal) modal('仙界命册', `<ol class="history">${state.immortal.journal.slice().reverse().map(j => `<li><small>仙界第 ${j.day} 日</small><p>${esc(j.text)}</p></li>`).join('')}</ol>${button('settings', '存档与说明', { ui: true, classes: 'secondary full' })}`);
           break;

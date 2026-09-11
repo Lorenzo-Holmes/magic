@@ -15,6 +15,7 @@ const modules = ['core', 'hud', 'cave', 'character', 'baggage', 'world-map', 'fo
 function runtime() {
   const sandbox = vm.createContext({ console });
   sandbox.window=sandbox;
+  vm.runInContext(fs.readFileSync(path.join(__dirname,'../src/ui/navigation.js'),'utf8'),sandbox);
   vm.runInContext(fs.readFileSync(path.join(__dirname,'../assets/ui-v3/manifest.js'),'utf8'),sandbox);
   vm.runInContext(fs.readFileSync(path.join(__dirname,'../src/ui-v3/art.js'),'utf8'),sandbox);
   for (const name of modules) {
