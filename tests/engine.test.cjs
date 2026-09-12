@@ -127,7 +127,10 @@ test('第二次普通行动必遇妖蟒，基础吞噬不依赖随机天命', ()
 });
 test('连续闭关在强制遭遇、修为圆满或寿元警戒前自动停止', () => {
   let s = enter(420);
+  const firstAge=s.age,firstPreview=E.actionPreview(s,'cultivate');
   s = step(s, 'act', { kind: 'cultivate' });
+  assert.deepEqual(s.event.retreat,{cycles:1,years:firstPreview.years,gain:s.event.gain});
+  assert.equal(s.age-firstAge,firstPreview.years);
   s = step(s, 'cultivate-to-ready');
   assert.equal(s.event.id, 'first-python');
   assert.equal(s.flags.pythonSeen, false);
@@ -136,6 +139,7 @@ test('连续闭关在强制遭遇、修为圆满或寿元警戒前自动停止',
   assert.ok(s.xp >= D.REALMS[0].threshold);
   assert.ok(E.canBreak(s));
   assert.ok(s.batchCultivations > 0);
+  assert.ok(s.event.retreat&&s.event.retreat.cycles>=1&&s.event.retreat.years>=1&&s.event.retreat.gain>=1);
   const risky = enter(421); risky.flags.pythonSeen = true; risky.age = E.maxAge(risky) - 1;
   assert.equal(E.canCultivateToReady(risky), false);
   assert.throws(() => step(risky, 'cultivate-to-ready'));

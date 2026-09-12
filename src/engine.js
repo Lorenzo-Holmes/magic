@@ -322,6 +322,7 @@
       const total = s.xp - startXp;
       s.event = {
         id: 'quiet', title: `连续闭关 · ${cycles} 次`, gain: total, batch: cycles,
+        retreat: { cycles, years: s.age - startAge, gain: total },
         text: `你封住洞门，一次又一次运转周天。${s.age - startAge} 年后，修为已逼近这一境的尽头；任何必须亲自处理的遭遇都会让闭关自动停止。`
       };
       log(s, '连续闭关', `${cycles} 次周天，修为共 +${total}；此刻 ${s.age} 岁。`, 'gold');
@@ -339,12 +340,13 @@
     }
     requireThat(!canBreak(s), '修为已满，请先突破。');
     const preview = actionPreview(s, kind);
+    const actionStartAge = s.age;
     if (!years(s, kind === 'cultivate' ? D.REALMS[s.realm].years : kind === 'explore' ? 2 : 1)) return;
     s.actions++;
     if (kind === 'cultivate') {
       const amount = gain(s, D.REALMS[s.realm].threshold * (0.15 + stats(s).insight * 0.004), kind);
       s.vitality = Math.min(100, s.vitality + preview.heal);
-      s.event = { id: 'quiet', title: '山中无甲子', text: `石壁上的刻痕又深了一道。你守住心神，将山间灵气缓缓纳入经脉。`, gain: amount };
+      s.event = { id: 'quiet', title: '山中无甲子', text: `石壁上的刻痕又深了一道。你守住心神，将山间灵气缓缓纳入经脉。`, gain: amount, retreat: { cycles: 1, years: s.age - actionStartAge, gain: amount } };
       log(s, '闭关', `修为 +${amount}，元气恢复；此刻 ${s.age} 岁。`);
     } else if (kind === 'explore') {
       if (s.realm >= 4) {
@@ -885,7 +887,7 @@
     requireThat(s.tribulationBase === null || (Number.isInteger(s.tribulationBase) && s.tribulationBase > 0), '天劫基准损坏。');
     requireThat(s.ascendedPower === null || (Number.isInteger(s.ascendedPower) && s.ascendedPower > 0), '飞升战力损坏。');
     requireThat(s.flags && ['pythonSeen', 'pythonSlain', 'swordEvent', 'bossSeen', 'bossSlain', 'ascended', 'traceEchoSeen', 'traceResonanceSeen'].every(k => typeof s.flags[k] === 'boolean') && typeof s.sword === 'boolean', '进度标记损坏。');
-    requireThat(s.event === null || (s.event && EVENT_IDS.includes(s.event.id) && (!s.event.enemy || byId(D.ENEMIES, s.event.enemy)) && (!s.event.scene || byId(D.ADVANCED_EVENTS, s.event.scene) || byId(D.HIGH_EVENTS, s.event.scene)) && (!s.event.trace || byId(D.TRACES, s.event.trace)) && (!['trace-echo', 'trace-resonance'].includes(s.event.id) || byId(D.TRACES, s.event.trace))), '事件数据损坏。');
+    requireThat(s.event === null || (s.event && EVENT_IDS.includes(s.event.id) && (!s.event.enemy || byId(D.ENEMIES, s.event.enemy)) && (!s.event.scene || byId(D.ADVANCED_EVENTS, s.event.scene) || byId(D.HIGH_EVENTS, s.event.scene)) && (!s.event.trace || byId(D.TRACES, s.event.trace)) && (!['trace-echo', 'trace-resonance'].includes(s.event.id) || byId(D.TRACES, s.event.trace)) && (!s.event.retreat || s.event.id === 'quiet' && Object.keys(s.event.retreat).length === 3 && Number.isInteger(s.event.retreat.cycles) && s.event.retreat.cycles > 0 && s.event.retreat.cycles <= 64 && Number.isInteger(s.event.retreat.years) && s.event.retreat.years > 0 && s.event.retreat.years <= 100000 && Number.isInteger(s.event.retreat.gain) && s.event.retreat.gain >= 0 && s.event.retreat.gain <= 100000000)), '事件数据损坏。');
     requireThat(s.root === null || byId(D.ROOTS, s.root), '灵根数据损坏。');
     requireThat(s.origin === null || byId(D.ORIGINS, s.origin), '出身数据损坏。');
     if (!['talents', 'attributes'].includes(s.phase) && !bridgeShell) requireThat(s.root && s.origin && s.innate.length === 3, '入世资料缺失。');

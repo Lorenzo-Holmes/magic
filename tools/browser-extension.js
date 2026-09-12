@@ -30,7 +30,9 @@ async (page, options = {}) => {
     const direct=page.locator('[data-ui="'+name+'"]:visible').first();if(await direct.count()){await direct.click();return;}
     const hub=['equipment','crafting','spirit-beast'].includes(name)?'inventory':name==='secret-realm'?'atlas':'character';
     await page.locator('[data-ui="nav-panel"][data-id="'+hub+'"]').click();
-    await ui(name).first().click();
+    const target=ui(name).first();
+    if(!(await target.isVisible()))await target.evaluate(el=>{const details=el.closest('details');if(details)details.open=true;});
+    await target.click();
   }
   const widths = [320, 360, 390, 430, 768, 1280];
   async function v3HitCheck(label) {
@@ -561,6 +563,7 @@ async (page, options = {}) => {
   for(const id of ['practice','atlas','inventory','character']){await page.locator('[data-ui="nav-panel"][data-id="'+id+'"]').click();await layout('navigation-'+id);}
   await page.locator('[data-ui="nav-panel"][data-id="inventory"]').click();
   const forgeBefore=JSON.stringify(await run());
+  await page.locator('.v4-bag-tools summary').click();
   await page.locator('[data-ui="forge"]:visible').first().click();
   check(await page.locator('.v3-forge-window').count()===1,'V3 forge window did not open from baggage');
   await layout('navigation-forge');
@@ -580,6 +583,7 @@ async (page, options = {}) => {
   await page.locator('[data-ui="nav-panel"][data-id="inventory"]').click();
   await page.evaluate(()=>document.querySelector('[data-ui-generation="v3"]').style.setProperty('--v3-safe-bottom','34px'));
   v3Hits.push(await v3HitCheck('inventory/synthetic-bottom-inset-34px'));
+  await page.locator('.v4-bag-tools summary').click();
   await page.locator('[data-ui="forge"]:visible').first().click();
   v3Hits.push(await v3HitCheck('forge/390x844'));
   check(JSON.stringify(await run())===navRaw,'V3 hit testing modified gameplay');

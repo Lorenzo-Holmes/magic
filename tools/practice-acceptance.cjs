@@ -46,6 +46,7 @@ async function inspect(label){
   await page.locator('.pr-affairs summary').click();
   for(const ui of ['atlas','forge','spirit-beast','journal']){const target=page.locator('.pr-affairs [data-ui="'+ui+'"]');await target.click({trial:true});}
   await page.keyboard.press('Escape');assert.equal(await page.locator('.pr-affairs[open]').count(),0);
+  await page.locator('.pr-affairs summary').click();
   await page.locator('[data-ui="practice-pills"]').click();assert.equal(await page.evaluate(()=>FSUIV3.getState('bagFilter')),'pills');assert.equal(await page.locator('.v3-baggage-window').count(),1);
   assert.equal(await page.evaluate(()=>document.body.classList.contains('practice-focus')),false);
   await page.locator('[data-ui="nav-panel"][data-id="practice"]').click();
@@ -58,7 +59,7 @@ async function inspect(label){
   await page.locator('[data-action="resolve"][data-choice="flee"]').click();assert.equal(await page.locator('.pr-encounter').count(),0);report.blockingEncounter=true;
   await restore(wounded);assert.ok((await page.locator('.pr-scene-caption').innerText()).includes('元气有损'));report.woundedVisible=true;
   const animations=await page.evaluate(()=>document.getAnimations().filter(a=>a.effect?.target?.closest?.('.practice-room')&&a.playState==='running').length);assert.equal(animations,0);report.reducedMotion=true;
-  expectedFailure=true;await page.route('**/assets/art/retreat-v2.1.webp',route=>route.abort());await restore(calm);
+  expectedFailure=true;await page.route('**/assets/ui-v3/scenes/character.webp',route=>route.abort());await restore(calm);
   assert.equal(await page.locator('.pr-stage.pr-no-art').count(),1);
   await page.locator('.pr-main-action').click();assert.ok(await page.evaluate(()=>JSON.parse(localStorage.getItem('feisheng.run.v1')).revision)>calm.revision);report.artFailureStillOperable=true;
   assert.deepEqual(report.errors,[]);report.passed=true;

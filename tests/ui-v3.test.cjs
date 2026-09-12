@@ -169,6 +169,16 @@ test('V3 行囊筛选和炼器预览只改变界面，不改存档', () => {
   assert.equal(E.serialize(state), original);
 });
 
+test('低频系统收进事务与档案折叠，核心入口仍可访问',()=>{
+  const V=runtime(),state=entered();
+  let ctx=context(V,state),html=V.render('BaggageWindow',ctx);
+  assert.match(html,/v4-bag-tools/);assert.match(html,/行囊事务/);
+  for(const id of ['forge','equipment','crafting','spirit-beast'])assert.ok(ctx.buttons.some(button=>button.action===id&&button.ui));
+  ctx=context(V,state);html=V.render('CharacterWindow',ctx);
+  assert.match(html,/v4-character-archive/);assert.match(html,/修行档案/);
+  for(const id of ['life','karma','legacy','codex'])assert.ok(ctx.buttons.some(button=>button.action===id&&button.ui));
+});
+
 test('V4 山海图志只重组地志与路签，不改行旅状态或可用动作',()=>{
   const V=runtime(),state=entered(),ctx=context(V,state),before=E.serialize(state);
   const html=V.render('WorldMapWindow',ctx);
@@ -190,6 +200,8 @@ test('修行室只有一个主操作，不再渲染五个建筑或整屏洞府�
   const V=runtime(),s=entered(),ctx=context(V,s),before=E.serialize(s);
   const html=V.render('CaveWindow',ctx);
   assert.match(html,/practice-room/);assert.doesNotMatch(html,/v3-building|v3-prop-anchor|scene\.cave/);
+  assert.match(html,/pr-retreat-summary/);assert.match(html,/闭关用时/);assert.match(html,/修炼阶段/);
+  assert.doesNotMatch(html,/盘缠|行粮/);assert.match(html,/修行事务/);
   const primary=ctx.buttons.filter(b=>b.classes?.includes('pr-main-action'));
   assert.equal(primary.length,1);assert.equal(primary[0].action,'act');assert.equal(primary[0].kind,'cultivate');
   assert.ok(ctx.buttons.some(b=>b.action==='practice-pills'&&b.ui));

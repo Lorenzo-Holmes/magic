@@ -41,7 +41,9 @@ async (page, options = {}) => {
     if(await page.locator('dialog[open]').count())await page.locator('dialog [data-ui="close-dialog"]').click();
     const hub=['equipment','crafting','spirit-beast'].includes(name)?'inventory':name==='secret-realm'?'atlas':'character';
     await page.locator('[data-ui="nav-panel"][data-id="'+hub+'"]').click();
-    await ui(name).first().click();
+    const target=ui(name).first();
+    if(!(await target.isVisible()))await target.evaluate(el=>{const details=el.closest('details');if(details)details.open=true;});
+    await target.click();
   }
   const widths = [320, 360, 390, 430, 768, 1280];
   async function layout(label) {
