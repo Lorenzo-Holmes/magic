@@ -14,8 +14,10 @@ const root = path.resolve(__dirname, '..');
 const version = require('../package.json').version;
 function mean(values) { return values.reduce((a,b)=>a+b,0) / values.length; }
 function run() {
-  // V3 changes presentation, not the classic compatibility simulation contract.
-  assert.match(version, /^(?:1|2|3)\.\d+\.\d+$/, 'Unsupported release version');
+  // Major releases may change presentation/story structure without changing the
+  // classic compatibility simulation contract. Keep this future-safe while
+  // still requiring a plain stable semver release (no prerelease/build suffix).
+  assert.match(version, /^[1-9]\d*\.\d+\.\d+$/, 'Unsupported release version');
   assert.equal(require('../src/scenes.js').VERSION, version, 'Release/scenes version mismatch');
   const perPath = {}, allMortalTurns = [], allImmortalTurns = [];
   for (const strategy of PATHS) {

@@ -2,7 +2,7 @@
 
 依据：`docs/STORY_TRILOGY_BIBLE.md`。
 
-状态：**v4.0.0 候选实现与 ST-10 技术验收完成，等待用户视觉核验。** 截至 2026-09-12，ST-00～ST-09 已在当前功能分支实现；冻结版本后的 Node 243/243、经典兼容 6000/6000、新行旅 1200 局、build / ZIP、正式包浏览器 smoke / visual / extension 均通过，关键页面已完成人工视觉核验。尚未合并 `main` 或部署 Cloudflare。
+状态：**v4.0.0 候选实现与 ST-10 技术验收完成，等待用户视觉核验。** 截至 2026-09-12，ST-00～ST-09 已在当前功能分支实现；本轮重新执行 Node 243/243、经典兼容 6000/6000、新行旅 1200 局、build / ZIP、正式包浏览器 smoke / visual / extension 均通过。重新验收时发现 `tools/final-simulation.cjs` 的发布版本正则仍硬编码到 v3，已改为接受稳定的大版本 semver 并重新完成 6000 局验证。浏览器自动化的 `visualArtApproved` 仍明确保留为人工批准位；尚未合并 `main` 或部署 Cloudflare。
 
 ### v4.0.0 最终候选证据
 
