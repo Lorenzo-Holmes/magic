@@ -19,13 +19,16 @@ function mortalPlaying(seed=606) {
   E.validate(s); return s;
 }
 
-test('四个宗门都只有轻量被动、传承、三节成长事件与一个大事件', () => {
+test('四个宗门都有三名具名人物、三节成长事件、一个大事件与一次大乘告别', () => {
   assert.equal(X.SECTS.length,4); assert.equal(X.MAJOR_CHOICES.length,3);
   assert.deepEqual(X.MAJOR_CHOICES.map(x=>x.id),['protect','leave','betray']);
   for(const sect of X.SECTS){
-    assert.equal(sect.events.length,4,sect.id);
+    assert.equal(sect.cast.length,3,sect.id); assert.equal(new Set(sect.cast.map(x=>x.name)).size,3,sect.id);
+    assert.ok(sect.cast.every(x=>x.name&&x.role),sect.id);
+    assert.equal(sect.events.length,5,sect.id);
     assert.equal(sect.events.filter(x=>x.major).length,1,sect.id);
-    assert.deepEqual(sect.events.map(x=>x.minRealm),[1,3,5,7],sect.id);
+    assert.equal(sect.events.filter(x=>x.farewell).length,1,sect.id);
+    assert.deepEqual(sect.events.map(x=>x.minRealm),[1,3,5,7,8],sect.id);
     assert.ok(Object.keys(sect.passive).length>=1&&Object.keys(sect.heritage).length>=1,sect.id);
     assert.equal('currency' in sect,false); assert.equal('positions' in sect,false);
   }
@@ -49,6 +52,10 @@ test('宗门事件严格按境界顺序一次性推进，刷新式复制不会�
   s=X.observe(s,{realm:3},{realm:5,phase:'playing',secretRealm:{active:null}}); assert.equal(s.pending,'tianji-sky');
   s=X.resolve(s,'reveal',5).state;
   s=X.observe(s,{realm:5},{realm:7,phase:'playing',secretRealm:{active:null}}); assert.equal(s.pending,'tianji-major');
+  s=X.resolve(s,'protect',7).state; assert.equal(s.pending,null);
+  s=X.observe(s,{realm:7},{realm:8,phase:'playing',secretRealm:{active:null}}); assert.equal(s.pending,'tianji-farewell');
+  const beforeFarewell=clone(s); assert.deepEqual(X.observe(beforeFarewell,{realm:8},{realm:8,phase:'playing',secretRealm:{active:null}}),beforeFarewell);
+  s=X.resolve(s,'tianji-no-divination',8).state; assert.ok(s.completed.includes('tianji-farewell')); assert.equal(s.pending,null);
   assert.equal(new Set(s.completed).size,s.completed.length);
 });
 

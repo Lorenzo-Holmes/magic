@@ -1,6 +1,6 @@
-# 我欲飞升 · v3.0.9「界域主舞台」
+# 我欲飞升 · v4.0.0「三卷纪」候选
 
-v3.0.9 已正式发布。`feat/world-edge-v4-refine` 基于 v3.0.8 深化仙界四界模板，并已 fast-forward 合并到 `main`、推送 GitHub、部署 Cloudflare。世界边缘、仙城废墟、星海遗迹、法则裂谷统一为界域主舞台：五界路签、资源牌、法则卡、五槽进化主条、1+2×2 行动卡与猎物档案共享同一结构；原五槽、印证、炼化、调息、碎片与狩猎 reducer 不变。线上地址：`https://magic.1106314996.workers.dev`。进度与证据见 [UI V4 执行记录](docs/UI_V4_PROGRESS.md) 和 [任务状态](docs/UI_V4_EXECUTION_STATE.json)。
+`feat/story-trilogy-structure` 基于已发布的 v3.0.9 重构主叙事为三卷：第一卷「凡尘 · 我欲飞升」以飞升为正式结局；第二卷「仙界 · 仙路无穷」以噬界者为正式结局，无尽诸天降为后日谈；第三卷「证道 · 我即天道」加入九段众生史与三个由玩家显式选择的证道终局。三卷解锁、跨卷 Bridge 和结局摘要写入轮回册；跨卷不复制背包、材料、完整日志或 RNG。v4.0.0 的 Node、6000 局经典兼容、1200 局行旅、source/dist/ZIP 以及正式包浏览器 smoke/visual/extension 已全部通过，助手已完成关键页面视觉核验；当前等待用户核验，尚未合并 `main` 或部署 Cloudflare。详见 [三篇章剧情总纲](docs/STORY_TRILOGY_BIBLE.md) 与 [实施计划](docs/STORY_TRILOGY_IMPLEMENTATION_PLAN.md)。
 
 v3.0.2 的修炼室布局继续保留：独坐修士、内景、修为与破境条件、中央闭关/破境操作；丹器、灵兽和山门位于洞府事务。历史设计依据见 [修行页视觉重构](docs/PRACTICE_VISUAL_REDESIGN.md)。原引擎、玩法、存档及两类装备体系均保持。
 

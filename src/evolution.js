@@ -37,10 +37,10 @@
   ]);
   const WORLDS = Object.freeze([
     {name:'下界仙域',rank:'初临仙域',scene:'nascent'},
-    {name:'仙城废墟',rank:'真仙',scene:'nascent',gate:'镇墟古像',event:'千盏无主灯',text:'整座仙城没有屋顶。夜里，灯仍照着无人归来的门。你站在街心，听见每一盏灯都在等一个已经死去的名字。'},
-    {name:'星海遗迹',rank:'玄仙',scene:'void',gate:'食星古鲸',event:'星辰的骨灰',text:'你踩在一颗星辰冷却后的骨架上。远处的鲸鸣穿过真空，不靠声音，而靠你身上每一寸仙骨同时震颤。'},
-    {name:'法则裂谷',rank:'仙王',scene:'void',gate:'裂界螳皇',event:'被剪断的因果',text:'裂谷两侧是同一座山的过去与未来。中间什么也没有。每向前一步，你都必须决定哪一部分自己不再返回。'},
-    {name:'世界边缘',rank:'噬界者',scene:'tribulation',gate:'界外吞世影',event:'一界之壳',text:'天地在脚下弯曲。你曾视作全部的世界，如今像一枚贴在夜色中的卵。壳外有东西在呼吸，它也饿了。'}
+    {name:'仙城废墟',rank:'真仙',scene:'nascent',gate:'镇墟古像',event:'千盏无主灯',opening:'你走出仙草荒野，第一座真正的仙城却没有屋顶。门楣上仍刻着“长生坊”，坊里没有一个活人，只有无人照看的灯火按旧时辰一盏盏亮起。',text:'整座仙城没有屋顶。夜里，灯仍照着无人归来的门。你站在街心，听见每一盏灯都在等一个已经死去的名字。',gateClue:'千盏灯最后都把影子投向城心。那里立着镇墟古像，胸口嵌满已经熄灭的仙籍。你终于明白：这座城不是被外敌毁掉，而是把“不死”变成了所有人都必须偿还的债。',aftermath:'镇墟古像倒下后，仙籍一枚枚碎成灰。城中第一次出现真正的黑夜；没有灯替亡者等门，废墟反而安静下来。'},
+    {name:'星海遗迹',rank:'玄仙',scene:'void',gate:'食星古鲸',event:'星辰的骨灰',opening:'界门之后没有大地。碎星像岛屿漂在黑暗里，你落脚的第一块“岩石”，其实是一颗已经死去数万年的星核。',text:'你踩在一颗星辰冷却后的骨架上。远处的鲸鸣穿过真空，不靠声音，而靠你身上每一寸仙骨同时震颤。',gateClue:'连续两次吞噬后，星骸深处传来同一段低鸣。食星古鲸并不追逐你，它只是沿着古文明留下的航道，一口口吞掉那些再也不会点亮的恒星。',aftermath:'古鲸沉入星海时，腹中尚未消化的星火逸散出来。你看见早已灭绝的航标短暂亮起，像一条文明最后一次被重新连成线。'},
+    {name:'法则裂谷',rank:'仙王',scene:'void',gate:'裂界螳皇',event:'被剪断的因果',opening:'再向上走，世界先裂成了两半。裂谷左岸是一座山的昨日，右岸是同一座山尚未发生的明日；你站在中间，脚下没有“现在”。',text:'裂谷两侧是同一座山的过去与未来。中间什么也没有。每向前一步，你都必须决定哪一部分自己不再返回。',gateClue:'裂界螳皇的刀足并不斩肉身，而是斩掉“本可以发生”的那一条路。你五槽中的每一次替换、融合与舍弃，都在它身上留下了可以看见的伤口。',aftermath:'螳皇断刀坠入裂谷，两岸第一次短暂重合。那些被你舍弃的能力没有回来，只化成一道清晰的边界：进化不是把所有可能都据为己有，而是承认自己已经放弃了什么。'},
+    {name:'世界边缘',rank:'噬界者',scene:'tribulation',gate:'界外吞世影',event:'一界之壳',opening:'最后一层界壁薄得像纸。你低头看见凡界、仙城、星海与裂谷都缩在同一层弧光之内——曾经无法想象的天地，如今只是一枚完整而脆弱的壳。',text:'天地在脚下弯曲。你曾视作全部的世界，如今像一枚贴在夜色中的卵。壳外有东西在呼吸，它也饿了。',gateClue:'界外吞世影没有名字，也没有宗门、文明或旧怨。它贴在世界外壁吸吮山河，姿态与你最初吞下赤鳞妖蟒时并无本质区别。',aftermath:'吞世影消失后，世界仍在你脚下完整运转。你第一次拥有足以吞掉一界的力量，却也第一次可以选择不把“还能吞”当成“必须继续”的理由。'}
   ]);
   const AFFIXES = Object.freeze([
     {id:'mist',name:'灵雾漫流',enemy:.94,reward:1,text:'仙兽势能略弱，灵机流动平缓。'},
@@ -106,11 +106,11 @@
     e.world=e.world===4?1:e.world+1;e.layer=(BigInt(e.layer)+1n).toString();e.scale=Q.multiply(e.scale,4);
     e.refinement=0;e.proof=false;e.hunts=0;e.target=null;e.offer=[];e.lastPrey=null;
     e.affix=AFFIXES[Math.floor(random(i)*AFFIXES.length)].id;e.enemyLaws=enemyLaws(i);i.health=100;i.phase='world';
-    note(i,`你越过界壁。${WORLDS[e.world].name}在前，已有力量随世界尺度四倍展开；新的守界者并不会因你的到来而退让。${byId(AFFIXES,e.affix).text}`);
+    note(i,`你越过界壁。${WORLDS[e.world].opening} 已有力量随世界尺度四倍展开；新的守界者并不会因你的到来而退让。${byId(AFFIXES,e.affix).text}`);
   }
   function transition(state,action) {
     const i=clone(state);need(action && typeof action.type==='string','无效进化操作。');
-    if(action.type==='enter') { i.evolution=create(i);i.phase='world';note(i,'你走出那片仙草。凡界融合没有被丢弃，它们成为肉身、血脉、神魂、神通与法则五处进化根基。每个槽位只能保留一种力量。');validate(i);return i; }
+    if(action.type==='enter') { i.evolution=create(i);i.phase='world';note(i,`${WORLDS[1].opening} 凡界融合没有被丢弃，它们成为肉身、血脉、神魂、神通与法则五处进化根基。每个槽位只能保留一种力量。`);validate(i);return i; }
     validate(i);const e=i.evolution,field=()=>need(i.phase==='world','先处理眼前的事件或进化选择。');
     if(action.type==='explore') {field();need(!e.proof,'此界印证已经完成。');i.phase='world-event';note(i,WORLDS[e.world].text);}
     else if(action.type==='event') {
@@ -133,7 +133,7 @@
       note(i,`${r.name}。旧能力已融入新槽位${r.catalyst?'；法则作为引子保留':'，被消耗的其他槽位可以重新寻找力量'}。不额外叠加旧效果。`);
     } else if(action.type==='hunt') {
       field();enemy(i,action.id);need(action.id!=='gate' || e.proof&&e.hunts>=2,'需要此界印证与至少两次吞噬，才能锁定守界者。');
-      e.target=action.id;i.phase='world-encounter';note(i,action.id==='gate'?`你终于站在${WORLDS[e.world].gate}之前。这一次，是它挡住了通往更大世界的门。`:byId(CREATURES,action.id).text);
+      e.target=action.id;i.phase='world-encounter';note(i,action.id==='gate'?`${WORLDS[e.world].gateClue} 你终于站在${WORLDS[e.world].gate}之前。这一次，是它挡住了通往更大世界的门。`:byId(CREATURES,action.id).text);
     } else if(action.type==='retreat') {need(i.phase==='world-encounter','没有需要避开的目标。');e.target=null;i.phase='world';note(i,'你收起锋芒。没有丢掉这条路，只是决定稍后再走。');}
     else if(action.type==='devour') {
       need(i.phase==='world-encounter','当前没有可以吞噬的目标。');
@@ -152,8 +152,8 @@
         i.essence=Math.min(100000,i.essence+gain);i.fragments=Math.min(10000,i.fragments+2+(i.law==='fortune'&&e.killCycle===0?1:0));
         if(target.boss) {
           if(!e.cleared.includes(e.world))e.cleared.push(e.world);
-          if(e.world===4&&!e.endless) {i.phase='ending';e.completed=true;note(i,'你吞下了挡在世界边缘的影子。凡界的妖蟒、仙域的灵虫、如今的界外之影，都成为身后之物。第一轮仙界进化正式完成。无尽诸天已开放，但你也可以在这里收束这一世。');}
-          else {i.phase='world-cleared';note(i,`${target.name}已成为一口仙元。${WORLDS[e.world].name}的界门不再闭合。选择踏出，才会进入下一界。`);}
+          if(e.world===4&&!e.endless) {i.phase='ending';e.completed=true;note(i,`${WORLDS[e.world].aftermath} 凡界的妖蟒、仙域的灵虫、如今的界外之影，都成为身后之物。第二篇仙界正式完成。无尽诸天已开放，但你也可以在这里收束这一卷。`);}
+          else {i.phase='world-cleared';note(i,`${WORLDS[e.world].aftermath} ${target.name}已成为一口仙元。${WORLDS[e.world].name}的界门不再闭合。选择踏出，才会进入下一界。`);}
         } else {
           e.lastPrey=target.id;e.offer=[...target.drops];i.phase='evolve';
           note(i,`吞噬${target.name}，仙元 +${gain}。三种力量尚未定形：留下其中一种，或全部化为碎片。它们不能同时占据你的身体。`);

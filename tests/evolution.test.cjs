@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
-const E=require('../src/engine.js'),I=require('../src/immortal.js'),V=require('../src/evolution.js'),Q=require('../src/quantity.js');
+const E=require('../src/engine.js'),I=require('../src/immortal.js'),V=require('../src/evolution.js'),Q=require('../src/quantity.js'),M=require('../src/meta.js');
 const {simulate,PATHS}=require('../tools/simulation-policy.cjs');
 const {prologue}=require('../tools/immortal-policy.cjs');
 const {campaign}=require('../tools/evolution-policy.cjs');
@@ -21,6 +21,32 @@ test('五槽继承凡界道基，重复进入与无条件提前结局被拒绝',
   assert.throws(()=>E.transition(s,{type:'immortal-evolution-enter'}));
   assert.throws(()=>E.transition(s,{type:'immortal-evolution-endless'}));
   assert.throws(()=>E.transition(s,{type:'immortal-evolution-hunt',id:'gate'}));
+});
+test('四界各有开场、印证、守界前线索与过界余波，并在真实流程中写入有界日志',()=>{
+  for(const world of V.WORLDS.slice(1)){
+    for(const key of ['opening','text','gateClue','aftermath'])assert.ok(typeof world[key]==='string'&&world[key].length>=20,`${world.name}/${key}`);
+  }
+  const notes=[];const finished=campaign(simulate(9012,'soul').state,'soul',{onStep:s=>notes.push(s.immortal.note)}).state;
+  assert.equal(finished.immortal.phase,'ending');
+  for(const world of V.WORLDS.slice(1)){
+    assert.ok(notes.some(text=>text.includes(world.opening.slice(0,12))),`${world.name}: opening`);
+    assert.ok(notes.some(text=>text.includes(world.text.slice(0,12))),`${world.name}: proof`);
+    assert.ok(notes.some(text=>text.includes(world.gateClue.slice(0,12))),`${world.name}: gate clue`);
+    assert.ok(notes.some(text=>text.includes(world.aftermath.slice(0,12))),`${world.name}: aftermath`);
+  }
+  assert.ok(finished.immortal.journal.length<=40);
+});
+test('第二卷正式结局生成严格仙界桥梁，不复制资源、随机流或完整日志',()=>{
+  const finished=campaign(simulate(9011,'soul').state,'soul').state, meta=M.observe(M.createMeta(),finished), bridge=meta.storyProgress.lastImmortalBridge;
+  assert.equal(meta.storyProgress.immortalCleared,true);assert.ok(bridge);
+  assert.equal(meta.storyProgress.endings.immortal.title,'噬界者');assert.equal(meta.storyProgress.endings.immortal.sourceSeed,finished.seed);assert.equal(meta.storyProgress.endings.immortal.law,finished.immortal.law);
+  assert.deepEqual(Object.keys(bridge).sort(),['law','lineage','mortalFusion','slots','sourceSeed','version']);
+  assert.deepEqual(Object.keys(bridge.slots).sort(),Object.keys(V.SLOTS).sort());
+  assert.equal(JSON.stringify(bridge).includes('essence'),false);assert.equal(JSON.stringify(bridge).includes('fragments'),false);assert.equal(JSON.stringify(bridge).includes('journal'),false);assert.equal(JSON.stringify(bridge).includes('rng'),false);
+  M.validateImmortalBridge(bridge);
+  const endless=E.transition(finished,{type:'immortal-evolution-endless'}),post=M.observe(meta,endless);
+  assert.deepEqual(post.storyProgress.lastImmortalBridge,bridge,'无尽后日谈不得重写正式结局桥梁');
+  const broken=copy(meta);broken.storyProgress.lastImmortalBridge.slots.body.level=99;assert.throws(()=>M.serialize(broken),/桥梁/);
 });
 test('吞噬三候选只选一，重载不重抽，替换不叠加旧能力',()=>{
   let s=entered();s=E.transition(s,{type:'immortal-evolution-hunt',id:'ruin-beetle'});

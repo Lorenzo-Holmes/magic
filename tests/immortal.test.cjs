@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const E = require('../src/engine.js'), I = require('../src/immortal.js'), M = require('../src/meta.js');
+const E = require('../src/engine.js'), I = require('../src/immortal.js'), M = require('../src/meta.js'), Z = require('../src/spirit-beast.js');
 const { simulate, PATHS } = require('../tools/simulation-policy.cjs');
 const { prologue } = require('../tools/immortal-policy.cjs');
 const clone = x => JSON.parse(JSON.stringify(x));
@@ -15,6 +15,28 @@ test('仙界自愿进入且不清空凡界成就，重复入界与过期操作�
   assert.ok(I.power(s.immortal) < s.immortal.wormPower);
   assert.throws(() => E.transition(s, { type: 'immortal-enter' }));
   assert.throws(() => E.transition(s, { type: 'immortal-approach', id: 'hide', revision: mortal.revision }));
+});
+test('凡尘桥梁只携带跨卷必要字段，并可创建独立第二卷运行态', () => {
+  const mortal=simulate(8061,'sword').state, meta=M.observe(M.createMeta(),mortal), bridge=meta.storyProgress.lastMortalBridge;
+  assert.deepEqual(Object.keys(bridge).sort(),['ascendedAge','ascendedPower','companion','lineage','mortalFusion','sourceSeed','version']);
+  assert.equal(bridge.sourceSeed,mortal.seed);assert.equal(bridge.ascendedPower,mortal.ascendedPower);
+  assert.equal(bridge.companion,null);assert.equal(JSON.stringify(bridge).includes('equipment'),false);assert.equal(JSON.stringify(bridge).includes('rng'),false);
+  const second=E.createImmortalRun(bridge);
+  assert.equal(second.storyOrigin.chapter,'immortal');assert.equal(second.immortal.phase,'arrival');assert.equal(second.root,null);assert.equal(second.origin,null);
+  assert.deepEqual(second.equipment.inventory,[]);assert.equal(second.immortal.lineage,bridge.lineage);assert.equal(second.immortal.mortalFusion,bridge.mortalFusion);
+  assert.deepEqual(E.deserialize(E.serialize(second)),second);
+  const stepped=E.transition(second,{type:'immortal-approach',id:'hide',revision:second.revision});assert.equal(stepped.immortal.phase,'shelter');
+  const broken=clone(meta);broken.storyProgress.lastMortalBridge.extra='forbidden';assert.throws(()=>M.serialize(broken),/桥梁/);
+});
+test('第一卷真灵只以最小摘要跨卷，第二卷可继续进化但不继承精华和历史',()=>{
+  const mortal=simulate(8062,'body').state;
+  let beast=Z.bond(Z.createState(),'stoneape');beast=Z.addEssence(beast,30,'fixture');
+  beast=Z.evolve(beast,{realm:9});beast=Z.evolve(beast,{realm:9},'sacred');beast=Z.evolve(beast,{realm:9});
+  mortal.spiritBeast=beast;E.validate(mortal);
+  const bridge=M.createMortalBridge(mortal);assert.deepEqual(bridge.companion,{species:'stoneape',stage:3,branch:'sacred'});
+  const second=E.createImmortalRun(bridge);assert.deepEqual(second.spiritBeast.companion,bridge.companion);assert.equal(second.spiritBeast.essence,0);assert.deepEqual(second.spiritBeast.history,[]);
+  second.spiritBeast=Z.addEssence(second.spiritBeast,8,'immortal-fixture');const evolved=E.transition(second,{type:'beast-evolve',revision:second.revision});
+  assert.equal(evolved.spiritBeast.companion.stage,4);assert.equal(Z.summary(evolved.spiritBeast).stageName,'仙兽');
 });
 test('首口吞噬形成三选一法则，签池刷新稳定且只扣一次碎片', () => {
   const s = prologue(simulate(807, 'soul').state, 'soul', { stop: s => s.immortal.phase === 'law' }).state;

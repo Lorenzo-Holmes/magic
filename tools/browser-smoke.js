@@ -275,7 +275,10 @@ async (page, options = {}) => {
   check(typeof finished.bossRoute === 'string', 'Boss route was not recorded');
   check(finished.tribulationRoutes.length === 3, 'Tribulation route history is incomplete');
   check(presentationChecked, 'Presentation layer was not exercised by the real playthrough');
-  check(await page.locator('.immortal-preview').innerText().then(t => t.includes('仙界噬灵虫')), 'Ascension Easter egg missing');
+  const ascensionEnding = await page.locator('.ascension-ending').innerText();
+  check(ascensionEnding.includes('第一篇完 · 凡尘') && ascensionEnding.includes('此世，飞升。'), 'First-story formal ascension ending is missing');
+  check(await page.locator('.immortal-preview').count() === 0, 'First-story ending still renders the retired immortal transition preview');
+  check(await page.locator('[data-ui="story-start-immortal"]').count() === 1, 'First-story ending does not expose the optional independent second-story entry');
   check(await page.locator('.revenge-comparison').innerText().then(t => t.includes('150')), 'Original enemy power contrast missing');
   check(finished.ascendedPower > 1000000000 && Math.ceil(finished.ascendedPower * 1.7) > finished.ascendedPower, 'Ascension power contrast changed');
   report.completed = { phase: finished.phase, seed: finished.seed, realm: finished.realm, age: finished.age, firstPower: finished.firstPower, revengePower: finished.revengePower, mutation: finished.mutations[0], fusion: finished.fusions[0], bossRoute: finished.bossRoute, tribulationRoutes: finished.tribulationRoutes, batchCultivations: finished.batchCultivations, bossSlain: finished.flags.bossSlain, ascended: finished.flags.ascended, ascendedPower: finished.ascendedPower, proofs: finished.realmProofs, steps: iterations };

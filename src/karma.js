@@ -26,7 +26,7 @@
       {id:'resonate',name:'与它同调一次',note:'强化彼此理解，而非直接加永久战力',xp:.05,heal:8},{id:'observe',name:'只观察它的变化',note:'把选择权仍留给灵兽',xp:.03},{id:'quiet',name:'不催促这段灵契',note:'不领取额外数值收益',xp:0}]},
     boss:{relation:'妖王余烬',title:'第三只眼留下的灰烬',text:'三眼妖王已经伏诛，但它曾盘踞的地界并不会立刻恢复。余烬里留下了一个需要你决定是否收尾的问题。',choices:[
       {id:'clean',name:'亲自清理余烬',note:'把战斗之后的责任也做完',xp:.07},{id:'teach',name:'把方法留给后来人',note:'不替他们永远守着此地',xp:.05},{id:'leave',name:'让天地自行恢复',note:'不把所有后果都揽到自己身上',xp:0}]},
-    ascension:{relation:'天门见证',title:'天门记得你的名字',text:'你真正踏入仙界后，那道曾在凡界打开的天门再次与你共鸣。这里没有额外飞升奖励，只有一次对过去的确认。',choices:[
+    ascension:{relation:'天门见证',title:'天门记得你的名字',text:'天门已经洞开。真正跨出凡尘以前，你最后一次回望来处。这里没有额外飞升奖励，只有一次对这一世的确认。',choices:[
       {id:'remember',name:'记住凡界来处',note:'留下历史，不增加凡界倍率',xp:0},{id:'name',name:'只留下一个名字',note:'让后来者知道有人走过',xp:0},{id:'silence',name:'不留下任何刻字',note:'让飞升只属于这一世',xp:0}]}
   });
   function createState(){return {version:VERSION,serial:0,active:[],pending:null,summaries:[]};}
@@ -35,7 +35,7 @@
     const id=`k${state.serial++}`;state.active.push({id,kind:entry.kind,sourceKey:entry.sourceKey,source:entry.source,relation:EVENTS[entry.kind].relation,strength:entry.strength,createdRealm:entry.createdRealm,trigger:entry.trigger,hint:entry.hint});
     if(state.active.length>ACTIVE_LIMIT){const old=state.active.shift();state.summaries.push({...old,outcome:'旧因果已归档',settledRealm:entry.createdRealm});state.summaries=state.summaries.slice(-SUMMARY_LIMIT);}
     validate(state);return state;}
-  function eligible(entry,context){return entry.trigger.type==='immortal'?!!context.immortal:Number(context.realm||0)>=entry.trigger.value;}
+  function eligible(entry,context){return entry.trigger.type==='immortal'?!!context.ascended:Number(context.realm||0)>=entry.trigger.value;}
   function refresh(input,context={}){validate(input);const state=clone(input);if(state.pending||!context.playable)return state;const hit=state.active.find(x=>eligible(x,context));state.pending=hit?.id||null;validate(state);return state;}
   function observe(input,before,after,action){validate(input);let state=clone(input);const realm=Number(after?.realm||0);
     const sectBefore=before?.sect?.majorOutcomes?.length||0,sectAfter=after?.sect?.majorOutcomes?.length||0;
@@ -47,8 +47,8 @@
     const beastBefore=before?.spiritBeast?.history?.length||0,beastAfter=after?.spiritBeast?.history?.length||0;
     if(beastAfter>beastBefore){const row=after.spiritBeast.history.at(-1);if(row.type==='evolve'&&row.stage===2)state=add(state,{kind:'beast',sourceKey:`beast:${row.species}:${row.branch}`,source:`灵兽分支 · ${BEAST_NAMES[row.species]||row.species}`,strength:2,createdRealm:realm,trigger:{type:'realm',value:Math.min(8,realm+2)},hint:'不可逆的灵兽分支会在以后回应这次选择。'});}
     if(!before?.flags?.bossSlain&&after?.flags?.bossSlain)state=add(state,{kind:'boss',sourceKey:'boss:threeeye',source:'妖王 · 三眼妖王',strength:3,createdRealm:realm,trigger:{type:'realm',value:5},hint:'妖王已死，它留下的地界仍有余烬。'});
-    if(!before?.flags?.ascended&&after?.flags?.ascended)state=add(state,{kind:'ascension',sourceKey:'ascension:first',source:'飞升 · 天门洞开',strength:3,createdRealm:realm,trigger:{type:'immortal'},hint:'真正踏入仙界后，天门会再次回应。'});
-    return refresh(state,{realm,immortal:!!after?.immortal,playable:(after?.phase==='playing'&&!after?.secretRealm?.active)||!!after?.immortal});
+    if(!before?.flags?.ascended&&after?.flags?.ascended)state=add(state,{kind:'ascension',sourceKey:'ascension:first',source:'飞升 · 天门洞开',strength:3,createdRealm:realm,trigger:{type:'immortal'},hint:'飞升结局会要求你回应这段凡尘因果。'});
+    return refresh(state,{realm,ascended:!!after?.flags?.ascended,playable:(after?.phase==='playing'&&!after?.secretRealm?.active)||!!after?.immortal||!!after?.flags?.ascended});
   }
   function pendingEntry(state){validate(state);return state.pending?state.active.find(x=>x.id===state.pending)||null:null;}
   function eventFor(entry){return entry?EVENTS[entry.kind]||null:null;}

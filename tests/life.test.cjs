@@ -11,9 +11,9 @@ function entered(seed=707,origin='herb'){
  s.origin=origin;s.realm=2;s.flags.pythonSeen=true;s.flags.pythonSlain=true;s.mutations=['redscale'];
  s.event={id:'quiet',title:'life',text:'echo'};s.life=L.observe(s.life,s.origin,s.realm,true);E.validate(s);return s;
 }
-test('four origin chains have 2 echoes and 1 major event',()=>{
+test('four origin chains have 2 echoes, 1 major event and 1 final mortal farewell',()=>{
  assert.deepEqual(Object.keys(L.CHAINS).sort(),['herb','orphan','scribe','servant']);
- for(const [id,c] of Object.entries(L.CHAINS)){assert.equal(c.events.length,3,id);assert.equal(c.events.filter(e=>e.major).length,1,id);assert.deepEqual(c.events.map(e=>e.minRealm),[2,4,6]);for(const e of c.events)assert.equal(e.choices.length,3);}
+ for(const [id,c] of Object.entries(L.CHAINS)){assert.equal(c.events.length,4,id);assert.equal(c.events.filter(e=>e.major).length,1,id);assert.equal(c.events.filter(e=>e.final).length,1,id);assert.deepEqual(c.events.map(e=>e.minRealm),[2,4,6,8]);for(const e of c.events)assert.equal(e.choices.length,3);}
 });
 test('refusal settles once without reward',()=>{
  let s=L.observe(L.createState(),'herb',2,true);const raw=JSON.stringify(s),r=L.resolve(s,'herb','herb-refuse',2);
@@ -24,6 +24,8 @@ test('late entry catches up in realm order',()=>{
  s=L.resolve(s,'scribe','scribe-correct',6).state;assert.equal(s.pending,'scribe-edict');
  s=L.resolve(s,'scribe','scribe-expose',6).state;assert.equal(s.pending,'scribe-major');
  s=L.resolve(s,'scribe','scribe-save-books',6).state;assert.equal(s.pending,null);assert.equal(s.completed.length,3);assert.equal(s.majorOutcomes.length,1);
+ s=L.observe(s,'scribe',8,true);assert.equal(s.pending,'scribe-farewell');
+ const before=clone(s);s=L.resolve(s,'scribe','scribe-listen',8).state;assert.equal(before.completed.length,3);assert.equal(s.completed.length,4);assert.equal(s.pending,null);assert.equal(s.marks.length,3);
 });
 test('life marks are bounded explainable Build sources',()=>{
  let s=L.observe(L.createState(),'orphan',2,true);s=L.resolve(s,'orphan','orphan-teach',2).state;

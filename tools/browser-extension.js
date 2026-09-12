@@ -376,8 +376,11 @@ async (page, options = {}) => {
   }
   await restore('ascension--ascension');
   const mortal = await run(), originalPower = mortal.ascendedPower;
-  await action('immortal-enter').click();
+  check(await ui('story-start-immortal').count() === 1, 'Ascension ending did not expose the independent second-story entry');
+  await ui('story-start-immortal').click();
   const arrival = await run();
+  check(arrival.storyOrigin?.chapter === 'immortal', 'Second story did not start from an explicit bridge shell');
+  check(arrival.equipment.inventory.length === 0 && arrival.spiritBeast.essence === 0 && arrival.spiritBeast.history.length === 0, 'Second story copied first-story inventory or progression history');
   check(arrival.immortal.basePower < arrival.immortal.wormPower, 'Immortal arrival lost the weaker-than-worm contrast');
   await layout('immortal-arrival');
   await page.locator('[data-action="immortal-approach"][data-id="test"]').click();
@@ -412,11 +415,17 @@ async (page, options = {}) => {
   }
   const final = await run(), i = final.immortal;
   check(i.phase === 'prologue-complete' && i.wormSlain && lawReloaded && i.wormPower === arrival.immortal.wormPower, 'Immortal prologue incomplete');
-  check(final.ascendedPower === originalPower && final.rng === mortal.rng, 'Immortal continuation mutated mortal accomplishments or RNG');
+  check(final.ascendedPower === originalPower && final.storyOrigin?.sourceSeed === mortal.seed, 'Second story lost the verified first-story bridge');
   const raw = JSON.stringify(final);
-  await ui('mortal-summary').click();
-  check((await page.locator('.immortal-preview').innerText()).includes('仙界噬灵虫'), 'Original ascension ending no longer accessible');
-  await ui('immortal-continue').click(); check(JSON.stringify(await run()) === raw, 'Reviewing mortal ending changed save');
+  await page.locator('button.brand[data-ui="home"]').click();
+  await page.locator('[data-ui="story-open"][data-id="mortal"]').click();
+  await page.locator('dialog [data-ui="story-switch"][data-id="mortal"]').click();
+  check((await page.locator('.ascension-ending').innerText()).includes('第一篇完 · 凡尘'), 'Original first-story ending no longer accessible');
+  check(await page.locator('.immortal-preview').count() === 0, 'Reviewing the first story restored the retired immortal transition preview');
+  await page.locator('button.brand[data-ui="home"]').click();
+  await page.locator('[data-ui="story-open"][data-id="immortal"]').click();
+  await page.locator('dialog [data-ui="story-switch"][data-id="immortal"]').click();
+  check(JSON.stringify(await run()) === raw, 'Switching to the first story changed the saved second-story run');
   const fileCases = [];
   for (const [mode,url] of options.fileRoots) {
     await page.goto(url); await close(); await openPanel('settings');
@@ -461,7 +470,9 @@ async (page, options = {}) => {
     }
     if (['upgrade','fuse'].includes(a.type) && !(await page.locator('.evolution-build').getAttribute('open') !== null)) await page.locator('.evolution-build summary').click();
     if(a.type==='fuse')await layout('evolution-fusion-ready');
-    await page.locator(`[data-action="immortal-evolution-${a.type}"]${a.id?`[data-id="${a.id}"]`:''}`).click();
+    const targetAction=page.locator(`[data-action="immortal-evolution-${a.type}"]${a.id?`[data-id="${a.id}"]`:''}`);
+    check(await targetAction.count()===1,`Evolution action missing: ${a.type}/${a.id||''} phase=${c.phase} world=${e.world} proof=${e.proof} hunts=${e.hunts}`);
+    await targetAction.click();
     if(a.type==='choose')check(Object.keys((await run()).immortal.evolution.slots).length===5,'Choosing an evolution grew an extra slot');
   }
   const evolved = await run(), evolvedRaw=JSON.stringify(evolved);
@@ -515,35 +526,30 @@ async (page, options = {}) => {
   for(const [mode,url]of options.fileRoots){await page.goto(url);await importRaw(daoRaw);await openPanel('build');await ui('dao').click();check((await page.locator('.dao-card').innerText()).includes(daoRun.dao.formed.name),mode+': Dao missing');await close();daoFiles.push(mode);}
   report.systems.dao={passed:true,name:daoRun.dao.formed.name,rules:daoRun.dao.formed.rules,samples:daoRun.dao.total,readOnly:true,reloadPreserved:true,fileCases:daoFiles,deterministic:true};
   await page.goto(baseURL);await importRaw(daoRaw);
-  await ui('world-setup').click();
-  check(await page.locator('[data-world-config]').count()===5,'Creation must expose exactly five laws');
-  await page.locator('[data-world-config="aura"]').selectOption('abundant');
-  await page.locator('[data-world-config="system"]').selectOption('body');
-  await page.locator('[data-world-config="risk"]').selectOption('calamity');
-  await page.locator('[data-world-config="inheritance"]').selectOption('open');
-  await layout('world-setup');
-  await action('world-create').click();
-  let created=await run();check(created.world&&created.world.config.aura==='abundant'&&created.world.config.system==='body','Selected laws were not used');
-  const originalImmortal=JSON.stringify(created.immortal),originalRng=created.rng,worldTypes=[];
-  for(const type of ['cultivation','calamity','inheritance']){
-    check(await page.locator('[data-world-event="'+type+'"]').count()===1,'Missing world event '+type);
-    await layout('world-'+type);worldTypes.push(type);
-    await action('world-resolve').first().click();
-    await page.reload();await ui('continue').click();
+  check(await ui('world-setup').count()===0,'Second-story ending still exposes the retired direct world-creation entry');
+  await page.locator('button.brand[data-ui="home"]').click();
+  await page.locator('[data-ui="story-open"][data-id="dao"]').click();
+  check(await page.locator('dialog [data-ui="story-start-dao"]').count()===1,'Third story did not expose the independent bridge entry');
+  await page.locator('dialog [data-ui="story-start-dao"]').click();
+  let third=await run();check(third.storyOrigin?.chapter==='dao'&&!third.immortal&&!third.world&&third.equipment.inventory.length===0,`Third story shell copied earlier chapter runtime state: ${JSON.stringify({chapter:third.storyOrigin?.chapter,immortal:!!third.immortal,world:!!third.world,inventory:third.equipment?.inventory?.length,phase:third.phase,seed:third.seed})}`);
+  check(await page.locator('dialog [data-world-config]').count()===5,'Third story setup must expose exactly five world laws');
+  await page.locator('dialog [data-world-config="aura"]').selectOption('abundant');await page.locator('dialog [data-world-config="system"]').selectOption('body');await page.locator('dialog [data-world-config="risk"]').selectOption('calamity');await page.locator('dialog [data-world-config="inheritance"]').selectOption('open');
+  await action('world-create').click();third=await run();check(third.world?.story?.cursor===0&&third.world.projection.type==='bridge','Third story world was not created from the verified immortal bridge');
+  const storyTitles=[];let storyReloaded=false;
+  while((await run()).world.phase==='event'&&!(await run()).world.story.sandbox){
+    const current=await run(),index=current.world.story.cursor,title=await page.locator('.creation-event .event-title').innerText();storyTitles.push(title);
+    if([0,2,6,8].includes(index))await layout('third-story-'+index);
+    if(index===4&&!storyReloaded){const raw=JSON.stringify(current);await page.reload();await ui('continue').click();check(JSON.stringify(await run())===raw,'Reload changed the third-story pending node');storyReloaded=true;}
+    await page.locator('[data-action="world-resolve"]').first().click();
   }
-  const worldEnding=await run();
-  check(worldEnding.world.phase==='ending'&&worldEnding.world.history.length===3,'Creation ending did not complete');
-  check((await page.locator('.creation-ending').innerText()).includes('我即天道'),'Formal creation ending missing');
-  check(JSON.stringify(worldEnding.immortal)===originalImmortal&&worldEnding.rng===originalRng&&worldEnding.ascendedPower===daoRun.ascendedPower,'World choices altered the earlier journey');
-  check(worldEnding.world.projection.name===daoRun.dao.formed.name,'World history did not project the real Dao');
-  await layout('world-ending');
-  await ui('world-return').click();check(await page.locator('.evolution-view').count()===1,'Return to immortal journey failed');
-  await ui('world-open').click();await action('world-continue').click();
-  const continuingWorld=await run(),worldRaw=JSON.stringify(continuingWorld);check(continuingWorld.world.era==='2','Next era did not open');
-  await layout('world-next-era');
-  const worldFiles=[];
-  for(const [mode,url]of options.fileRoots){await page.goto(url);await importRaw(worldRaw);check(await page.locator('.creation-view').count()===1,mode+': world not restored');await action('world-resolve').first().click();check((await run()).world.cursor===1,mode+': next era event failed');worldFiles.push(mode);}
-  report.systems.world={passed:true,parameters:5,eventTypes:worldTypes,created:true,ending:true,continuation:true,projection:worldEnding.world.projection.name,reloadPreserved:true,mortalAndImmortalPreserved:true,fileCases:worldFiles,historyLimit:24};
+  check(storyTitles.length===9&&storyTitles[0].includes('第一位感灵者')&&storyTitles[6].includes('第一位试图飞升'),'Third-story bounded history nodes are incomplete');
+  check(await page.locator('[data-action="world-ending"]').count()===3,'Third story must expose exactly three explicit endings');await layout('third-story-ending-choice');
+  await page.locator('[data-action="world-ending"][data-id="all-ascend"]').click();const thirdEnding=await run();check(thirdEnding.world.phase==='ending'&&thirdEnding.world.story.ending==='all-ascend','Explicit third-story ending was not saved');
+  check((await page.locator('.creation-ending').innerText()).includes('众生皆可飞升'),'Third-story formal ending text is missing');await layout('third-story-ending');
+  const thirdMeta=await page.evaluate(()=>JSON.parse(localStorage.getItem('feisheng.meta.v1')));check(thirdMeta.storyProgress.daoCleared&&thirdMeta.storyProgress.endings.dao?.choice==='all-ascend','Third-story ending summary was not written to the ledger');
+  const thirdRaw=JSON.stringify(thirdEnding),thirdFiles=[];for(const [mode,url]of options.fileRoots){await page.goto(url);await importRaw(thirdRaw);check(await page.locator('.creation-ending').count()===1,mode+': third-story ending did not restore');check((await page.locator('.creation-ending').innerText()).includes('众生皆可飞升'),mode+': third-story ending choice was lost');thirdFiles.push(mode);}
+  await page.goto(baseURL);await importRaw(thirdRaw);await action('world-continue').click();check((await run()).world.story.sandbox&& (await run()).world.era==='2','Third-story postgame did not open after the formal ending');check(await page.locator('.creation-event').count()===1,'Third-story postgame event renderer failed');
+  report.systems.world={passed:true,directCreationDetached:true,thirdStoryBoundary:true,independentBridge:true,storyNodes:storyTitles.length,endings:3,chosenEnding:'all-ascend',summarySaved:true,postgame:true,reloadPreserved:storyReloaded,fileCases:thirdFiles,historyLimit:24};
   await page.goto(baseURL);await restore('mortal--serpent-danger');
   await page.locator('[data-action="resolve"][data-choice="flee"]').click();
   check((await run()).phase==='playing','Navigation fixture must have entered the mortal world');
@@ -600,7 +606,7 @@ async (page, options = {}) => {
   report.systems.journey={passed:true,regions:6,routes:18,events:54,reloadPreserved:true,retreat:true,outcomeVisible:true,fileCases:journeyFiles};
   await page.goto(baseURL); await restore('ascension--ascension');
   report.externalRequests = report.requests.filter(url => /^https?:/.test(url) && !url.startsWith(`${baseURL}/`) && url !== baseURL).length;
-  check(report.externalRequests === 0 && report.errors.length === 0 && report.failedRequests.length === 0, 'Extension produced network or browser errors');
+  check(report.externalRequests === 0 && report.errors.length === 0 && report.failedRequests.length === 0, `Extension produced network or browser errors: ${JSON.stringify({externalRequests:report.externalRequests,errors:report.errors,failedRequests:report.failedRequests})}`);
   report.passed = true;
   return report;
 }

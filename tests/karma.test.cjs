@@ -20,13 +20,13 @@ test('六类高价值来源都能登记且来源键可追溯',()=>{
   assert.ok(s.active.every(x=>x.sourceKey&&x.source&&x.relation));K.validate(s);
 });
 
-test('延迟因果只在声明阶段进入待偿，飞升因果只在真正入仙后触发',()=>{
+test('延迟因果只在声明阶段进入待偿，飞升因果在第一卷结局触发',()=>{
   let s=K.add(K.createState(),entry(1));
   assert.equal(K.refresh(s,{realm:3,playable:true}).pending,null);
   s=K.refresh(s,{realm:4,playable:true});assert.equal(s.pending,'k0');
-  let a=K.add(K.createState(),{kind:'ascension',sourceKey:'a',source:'飞升',strength:3,createdRealm:9,trigger:{type:'immortal'},hint:'入仙后回应'});
-  assert.equal(K.refresh(a,{realm:9,playable:true,immortal:false}).pending,null);
-  assert.equal(K.refresh(a,{realm:9,playable:true,immortal:true}).pending,'k0');
+  let a=K.add(K.createState(),{kind:'ascension',sourceKey:'a',source:'飞升',strength:3,createdRealm:9,trigger:{type:'immortal'},hint:'飞升结局回应'});
+  assert.equal(K.refresh(a,{realm:9,playable:true,ascended:false}).pending,null);
+  assert.equal(K.refresh(a,{realm:9,playable:true,ascended:true}).pending,'k0');
 });
 
 test('因果结算只发生一次并保留来源、关系与选择摘要',()=>{

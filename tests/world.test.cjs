@@ -1,9 +1,13 @@
 'use strict';
-const test=require('node:test'),assert=require('node:assert/strict');
-const W=require('../src/world.js'),A=require('../src/dao.js'),E=require('../src/engine.js');
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
+const W=require('../src/world.js'),A=require('../src/dao.js'),E=require('../src/engine.js'),M=require('../src/meta.js');
 const {simulate}=require('../tools/simulation-policy.cjs'),{campaign}=require('../tools/evolution-policy.cjs');
 const clone=v=>JSON.parse(JSON.stringify(v));
 let cached;
+test('浏览器脚本先加载quantity/evolution再加载world，避免第三卷Bridge依赖未定义',()=>{
+  const html=fs.readFileSync('index.html','utf8'),quantity=html.indexOf('./src/quantity.js'),evolution=html.indexOf('./src/evolution.js'),world=html.indexOf('./src/world.js');
+  assert.ok(quantity>=0&&evolution>quantity&&world>evolution);
+});
 test('六条主脉完成仙界后都能带着真实大道创世并归卷',()=>{
   for(const path of ['devour','sword','body','soul','fortune','insight']){
     let s=campaign(simulate(230001,path,{trace:path}).state,path).state;
@@ -14,6 +18,30 @@ test('六条主脉完成仙界后都能带着真实大道创世并归卷',()=>{
 });
 function earned(){if(!cached){cached=campaign(simulate(220001,'insight').state,'insight').state;assert.ok(A.preview(cached.dao,cached).ready);cached=E.transition(cached,{type:'dao-form'});}return clone(cached);}
 function create(config=W.defaults()){return E.transition(earned(),{type:'world-create',config});}
+function immortalBridge(){const s=campaign(simulate(220002,'soul').state,'soul').state;return M.observe(M.createMeta(),s).storyProgress.lastImmortalBridge;}
+function third(config=W.defaults()){return E.transition(E.createDaoRun(immortalBridge()),{type:'world-create',config});}
+test('仙界正式结局Bridge可独立启动第三卷，不携带第二卷资源或无尽层数',()=>{
+  const bridge=immortalBridge(),shell=E.createDaoRun(bridge);assert.equal(shell.storyOrigin.chapter,'dao');assert.equal(shell.immortal,null);assert.equal(shell.world,null);assert.equal(shell.equipment.inventory.length,0);assert.ok(W.canCreate(shell));
+  const s=E.transition(shell,{type:'world-create',config:W.defaults()});assert.equal(s.world.projection.type,'bridge');assert.equal(s.world.story.cursor,0);assert.equal(W.event(s.world).title,'第一位感灵者');assert.deepEqual(E.deserialize(E.serialize(s)),s);
+});
+test('第三卷九段众生史按固定顺序推进，查看事件不改状态或随机流',()=>{
+  let s=third(),raw=E.serialize(s);for(let i=0;i<20;i++)W.event(s.world);assert.equal(E.serialize(s),raw);
+  const titles=[];for(let i=0;i<W.STORY_NODES.length;i++){const e=W.event(s.world);titles.push(e.title);const action={type:'world-resolve',id:e.choices[i%2].id,revision:s.revision};s=E.transition(s,action);assert.throws(()=>E.transition(s,action));}
+  assert.deepEqual(titles,W.STORY_NODES.map(x=>x.title));assert.equal(s.world.phase,'ending-choice');assert.equal(s.world.story.cursor,W.STORY_NODES.length);assert.equal(s.world.history.length,W.STORY_NODES.length);
+});
+test('第三卷三种终局都由玩家显式选择，生机秩序不替玩家自动决定',()=>{
+  for(const ending of W.ENDINGS){let s=third();while(s.world.phase==='event'){const e=W.event(s.world);s=E.transition(s,{type:'world-resolve',id:e.choices[0].id});}
+    const before={vitality:s.world.vitality,order:s.world.order};assert.deepEqual(W.endingChoices(s.world).map(x=>x.id),W.ENDINGS.map(x=>x.id));s=E.transition(s,{type:'world-ending',id:ending.id});
+    assert.equal(s.world.phase,'ending');assert.equal(s.world.story.ending,ending.id);assert.deepEqual({vitality:s.world.vitality,order:s.world.order},before);assert.match(W.conclusion(s.world),new RegExp(ending.text.slice(0,8)));
+    const meta=M.observe(M.createMeta(),s);assert.equal(meta.storyProgress.daoCleared,true);assert.equal(meta.storyProgress.endings.dao.choice,ending.id);assert.equal(meta.storyProgress.endings.dao.title,ending.name);assert.equal(meta.storyProgress.endings.dao.sourceSeed,s.seed);
+  }
+});
+test('第三卷正式结局后才能进入后日谈，后日谈继续复用有界三事件纪元',()=>{
+  let s=third();while(s.world.phase==='event'){const e=W.event(s.world);s=E.transition(s,{type:'world-resolve',id:e.choices[0].id});}
+  assert.throws(()=>E.transition(s,{type:'world-continue'}));s=E.transition(s,{type:'world-ending',id:'all-ascend'});s=E.transition(s,{type:'world-continue'});
+  assert.equal(s.world.story.sandbox,true);assert.equal(s.world.era,'2');assert.equal(W.event(s.world).type,'cultivation');for(let n=0;n<100;n++){if(s.world.phase==='ending')s=E.transition(s,{type:'world-continue'});else s=E.transition(s,{type:'world-resolve',id:W.event(s.world).choices[0].id});}
+  assert.ok(s.world.history.length<=W.LIMIT);W.validate(s.world);
+});
 test('从合法凡界到仙界正式结局与创道，才能创建世界；不重复创世',()=>{
   const s=earned();assert.ok(W.canCreate(s));const raw=E.serialize(s),n=create();
   assert.equal(E.serialize(s),raw);assert.equal(n.rng,s.rng);assert.deepEqual(n.immortal,s.immortal);assert.equal(n.ascendedPower,s.ascendedPower);

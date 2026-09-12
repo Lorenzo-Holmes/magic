@@ -217,7 +217,7 @@
   function tribulationChoices(s) {
     requireThat(s.phase === 'tribulation', '当前不在渡劫。');
     const stage = s.tribulationStage, a = stats(s), e = effects(s), has = id => (s.fusions || []).includes(id), fusion = byId(D.FUSIONS, s.fusions[0]);
-    const labels = ['九霄雷劫', '问心魔劫', '天门终劫'];
+    const labels = ['第一劫 · 问身', '第二劫 · 问心', '第三劫 · 问道'];
     const out = [{ id: 'endure', name: '以全部修为硬渡', note: '通用路线 · 风险较高', enemyFactor: .55 }];
     if (fusion) out.push({ id: 'fusion', name: `以「${fusion.name}」承劫`, note: '本世融合路线 · 最稳定', enemyFactor: .40 });
     if (stage === 0) {
@@ -259,10 +259,24 @@
       highSeen: [], realmProofs: [], tribulationStage: 0, tribulationBase: null, ascendedPower: null,
       carriedTrace, traceSourceSeed, bossRoute: null, tribulationRoutes: [], batchCultivations: 0,
       event: null, draft: null, firstPower: null, revengePower: null, lastGain: 0,
-      ending: null, log: [], equipment: equipmentEngine().createState(), combatReplay: null, secretRealm: secretRealmEngine().createState(), sect: sectEngine().createState(), life: lifeEngine().createState(), spiritBeast: spiritBeastEngine().createState(), crafting: craftingEngine().createState(), karma: karmaEngine().createState(), dao: daoEngine().createState(), world: null, immortal: null
+      ending: null, log: [], equipment: equipmentEngine().createState(), combatReplay: null, secretRealm: secretRealmEngine().createState(), sect: sectEngine().createState(), life: lifeEngine().createState(), spiritBeast: spiritBeastEngine().createState(), crafting: craftingEngine().createState(), karma: karmaEngine().createState(), dao: daoEngine().createState(), world: null, immortal: null, storyOrigin: null
     };
     s.offer = openingOffer(s);
     return s;
+  }
+  function createImmortalRun(bridge) {
+    const I = immortalEngine(), immortal = I.createFromBridge(bridge), s = createRun(bridge.sourceSeed);
+    s.storyOrigin = { chapter:'immortal', sourceSeed:bridge.sourceSeed, lineage:bridge.lineage, mortalFusion:bridge.mortalFusion, companion:copy(bridge.companion) };
+    s.phase = 'complete'; s.realm = 9; s.age = bridge.ascendedAge; s.ending = '飞升'; s.offer = [];
+    s.flags.ascended = true; s.ascendedPower = bridge.ascendedPower; s.fusions = [bridge.mortalFusion]; s.immortal = immortal;
+    if (bridge.companion) s.spiritBeast.companion = copy(bridge.companion);
+    validate(s); return s;
+  }
+  function createDaoRun(bridge) {
+    const W=worldEngine();W.validateBridge(bridge);const s=createRun(bridge.sourceSeed);
+    s.storyOrigin={chapter:'dao',bridge:copy(bridge)};
+    s.phase='complete';s.realm=9;s.age=16;s.ending='噬界者';s.offer=[];s.flags.ascended=true;s.ascendedPower=1;s.fusions=[bridge.mortalFusion];
+    validate(s);return s;
   }
   function canBreak(s) {
     if(s.journey?.active || s.journey && !journeyEngine().ready(s.journey,s.realm))return false;
@@ -548,7 +562,7 @@
     if(action.type.startsWith('world-')){
       const W=worldEngine();
       if(action.type==='world-create')s.world=W.create(s,action.config);
-      else {requireThat(s.world,'尚未建立自己的天地。');if(action.type==='world-resolve')s.world=W.resolve(s.world,action.id);else if(action.type==='world-continue')s.world=W.continueWorld(s.world);else throw new Error('未知的创世操作。');}
+      else {requireThat(s.world,'尚未建立自己的天地。');if(action.type==='world-resolve')s.world=W.resolve(s.world,action.id);else if(action.type==='world-ending')s.world=W.chooseEnding(s.world,action.id);else if(action.type==='world-continue')s.world=W.continueWorld(s.world);else throw new Error('未知的创世操作。');}
       nextRevision(s);validate(s);return s;
     }
     // A replay is evidence of an already committed result. Any subsequent
@@ -560,7 +574,9 @@
       const I = immortalEngine();
       if (action.type === 'immortal-enter' || action.type === 'immortal-retry') {
         requireThat(action.type === 'immortal-enter' ? !s.immortal : s.immortal?.phase === 'dead', '不能重复领取仙界开局。');
-        s.immortal = I.create(s);
+        s.immortal = action.type === 'immortal-retry' && s.storyOrigin?.chapter === 'immortal'
+          ? I.createFromBridge({version:1,sourceSeed:s.storyOrigin.sourceSeed,ascendedPower:s.ascendedPower,lineage:s.storyOrigin.lineage,mortalFusion:s.storyOrigin.mortalFusion,ascendedAge:s.age,companion:copy(s.storyOrigin.companion)})
+          : I.create(s);
       } else {
         requireThat(s.immortal, '尚未进入仙界。');
         s.immortal = I.transition(s.immortal, { ...action, type: action.type.slice(9) });
@@ -783,7 +799,7 @@
         log(s,'自创大道',`十二段以上真实修行凝为「${s.dao.formed.name}」。此道的规则与来源已写入道途。`,'gold');break;
       case 'karma-resolve': {
         requireThat(s.karma?.pending,'当前没有待偿因果。');
-        const K=karmaEngine(),result=K.resolve(s.karma,action.id,{realm:s.realm,immortal:!!s.immortal,playable:s.phase==='playing'||!!s.immortal});s.karma=result.state;
+        const K=karmaEngine(),result=K.resolve(s.karma,action.id,{realm:s.realm,ascended:!!s.flags.ascended,playable:s.phase==='playing'||!!s.immortal||!!s.flags.ascended});s.karma=result.state;
         const threshold=D.REALMS[Math.min(s.realm,8)].threshold||D.REALMS[8].threshold;
         const actual=result.reward.xpFactor&&s.phase==='playing'?gain(s,threshold*result.reward.xpFactor,'explore'):0;
         if(result.reward.heal&&s.phase==='playing')s.vitality=Math.min(100,s.vitality+result.reward.heal);
@@ -823,9 +839,12 @@
   function validate(s) {
     requireThat(s && typeof s === 'object' && !Array.isArray(s) && s.version === VERSION, '存档版本不兼容。');
     requireThat(PHASES.includes(s.phase), '存档阶段无效。');
+    const immortalShell = s.storyOrigin?.chapter === 'immortal', daoShell=s.storyOrigin?.chapter==='dao', bridgeShell=immortalShell||daoShell;
+    requireThat(s.storyOrigin === null || s.storyOrigin === undefined || immortalShell && Object.keys(s.storyOrigin).length === 5 && Number.isInteger(s.storyOrigin.sourceSeed) && s.storyOrigin.sourceSeed > 0 && s.storyOrigin.sourceSeed <= 4294967295 && s.storyOrigin.sourceSeed === s.seed && ['devour','sword','body','soul','fortune','insight'].includes(s.storyOrigin.lineage) && D.FUSIONS.some(item=>item.id===s.storyOrigin.mortalFusion) && (s.storyOrigin.companion===null || spiritBeastEngine().BY_ID[s.storyOrigin.companion?.species] && Number.isInteger(s.storyOrigin.companion.stage) && s.storyOrigin.companion.stage>=0 && s.storyOrigin.companion.stage<=3 && (s.storyOrigin.companion.stage<2?s.storyOrigin.companion.branch===null:['wild','sacred'].includes(s.storyOrigin.companion.branch))) || daoShell && Object.keys(s.storyOrigin).length===2 && worldEngine().validateBridge(s.storyOrigin.bridge) && s.storyOrigin.bridge.sourceSeed===s.seed, '跨卷运行来源损坏。');
     if (s.immortal != null) {
       requireThat(s.phase === 'complete' && s.flags?.ascended && s.immortal.mortalPower === s.ascendedPower, '仙界与凡界成就不一致。');
       immortalEngine().validate(s.immortal);
+      if (immortalShell) requireThat(s.immortal.lineage === s.storyOrigin.lineage && s.immortal.mortalFusion === s.storyOrigin.mortalFusion, '跨卷仙界道基不一致。');
     }
     equipmentEngine().validate(s.equipment);
     combatEngine().validateReplay(s.combatReplay);
@@ -840,7 +859,7 @@
     if(s.journey.active)requireThat(s.phase==='playing'&&!s.immortal&&!s.secretRealm.active&&!isBlocking(s)&&s.journey.active.seed===s.seed&&s.journey.active.realm===s.realm,'行旅与此世进度不一致。');
     requireThat(!s.dao.formed||s.dao.formed.seed===s.seed,'大道不属于本世。');
     requireThat(s.world===null||s.world&&typeof s.world==='object','创世字段损坏。');
-    if(s.world){worldEngine().validate(s.world);requireThat(s.flags.ascended&&s.immortal?.evolution?.completed&&s.dao.formed&&s.world.seed===s.seed&&s.world.projection.name===s.dao.formed.name&&JSON.stringify(s.world.rules)===JSON.stringify(s.dao.formed.rules),'创世来源与本世成就不一致。');}
+    if(s.world){worldEngine().validate(s.world);if(daoShell){const projection=worldEngine().bridgeProjection(s.storyOrigin.bridge);requireThat(s.world.seed===s.seed&&s.world.projection.name===projection.name&&s.world.projection.sourceSeed===s.seed,'证道世界与跨卷来源不一致。');}else requireThat(s.flags.ascended&&s.immortal?.evolution?.completed&&s.dao.formed&&s.world.seed===s.seed&&s.world.projection.name===s.dao.formed.name&&JSON.stringify(s.world.rules)===JSON.stringify(s.dao.formed.rules),'创世来源与本世成就不一致。');}
     requireThat(s.defeats === undefined || s.defeats === null || (Number.isSafeInteger(s.defeats) && s.defeats >= 0), '败退记录损坏。');
     for (const key of ['seed', 'rng']) requireThat(Number.isInteger(s[key]) && s[key] > 0 && s[key] <= 4294967295, '随机种子损坏。');
     requireThat(Number.isSafeInteger(s.revision) && s.revision >= 0 || typeof s.revision === 'string' && s.revision.length <= 2048 && /^(0|[1-9]\d*)$/.test(s.revision), '操作版本损坏。');
@@ -869,15 +888,15 @@
     requireThat(s.event === null || (s.event && EVENT_IDS.includes(s.event.id) && (!s.event.enemy || byId(D.ENEMIES, s.event.enemy)) && (!s.event.scene || byId(D.ADVANCED_EVENTS, s.event.scene) || byId(D.HIGH_EVENTS, s.event.scene)) && (!s.event.trace || byId(D.TRACES, s.event.trace)) && (!['trace-echo', 'trace-resonance'].includes(s.event.id) || byId(D.TRACES, s.event.trace))), '事件数据损坏。');
     requireThat(s.root === null || byId(D.ROOTS, s.root), '灵根数据损坏。');
     requireThat(s.origin === null || byId(D.ORIGINS, s.origin), '出身数据损坏。');
-    if (!['talents', 'attributes'].includes(s.phase)) requireThat(s.root && s.origin && s.innate.length === 3, '入世资料缺失。');
+    if (!['talents', 'attributes'].includes(s.phase) && !bridgeShell) requireThat(s.root && s.origin && s.innate.length === 3, '入世资料缺失。');
     if (s.phase === 'talents') requireThat(s.offer.length === 8 && s.selected.every(id => s.offer.includes(id)), '开局签池损坏。');
     if (s.phase === 'draft') requireThat(s.offer.length === 3 && s.offer.every(id => !s.talents.includes(id)) && s.draft && s.realm > 0, '悟道存档损坏。');
     if (s.phase === 'mutation') requireThat(s.flags.pythonSlain && s.mutations.length === 0 && s.realm === 2, '异变阶段资料不完整。');
-    if (['fusion', 'tribulation', 'complete'].includes(s.phase) || s.realm >= 3) requireThat(s.flags.pythonSlain && s.mutations.length === 1 && s.realm >= 2, '异变进度不完整。');
+    if (!bridgeShell && (['fusion', 'tribulation', 'complete'].includes(s.phase) || s.realm >= 3)) requireThat(s.flags.pythonSlain && s.mutations.length === 1 && s.realm >= 2, '异变进度不完整。');
     if (s.phase === 'fusion') requireThat(s.realm === 3 && s.fusionOffer.length === 3 && s.fusions.length === 0, '融合阶段资料不完整。');
-    if (s.realm >= 4) requireThat(s.fusions.length === 1 && s.flags.bossSlain, '高境界前置进度不完整。');
+    if (s.realm >= 4) requireThat(s.fusions.length === 1 && (bridgeShell || s.flags.bossSlain), '高境界前置进度不完整。');
     if (s.phase === 'tribulation') requireThat(s.realm === 9 && s.tribulationStage < 3 && s.tribulationBase, '渡劫资料不完整。');
-    if (s.phase === 'complete') requireThat(s.realm === 9 && s.fusions.length === 1 && s.flags.bossSlain && s.flags.ascended && s.tribulationStage === 3 && s.ascendedPower, '飞升结算资料不完整。');
+    if (s.phase === 'complete') requireThat(s.realm === 9 && s.fusions.length === 1 && (bridgeShell || s.flags.bossSlain && s.tribulationStage === 3) && s.flags.ascended && s.ascendedPower, '飞升结算资料不完整。');
     requireThat(Array.isArray(s.log) && s.log.length <= 100 && s.log.every(l => l && typeof l.title === 'string' && l.title.length < 200 && typeof l.text === 'string' && l.text.length < 2000 && Number.isInteger(l.age) && Number.isInteger(l.realm)), '历程记录损坏。');
     return true;
   }
@@ -957,7 +976,7 @@
   function migrateV13(s){if(s?.version===13){s.version=14;s.dao=daoEngine().createState();}return s;}
   function migrateV14(s){if(s?.version===14){s.version=15;s.world=null;}return s;}
   function migrateV15(s){if(s?.version===15){s.version=16;s.journey=journeyEngine().createState(false);}return s;}
-  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); s = migrateV5(s); s = migrateV6(s); s = migrateV7(s); s = migrateV8(s); s = migrateV9(s); s = migrateV10(s); s = migrateV11(s); s = migrateV12(s); s=migrateV13(s); s=migrateV14(s); s=migrateV15(s); if (s?.version === VERSION && s.immortal) s.immortal = immortalEngine().migrate(s.immortal); validate(s); return s; }
+  function deserialize(text) { requireThat(typeof text === 'string' && text.length <= 200000, '存档文件过大。'); let s = JSON.parse(text); s = migrateV1(s); s = migrateV2(s); s = migrateV3(s); s = normalizeV4(s); s = migrateV4(s); s = migrateV5(s); s = migrateV6(s); s = migrateV7(s); s = migrateV8(s); s = migrateV9(s); s = migrateV10(s); s = migrateV11(s); s = migrateV12(s); s=migrateV13(s); s=migrateV14(s); s=migrateV15(s); if (s?.version === VERSION && s.storyOrigin === undefined) s.storyOrigin = null; if (s?.version === VERSION && s.immortal) s.immortal = immortalEngine().migrate(s.immortal); validate(s); return s; }
   function synergies(s) {
     const list = [];
     if (s.sword && s.root === 'thunder' && s.talents.includes('swordbone')) list.push({ name: '雷剑体', text: '雷灵根 × 天生剑骨 × 青云剑诀：战力额外 +20%。' });
@@ -965,5 +984,5 @@
     for (const id of s.fusions || []) { const f = byId(D.FUSIONS, id); if (f) list.push({ name: f.name, text: `${f.path}：${f.description}` }); }
     return list;
   }
-  return { VERSION, createRun, transition, validate, serialize, deserialize, effects, stats, power, maxAge, threat, canBreak, isBlocking, actionPreview, canCultivateToReady, canSeekProof, synergies, availableFusions, advancedChoices, bossChoices, canChallengeBoss, highChoices, tribulationChoices };
+  return { VERSION, createRun, createImmortalRun, createDaoRun, transition, validate, serialize, deserialize, effects, stats, power, maxAge, threat, canBreak, isBlocking, actionPreview, canCultivateToReady, canSeekProof, synergies, availableFusions, advancedChoices, bossChoices, canChallengeBoss, highChoices, tribulationChoices };
 });

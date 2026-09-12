@@ -14,7 +14,7 @@
         Object.freeze({id:'herb-seed',name:'只留下新的药种',note:'不替所有人决定未来',xp:.04,tag:'insight',effects:{cultivate:.015}}),
         Object.freeze({id:'herb-refuse',name:'不再介入凡尘',note:'拒绝这条人生支线',xp:0})
       ])}),
-      Object.freeze({id:'herb-debt',minRealm:4,title:'旧药篓里的名字',text:'元婴以后，一只破旧药篓被送到洞府。篓底压着十几个你小时候认识的名字，以及一句“若还能记得，就回来看看”。',choices:Object.freeze([
+      Object.freeze({id:'herb-debt',minRealm:4,title:'旧药篓里的名字',text:'元婴以后，一只破旧药篓被送到洞府。送篓来的沈阿芷已经鬓白，篓底压着十几个你小时候认识的名字，以及一句“若还能记得，就回来看看”。',choices:Object.freeze([
         Object.freeze({id:'herb-return',name:'回去看一眼',note:'把修士的时间还给故人一日',xp:.05,tag:'fortune',effects:{luck:1}}),
         Object.freeze({id:'herb-medicine',name:'托人送回灵药',note:'保留距离，但不忘旧恩',xp:.04,tag:'growth',effects:{explore:.015}}),
         Object.freeze({id:'herb-ignore',name:'把药篓收起',note:'拒绝继续牵扯',xp:0})
@@ -23,6 +23,11 @@
         Object.freeze({id:'herb-save-home',name:'先救故乡',note:'选择具体的人，而非更大的收益',xp:.08,tag:'survival',effects:{guard:.02}}),
         Object.freeze({id:'herb-save-field',name:'先保古灵田',note:'让更多陌生人以后受益',xp:.09,tag:'growth',effects:{xp:.02}}),
         Object.freeze({id:'herb-let-go',name:'两边都不替天作主',note:'拒绝以力量决定所有命运',xp:.03,tag:'insight',effects:{cultivate:.01}})
+      ])}),
+      Object.freeze({id:'herb-farewell',minRealm:8,final:true,title:'药坡最后一场春雨',text:'大乘以后你再回青露坡，沈阿芷的坟边已经长满新药。村里没有人认识你，只把那片药坡叫作“阿芷坡”。春雨落下时，你第一次发现故乡已经不需要等你回来。',choices:Object.freeze([
+        Object.freeze({id:'herb-rain',name:'在雨里站到天亮',note:'不留灵药，也不惊动后来者',xp:0}),
+        Object.freeze({id:'herb-name-stone',name:'替她扶正无字碑',note:'只把一个人的名字留稳',xp:0}),
+        Object.freeze({id:'herb-pass-spring',name:'沿旧山路离开',note:'承认故乡已经有自己的下一世',xp:0})
       ])})
     ])}),
     orphan:Object.freeze({name:'山野孤儿',events:Object.freeze([
@@ -31,7 +36,7 @@
         Object.freeze({id:'orphan-token',name:'留一枚护身木牌',note:'在危险时给一次退路',xp:.04,tag:'fortune',effects:{luck:1}}),
         Object.freeze({id:'orphan-pass',name:'悄然离开',note:'拒绝把自己的过去投向他人',xp:0})
       ])}),
-      Object.freeze({id:'orphan-pack',minRealm:4,title:'群狼归山',text:'黑风岭旧猎道上出现一支狼群，它们没有袭村，而是在围住一处被邪修污染的泉眼。',choices:Object.freeze([
+      Object.freeze({id:'orphan-pack',minRealm:4,title:'群狼归山',text:'黑风岭旧猎道上出现一支狼群。你当年留在猎屋的孩子陆小山如今已是中年猎户，他说狼没有袭村，只是在围住一处被邪修污染的泉眼。',choices:Object.freeze([
         Object.freeze({id:'orphan-clean',name:'净化泉眼',note:'相信山野自己的警告',xp:.05,tag:'soul',effects:{mind:1}}),
         Object.freeze({id:'orphan-track',name:'循污染追查邪修',note:'把危机追到源头',xp:.06,tag:'burst',effects:{bossPower:.02}}),
         Object.freeze({id:'orphan-leave',name:'让山里自己恢复',note:'拒绝介入',xp:0})
@@ -40,6 +45,11 @@
         Object.freeze({id:'orphan-guard',name:'替无主之山守一次',note:'不为宗门，只为故土',xp:.09,tag:'body',effects:{power:.02}}),
         Object.freeze({id:'orphan-move',name:'先迁走山中凡民',note:'不争灵脉，先保活人',xp:.08,tag:'survival',effects:{guard:.02}}),
         Object.freeze({id:'orphan-release',name:'接受山河也会易主',note:'放下故土执念',xp:.04,tag:'insight',effects:{cultivate:.01}})
+      ])}),
+      Object.freeze({id:'orphan-farewell',minRealm:8,final:true,title:'旧猎屋没有锁',text:'你最后一次回黑风岭时，陆小山已经不在了。他的孙女仍住在旧猎屋，门上没有锁，墙上刻着一句祖训：“山里没有谁天生该低头。”她不知道这句话最早是谁说的。',choices:Object.freeze([
+        Object.freeze({id:'orphan-sit-fire',name:'借火坐一夜',note:'以路人的身份听完山风',xp:0}),
+        Object.freeze({id:'orphan-repair-roof',name:'替猎屋补好漏雨处',note:'不留姓名，只留一个能继续住人的屋顶',xp:0}),
+        Object.freeze({id:'orphan-no-sign',name:'天亮前离开',note:'让黑风岭继续做无主之山',xp:0})
       ])})
     ])}),
     scribe:Object.freeze({name:'落第书生',events:Object.freeze([
@@ -48,7 +58,7 @@
         Object.freeze({id:'scribe-name',name:'留下真实署名',note:'让凡人知道修仙者也曾落第',xp:.04,tag:'fortune',effects:{luck:1}}),
         Object.freeze({id:'scribe-close',name:'合上旧书',note:'拒绝回到旧身份',xp:0})
       ])}),
-      Object.freeze({id:'scribe-edict',minRealm:4,title:'皇榜上的异文',text:'一张凡朝皇榜把“修士现世”解释成天降祥瑞，并借此征税。你认得其中几句，正是自己少年文章的断章取义。',choices:Object.freeze([
+      Object.freeze({id:'scribe-edict',minRealm:4,title:'皇榜上的异文',text:'一张凡朝皇榜把“修士现世”解释成天降祥瑞，并借此征税。旧书院先生程砚秋已垂垂老去，你认得榜上几句，正是自己少年文章的断章取义。',choices:Object.freeze([
         Object.freeze({id:'scribe-expose',name:'公开原文',note:'让误读无处藏身',xp:.06,tag:'soul',effects:{mind:1}}),
         Object.freeze({id:'scribe-burn',name:'烧掉被利用的旧稿',note:'斩断文字的权威',xp:.05,tag:'burst',effects:{power:.015}}),
         Object.freeze({id:'scribe-ignore',name:'不替王朝纠错',note:'拒绝介入',xp:0})
@@ -57,6 +67,11 @@
         Object.freeze({id:'scribe-save-books',name:'保住全部典籍',note:'让后人自己判断真假',xp:.09,tag:'insight',effects:{xp:.02}}),
         Object.freeze({id:'scribe-save-people',name:'只救记录中的人',note:'文字不是比活人更高的道',xp:.08,tag:'fortune',effects:{explore:.02}}),
         Object.freeze({id:'scribe-walk',name:'任一朝文字自生自灭',note:'拒绝成为新的裁定者',xp:.04,tag:'survival',effects:{guard:.01}})
+      ])}),
+      Object.freeze({id:'scribe-farewell',minRealm:8,final:true,title:'书院里已经没人认得你',text:'大乘时你回到旧书院，程砚秋早已故去。学生正在背一篇没有署名的短文，其中三处批注出自你少年时的手。文字比姓名活得更久，也比姓名更容易被误解。',choices:Object.freeze([
+        Object.freeze({id:'scribe-listen',name:'坐在廊下听完一课',note:'不纠正，不署名，只听后来人如何理解',xp:0}),
+        Object.freeze({id:'scribe-add-line',name:'在书尾再补一句',note:'只写“此文也可能是错的”',xp:0}),
+        Object.freeze({id:'scribe-close-door',name:'替最后一间旧藏书室关门',note:'把旧身份留在门内',xp:0})
       ])})
     ])}),
     servant:Object.freeze({name:'宗门杂役',events:Object.freeze([
@@ -65,7 +80,7 @@
         Object.freeze({id:'servant-teach',name:'教他一式基础吐纳',note:'不给身份，只给一把钥匙',xp:.05,tag:'growth',effects:{cultivate:.015}}),
         Object.freeze({id:'servant-pass',name:'不干涉山门规矩',note:'拒绝旧因果',xp:0})
       ])}),
-      Object.freeze({id:'servant-letter',minRealm:4,title:'旧掌事来信',text:'当年从不记得你名字的掌事，如今在信中连写三次“道友”，请你替旧宗处理一桩无法公开的麻烦。',choices:Object.freeze([
+      Object.freeze({id:'servant-letter',minRealm:4,title:'旧掌事来信',text:'当年从不记得你名字的掌事何九，如今已老得握不稳笔，却在信中连写三次“道友”，请你替旧宗处理一桩无法公开的麻烦。',choices:Object.freeze([
         Object.freeze({id:'servant-help',name:'只处理危及弟子的部分',note:'不替旧权力收拾全部残局',xp:.06,tag:'survival',effects:{guard:.015}}),
         Object.freeze({id:'servant-return-letter',name:'原信退回',note:'让他们自己承担选择',xp:.04,tag:'insight',effects:{mind:1}}),
         Object.freeze({id:'servant-ignore',name:'不回信',note:'拒绝旧宗门支线',xp:0})
@@ -74,6 +89,11 @@
         Object.freeze({id:'servant-break-rule',name:'破阵法，带杂役下山',note:'明确站在被牺牲者一边',xp:.09,tag:'burst',effects:{power:.02}}),
         Object.freeze({id:'servant-rewrite',name:'重写阵眼，让强者承担代价',note:'改变规则，而非只救一批人',xp:.09,tag:'insight',effects:{xp:.02}}),
         Object.freeze({id:'servant-refuse',name:'不替旧宗决定存亡',note:'拒绝介入，但记住这件事',xp:.03,tag:'soul',effects:{mind:1}})
+      ])}),
+      Object.freeze({id:'servant-farewell',minRealm:8,final:true,title:'天阶上再没有杂役名册',text:'你在大乘末期重回旧山门。何九已死多年，当年那批杂役里有人下山成家，有人留宗修行。天阶仍有人扫，却不再有“杂役不得抬头”的规矩。',choices:Object.freeze([
+        Object.freeze({id:'servant-sweep',name:'拿起竹帚扫完一阶',note:'不是为了身份，只为了记得自己从哪里来',xp:0}),
+        Object.freeze({id:'servant-read-roster',name:'翻完最后一本旧名册',note:'确认那些名字没有再被抹掉',xp:0}),
+        Object.freeze({id:'servant-down-mountain',name:'从正门下山',note:'这一次不走杂役偏门',xp:0})
       ])})
     ])})
   });

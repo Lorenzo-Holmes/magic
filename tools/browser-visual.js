@@ -127,13 +127,14 @@ async (page, options = {}) => {
       report.fileCases.push({ mode, ...await ready(scene, atmosphere) });
     }
     await page.setViewportSize({ width: 320, height: 844 });
-    const numbers = await page.locator('.immortal-preview .versus strong').evaluateAll(elements => elements.map(el => {
+    const numbers = await page.locator('.ascension-ending .revenge-comparison strong').evaluateAll(elements => elements.map(el => {
       const range = document.createRange(); range.selectNodeContents(el);
       return { text: el.textContent, lines: range.getClientRects().length };
     }));
     check(numbers.length === 2 && numbers.every(n => n.lines === 1), `${mode}: narrow-screen power number split`);
-    await page.locator('.immortal-preview').scrollIntoViewIfNeeded();
-    const screenshot = `${out}/verified-${mode}-easter-egg-320.png`;
+    check(await page.locator('.immortal-preview').count() === 0, `${mode}: retired immortal transition preview returned`);
+    await page.locator('.ascension-ending .chapter-entry').scrollIntoViewIfNeeded();
+    const screenshot = `${out}/verified-${mode}-ascension-ending-320.png`;
     await page.screenshot({ path: screenshot }); report.screenshots.push(screenshot);
     await page.setViewportSize({ width: 390, height: 844 });
   }

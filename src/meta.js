@@ -4,13 +4,14 @@
     typeof module === 'object' && module.exports ? require('./engine.js') : root.FSEngine,
     typeof module === 'object' && module.exports ? require('./evolution.js') : root.FSEvolution,
     typeof module === 'object' && module.exports ? require('./equipment.js') : root.FSEquipment,
-    typeof module === 'object' && module.exports ? require('./spirit-beast.js') : root.FSSpiritBeast
+    typeof module === 'object' && module.exports ? require('./spirit-beast.js') : root.FSSpiritBeast,
+    typeof module === 'object' && module.exports ? require('./world.js') : root.FSWorld
   );
   if (typeof module === 'object' && module.exports) module.exports = meta;
   else root.FSMeta = meta;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (D, E, V, G, Z) {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (D, E, V, G, Z, W) {
   'use strict';
-  const VERSION = 3, LEGACY_LIMIT = 24;
+  const VERSION = 4, LEGACY_LIMIT = 24;
   const LAW_NAMES = Object.freeze({devour:'吞噬法则',sword:'锋芒法则',body:'不灭法则',soul:'破妄法则',fortune:'命线法则',insight:'归一法则'});
   const copy = value => JSON.parse(JSON.stringify(value));
   const traceById = id => D.TRACES.find(trace => trace.id === id);
@@ -46,7 +47,7 @@
     { id: 'fate-gate', name: '借此世命数开门', hint: '天门终劫中的气运路线。' },
     ...D.TRACES.map(trace => ({ id: trace.route.id, name: trace.route.name, hint: `${trace.name}在对应天劫中开启。` }))
   ]);
-  function ascended(state) { return !!(state?.phase === 'complete' && state.flags?.ascended); }
+  function ascended(state) { return !!(state?.phase === 'complete' && state.flags?.ascended && state.storyOrigin?.chapter !== 'dao'); }
   function effectiveStats(state) {
     try { return E.stats(state); }
     catch { return state?.stats || { bone: 5, insight: 5, luck: 5, mind: 5 }; }
@@ -142,8 +143,90 @@
       traceEvents: [], immortalLaws: [], evolutionTraits: [], evolutionFusions: [], worlds: [] };
   }
   function legacyState() { return { echoes: [], legends: [] }; }
+  const BRIDGE_VERSION = 1;
+  const exactKeys = (value, keys) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+    const actual = Object.keys(value).sort(), expected = [...keys].sort();
+    return actual.length === expected.length && actual.every((key, index) => key === expected[index]);
+  };
+  function validateMortalBridge(bridge) {
+    if (!exactKeys(bridge, ['version','sourceSeed','ascendedPower','lineage','mortalFusion','ascendedAge','companion'])) throw new Error('凡尘跨卷桥梁字段损坏。');
+    if (bridge.version !== BRIDGE_VERSION || !Number.isInteger(bridge.sourceSeed) || bridge.sourceSeed <= 0 || bridge.sourceSeed > 4294967295) throw new Error('凡尘跨卷桥梁来源损坏。');
+    if (!Number.isSafeInteger(bridge.ascendedPower) || bridge.ascendedPower <= 0 || !Number.isSafeInteger(bridge.ascendedAge) || bridge.ascendedAge < 16 || bridge.ascendedAge > 200000) throw new Error('凡尘跨卷桥梁数值损坏。');
+    if (!PATHS[bridge.lineage] || !D.FUSIONS.some(item => item.id === bridge.mortalFusion)) throw new Error('凡尘跨卷桥梁道基损坏。');
+    if (bridge.companion !== null) {
+      if (!exactKeys(bridge.companion, ['species','stage','branch']) || !Z?.BY_ID?.[bridge.companion.species] || !Number.isInteger(bridge.companion.stage) || bridge.companion.stage < 0 || bridge.companion.stage > 3) throw new Error('凡尘跨卷桥梁灵兽损坏。');
+      if (bridge.companion.stage < 2 ? bridge.companion.branch !== null : !['wild','sacred'].includes(bridge.companion.branch)) throw new Error('凡尘跨卷桥梁灵兽分支损坏。');
+    }
+    return true;
+  }
+  function createMortalBridge(state) {
+    if (!ascended(state) || !Number.isSafeInteger(state.ascendedPower) || state.ascendedPower <= 0 || !D.FUSIONS.some(item => item.id === state.fusions?.[0])) throw new Error('只有真实完成飞升的本世才能生成凡尘桥梁。');
+    const origin = state.storyOrigin?.chapter === 'immortal' ? state.storyOrigin : null;
+    const lineage = origin?.lineage || classifyPath(state).id || 'insight';
+    const mortalFusion = origin?.mortalFusion || state.fusions[0];
+    const beast = state.spiritBeast ? Z?.summary?.(state.spiritBeast) : null;
+    const companion = beast ? { species:beast.species, stage:Math.min(3,beast.stage), branch:beast.branch } : null;
+    const bridge = { version: BRIDGE_VERSION, sourceSeed: state.seed, ascendedPower: state.ascendedPower, lineage, mortalFusion, ascendedAge: state.age, companion };
+    validateMortalBridge(bridge); return bridge;
+  }
+  function mergeMortalBridge(existing, candidate) {
+    if (!existing || existing.sourceSeed !== candidate.sourceSeed) return candidate;
+    const oldStage = existing.companion?.stage ?? -1;
+    const newStage = candidate.companion?.stage ?? -1;
+    return newStage > oldStage ? candidate : existing;
+  }
+  function validateImmortalBridge(bridge) {
+    if (!exactKeys(bridge, ['version','sourceSeed','lineage','law','mortalFusion','slots'])) throw new Error('仙界跨卷桥梁字段损坏。');
+    if (bridge.version !== BRIDGE_VERSION || !Number.isInteger(bridge.sourceSeed) || bridge.sourceSeed <= 0 || bridge.sourceSeed > 4294967295) throw new Error('仙界跨卷桥梁来源损坏。');
+    if (!PATHS[bridge.lineage] || !LAW_NAMES[bridge.law] || !D.FUSIONS.some(item => item.id === bridge.mortalFusion)) throw new Error('仙界跨卷桥梁道基损坏。');
+    if (!exactKeys(bridge.slots, Object.keys(V.SLOTS))) throw new Error('仙界跨卷桥梁五槽损坏。');
+    for (const [slot, item] of Object.entries(bridge.slots)) {
+      if (!item || !exactKeys(item, ['id','level']) || !V.TRAITS.some(trait => trait.id === item.id && trait.slot === slot) || !Number.isInteger(item.level) || item.level < 1 || item.level > 5) throw new Error('仙界跨卷桥梁槽位损坏。');
+    }
+    return true;
+  }
+  function createImmortalBridge(state) {
+    const immortal = state?.immortal, evolution = immortal?.evolution;
+    if (!immortal || immortal.phase !== 'ending' || !evolution?.completed) throw new Error('只有真实完成仙界正式结局的存档才能生成仙界桥梁。');
+    const slots = {};
+    for (const slot of Object.keys(V.SLOTS)) {
+      const item = evolution.slots?.[slot];
+      if (!item) throw new Error('仙界正式结局缺少完整五槽。');
+      slots[slot] = { id: item.id, level: item.level };
+    }
+    const bridge = { version: BRIDGE_VERSION, sourceSeed: state.seed, lineage: immortal.lineage, law: immortal.law, mortalFusion: immortal.mortalFusion, slots };
+    validateImmortalBridge(bridge); return bridge;
+  }
+  function endingSummaries(){return {mortal:null,immortal:null,dao:null};}
+  function validateEndingSummary(kind,row){
+    if(row===null)return true;
+    if(kind==='mortal'){
+      if(!exactKeys(row,['version','sourceSeed','title','path','age','power'])||row.version!==1||!Number.isInteger(row.sourceSeed)||row.sourceSeed<=0||row.sourceSeed>4294967295||typeof row.title!=='string'||row.title.length>80||!PATHS[row.path]||!Number.isSafeInteger(row.age)||row.age<16||row.age>200000||!Number.isSafeInteger(row.power)||row.power<=0)throw new Error('凡尘结局摘要损坏。');
+    }else if(kind==='immortal'){
+      if(!exactKeys(row,['version','sourceSeed','title','law','slots'])||row.version!==1||!Number.isInteger(row.sourceSeed)||row.sourceSeed<=0||row.sourceSeed>4294967295||row.title!=='噬界者'||!LAW_NAMES[row.law]||!exactKeys(row.slots,Object.keys(V.SLOTS)))throw new Error('仙界结局摘要损坏。');
+      for(const [slot,item] of Object.entries(row.slots))if(!item||!exactKeys(item,['id','level'])||!V.TRAITS.some(t=>t.id===item.id&&t.slot===slot)||!Number.isInteger(item.level)||item.level<1||item.level>5)throw new Error('仙界结局摘要五槽损坏。');
+    }else if(kind==='dao'){
+      if(!exactKeys(row,['version','sourceSeed','title','choice','vitality','order','worldName'])||row.version!==1||!Number.isInteger(row.sourceSeed)||row.sourceSeed<=0||row.sourceSeed>4294967295||!W.ENDINGS.some(x=>x.id===row.choice&&x.name===row.title)||typeof row.worldName!=='string'||row.worldName.length<1||row.worldName.length>80||!Number.isInteger(row.vitality)||row.vitality<0||row.vitality>100||!Number.isInteger(row.order)||row.order<0||row.order>100)throw new Error('证道结局摘要损坏。');
+    }else throw new Error('未知结局摘要。');
+    return true;
+  }
+  function mortalEndingSummary(state){
+    const bridge=createMortalBridge(state),title=endingTitles(state)[0]?.name||'凡界飞升者';
+    return {version:1,sourceSeed:state.seed,title,path:bridge.lineage,age:state.age,power:state.ascendedPower};
+  }
+  function immortalEndingSummary(state){
+    const bridge=createImmortalBridge(state);return {version:1,sourceSeed:state.seed,title:'噬界者',law:bridge.law,slots:copy(bridge.slots)};
+  }
+  function daoEndingSummary(state){
+    const world=state?.world,ending=W.ENDINGS.find(x=>x.id===world?.story?.ending);if(!world||!ending||world.phase!=='ending'||!world.story?.completed||world.story.sandbox)throw new Error('只有第三卷正式证道结局才能生成摘要。');
+    return {version:1,sourceSeed:world.seed,title:ending.name,choice:ending.id,vitality:world.vitality,order:world.order,worldName:W.name(world)};
+  }
+  function storyProgress() {
+    return { version: 2, mortalCleared: false, immortalCleared: false, daoCleared: false, lastMortalBridge: null, lastImmortalBridge: null, endings:endingSummaries() };
+  }
   function createMeta() {
-    return { version: VERSION, nextTrace: null, nextTraceSource: null, tutorialHidden: false, tutorialSeen: [], totals: { ended: 0, ascended: 0 }, discovered: discoveries(), runHistory: [], legacy: legacyState() };
+    return { version: VERSION, nextTrace: null, nextTraceSource: null, tutorialHidden: false, tutorialSeen: [], totals: { ended: 0, ascended: 0 }, discovered: discoveries(), runHistory: [], legacy: legacyState(), storyProgress: storyProgress() };
   }
   const validIds = Object.freeze({
     talents: D.TALENTS.map(x => x.id), mutations: D.MUTATIONS.map(x => x.id), fusions: D.FUSIONS.map(x => x.id),
@@ -169,6 +252,16 @@
     if (!meta.legacy || typeof meta.legacy !== 'object' || Array.isArray(meta.legacy)) throw new Error('百世回响损坏。');
     if (!Array.isArray(meta.legacy.echoes) || meta.legacy.echoes.length > LEGACY_LIMIT || new Set(meta.legacy.echoes.map(x=>x?.id)).size !== meta.legacy.echoes.length || meta.legacy.echoes.some(x=>!x||typeof x.id!=='string'||x.id.length>180||!Number.isInteger(x.sourceSeed)||x.sourceSeed<=0||x.sourceSeed>4294967295||typeof x.source!=='string'||x.source.length>180||typeof x.relation!=='string'||x.relation.length>120||typeof x.outcome!=='string'||x.outcome.length>160)) throw new Error('前世因果回声损坏。');
     if (!Array.isArray(meta.legacy.legends) || meta.legacy.legends.length > LEGACY_LIMIT || new Set(meta.legacy.legends.map(x=>x?.id)).size !== meta.legacy.legends.length || meta.legacy.legends.some(x=>!x||typeof x.id!=='string'||x.id.length>180||!['weapon','beast'].includes(x.type)||!Number.isInteger(x.sourceSeed)||x.sourceSeed<=0||x.sourceSeed>4294967295||typeof x.name!=='string'||x.name.length>120||typeof x.text!=='string'||x.text.length>300||(x.stage!==undefined&&(!Number.isInteger(x.stage)||x.stage<0||x.stage>(x.type==='beast'?4:2))))) throw new Error('前世传说损坏。');
+    const story=meta.storyProgress;
+    if (!exactKeys(story, ['version','mortalCleared','immortalCleared','daoCleared','lastMortalBridge','lastImmortalBridge','endings']) || story.version!==2 || ['mortalCleared','immortalCleared','daoCleared'].some(k=>typeof story[k]!=='boolean') || !exactKeys(story.endings,['mortal','immortal','dao'])) throw new Error('三卷进度损坏。');
+    if (story.lastMortalBridge !== null) validateMortalBridge(story.lastMortalBridge);
+    if (story.lastImmortalBridge !== null) validateImmortalBridge(story.lastImmortalBridge);
+    for(const kind of ['mortal','immortal','dao'])validateEndingSummary(kind,story.endings[kind]);
+    if (story.lastMortalBridge && !story.mortalCleared) throw new Error('凡尘桥梁缺少第一卷完成标记。');
+    if (story.lastImmortalBridge && !story.immortalCleared) throw new Error('仙界桥梁缺少第二卷完成标记。');
+    if (story.endings.mortal && !story.mortalCleared || story.endings.immortal && !story.immortalCleared || story.endings.dao && !story.daoCleared) throw new Error('结局摘要与三卷完成状态不一致。');
+    if (story.immortalCleared && !story.mortalCleared) throw new Error('三卷进度顺序损坏。');
+    if (story.daoCleared && !story.immortalCleared) throw new Error('证道进度缺少仙界前置。');
     return true;
   }
   function serialize(meta) { validate(meta); return JSON.stringify(meta); }
@@ -183,6 +276,13 @@
       if (meta.tutorialSeen === undefined) meta.tutorialSeen = [];
     }
     if (meta?.version === 2) { meta.version = 3; meta.legacy = legacyState(); }
+    if (meta?.version === 3) {
+      meta.version = 4; meta.storyProgress = storyProgress();
+      if (Number.isSafeInteger(meta.totals?.ascended) && meta.totals.ascended > 0) meta.storyProgress.mortalCleared = true;
+    }
+    if (meta?.version === 4 && meta.storyProgress?.version === 1) {
+      meta.storyProgress = { ...meta.storyProgress, version:2, endings:endingSummaries() };
+    }
     validate(meta); return meta;
   }
   function add(discovered, key, values) { discovered[key] = unique([...discovered[key], ...values]).filter(id => validIds[key].includes(id)); }
@@ -230,6 +330,26 @@
   function observe(meta, state) {
     validate(meta); if (!state) return copy(meta);
     const next = copy(meta), found = next.discovered;
+    if (ascended(state)) {
+      next.storyProgress.mortalCleared = true;
+      next.storyProgress.lastMortalBridge = mergeMortalBridge(next.storyProgress.lastMortalBridge, createMortalBridge(state));
+      if(state.storyOrigin?.chapter!=='immortal'||!next.storyProgress.endings.mortal) next.storyProgress.endings.mortal = mortalEndingSummary(state);
+    }
+    if (state.immortal?.evolution?.completed) {
+      next.storyProgress.mortalCleared = true;
+      next.storyProgress.immortalCleared = true;
+      // The bridge is frozen at the formal second-story ending. Endless mode
+      // may continue changing the five slots, so later postgame observations
+      // must never rewrite (or attempt to reconstruct) that ending snapshot.
+      if (state.immortal.phase === 'ending') {
+        next.storyProgress.lastImmortalBridge = createImmortalBridge(state);
+        next.storyProgress.endings.immortal = immortalEndingSummary(state);
+      }
+    }
+    if (state.world?.phase === 'ending') {
+      next.storyProgress.mortalCleared = true; next.storyProgress.immortalCleared = true; next.storyProgress.daoCleared = true;
+      if(state.world.story?.completed&&!state.world.story.sandbox) next.storyProgress.endings.dao = daoEndingSummary(state);
+    }
     add(found, 'talents', state.talents || []); add(found, 'mutations', state.mutations || []); add(found, 'fusions', state.fusions || []);
     add(found, 'highEvents', state.highSeen || []); add(found, 'bossRoutes', [state.bossRoute]); add(found, 'tribulationRoutes', state.tribulationRoutes || []);
     add(found, 'traces', [state.carriedTrace]);
@@ -246,7 +366,7 @@
         add(found, 'worlds', [String(evolution.world), ...evolution.cleared.map(String)]);
       }
     }
-    if (['complete', 'dead'].includes(state.phase)) {
+    if (['complete', 'dead'].includes(state.phase) && state.storyOrigin?.chapter!=='dao') {
       const titles = endingTitles(state), traces = traceCandidates(state);
       add(found, 'titles', titles.map(title => title.id)); add(found, 'traces', traces.map(trace => trace.id));
       collectLegacy(next,state);
@@ -326,5 +446,5 @@
     const sections = codexSections(meta);
     return { ended: meta.totals.ended, ascended: meta.totals.ascended, discovered: sections.reduce((n, section) => n + section.discovered, 0), total: sections.reduce((n, section) => n + section.total, 0), nextTrace: traceById(meta.nextTrace) || null };
   }
-  return Object.freeze({ VERSION, LEGACY_LIMIT, PATHS, TITLE_RULES, BOSS_ROUTES, TRIBULATION_ROUTES, createMeta, validate, serialize, deserialize, observe, classifyPath, pathScores, endingTitles, traceCandidates, selectTrace, consumeTrace, reconcile, recentLives, eventMemory, routeMemory, legacySnapshot, codexSections, summary });
+  return Object.freeze({ VERSION, LEGACY_LIMIT, BRIDGE_VERSION, PATHS, TITLE_RULES, BOSS_ROUTES, TRIBULATION_ROUTES, createMeta, validate, serialize, deserialize, observe, classifyPath, pathScores, endingTitles, traceCandidates, createMortalBridge, validateMortalBridge, createImmortalBridge, validateImmortalBridge, selectTrace, consumeTrace, reconcile, recentLives, eventMemory, routeMemory, legacySnapshot, codexSections, summary });
 });

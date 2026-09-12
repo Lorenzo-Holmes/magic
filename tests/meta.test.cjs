@@ -66,6 +66,7 @@ test('轮回册观察只登记一次结局，并收集图谱发现', () => {
   assert.ok(meta.discovered.bossRoutes.includes('see-through'));
   assert.ok(meta.discovered.tribulationRoutes.includes('trace-soul'));
   assert.ok(meta.discovered.titles.includes('myriad-devourer'));
+  assert.equal(meta.storyProgress.endings.mortal.sourceSeed,s.seed);assert.equal(meta.storyProgress.endings.mortal.title,M.endingTitles(s)[0].name);assert.equal(meta.storyProgress.endings.mortal.path,M.classifyPath(s).id);assert.equal(meta.storyProgress.endings.mortal.power,s.ascendedPower);
 });
 test('每局只凝练一枚候选道痕，开始下一世后即被消费', () => {
   const s = ascended(620), candidates = M.traceCandidates(s);
@@ -105,9 +106,20 @@ test('下一世只获得前世文本与路线提示，不直接改变当前数�
   assert.match(arrival,/记忆|旧字/);assert.match(boss,/前世/);assert.match(trib,/前世/);assert.equal(JSON.stringify(next),before);
   assert.equal(M.routeMemory(meta,next,'boss','fight'),'');
 });
-test('v2轮回册迁移到v3只补空百世回响，不伪造旧传说', () => {
+test('v2轮回册迁移到v4只补空百世回响与三卷进度，不伪造旧传说', () => {
   const old=clone(M.createMeta());old.version=2;delete old.legacy;
-  const migrated=M.deserialize(JSON.stringify(old));assert.equal(migrated.version,3);assert.deepEqual(migrated.legacy,{echoes:[],legends:[]});
+  delete old.storyProgress;
+  const migrated=M.deserialize(JSON.stringify(old));assert.equal(migrated.version,4);assert.deepEqual(migrated.legacy,{echoes:[],legends:[]});
+  assert.deepEqual(migrated.storyProgress,{version:2,mortalCleared:false,immortalCleared:false,daoCleared:false,lastMortalBridge:null,lastImmortalBridge:null,endings:{mortal:null,immortal:null,dao:null}});
+});
+test('v3轮回册只根据可信飞升统计补第一卷完成，不猜测后两卷', () => {
+  const old=clone(M.createMeta());old.version=3;delete old.storyProgress;old.totals={ended:2,ascended:1};
+  const migrated=M.deserialize(JSON.stringify(old));assert.equal(migrated.version,4);
+  assert.equal(migrated.storyProgress.mortalCleared,true);assert.equal(migrated.storyProgress.immortalCleared,false);assert.equal(migrated.storyProgress.daoCleared,false);
+});
+test('旧v4 storyProgress v1迁移到v2只补空三卷结局摘要',()=>{
+  const old=clone(M.createMeta());old.storyProgress={version:1,mortalCleared:true,immortalCleared:true,daoCleared:false,lastMortalBridge:null,lastImmortalBridge:null};
+  const migrated=M.deserialize(JSON.stringify(old));assert.equal(migrated.storyProgress.version,2);assert.deepEqual(migrated.storyProgress.endings,{mortal:null,immortal:null,dao:null});assert.equal(migrated.storyProgress.mortalCleared,true);assert.equal(migrated.storyProgress.immortalCleared,true);
 });
 test('飞升后合法结契与仙兽进化持续更新同世传说，旧v3及旧本世存档不降级', () => {
   let s=simulate(633).state;

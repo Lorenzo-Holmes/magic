@@ -31,16 +31,17 @@
     return i.rng / 4294967296;
   }
   function record(i, text) { i.note = text; i.journal.push({ day: i.days, text }); i.journal = i.journal.slice(-40); }
-  function create(mortal) {
-    requireThat(mortal.phase === 'complete' && mortal.flags.ascended && Number.isSafeInteger(mortal.ascendedPower) && mortal.ascendedPower > 0, '先完成凡界飞升。');
-    const base = Math.max(1, Math.floor(mortal.ascendedPower / PRESSURE));
-    return { version: VERSION, phase: 'arrival', rng: ((mortal.seed ^ 0x5a17c39d) >>> 0) || 1,
-      mortalPower: mortal.ascendedPower, basePower: base, wormPower: Math.max(2, Math.ceil(mortal.ascendedPower * 1.7 / PRESSURE)),
-      lineage: M.classifyPath(mortal).id || 'insight', mortalFusion: mortal.fusions[0],
+  function createFromBridge(bridge) {
+    M.validateMortalBridge(bridge);
+    const base = Math.max(1, Math.floor(bridge.ascendedPower / PRESSURE));
+    return { version: VERSION, phase: 'arrival', rng: ((bridge.sourceSeed ^ 0x5a17c39d) >>> 0) || 1,
+      mortalPower: bridge.ascendedPower, basePower: base, wormPower: Math.max(2, Math.ceil(bridge.ascendedPower * 1.7 / PRESSURE)),
+      lineage: bridge.lineage, mortalFusion: bridge.mortalFusion,
       health: 100, level: 0, essence: 0, fragments: 0, law: null, lawOffer: [], target: null,
       devours: 0, losses: 0, days: 0, steps: 0, wormSlain: false,
       note: '天门在背后闭合。你低头时，那只不起眼的噬灵虫正在啃食仙草。', journal: [], evolution: null };
   }
+  function create(mortal) { return createFromBridge(M.createMortalBridge(mortal)); }
   function power(i, enemy = null) {
     const lawBonus = i.law === 'sword' ? .15 : i.law === 'soul' && enemy?.kind === 'illusion' ? .25 : 0;
     return Math.max(1, Math.floor(i.basePower * (1 + i.level * .45) * (1 + lawBonus) * (.65 + i.health * .0035)));
@@ -143,5 +144,5 @@
     if (i && i.version === 1) { i.version = 2; i.evolution = null; }
     return i;
   }
-  return Object.freeze({ VERSION, PRESSURE, LAWS, CREATURES, create, validate, transition, power, enemy, threat, trainingCost, availableCreatures, migrate });
+  return Object.freeze({ VERSION, PRESSURE, LAWS, CREATURES, create, createFromBridge, validate, transition, power, enemy, threat, trainingCost, availableCreatures, migrate });
 });
