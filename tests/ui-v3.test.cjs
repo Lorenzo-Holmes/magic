@@ -175,14 +175,16 @@ test('低频系统收进事务与档案折叠，核心入口仍可访问',()=>{
   assert.match(html,/v4-bag-tools/);assert.match(html,/行囊事务/);
   for(const id of ['forge','equipment','crafting','spirit-beast'])assert.ok(ctx.buttons.some(button=>button.action===id&&button.ui));
   ctx=context(V,state);html=V.render('CharacterWindow',ctx);
-  assert.match(html,/v4-character-archive/);assert.match(html,/修行档案/);
-  for(const id of ['life','karma','legacy','codex'])assert.ok(ctx.buttons.some(button=>button.action===id&&button.ui));
+  assert.match(html,/v4-character-archive/);assert.match(html,/更多此世/);
+  assert.equal(ctx.buttons.filter(button=>button.classes?.includes('v3-character-link')).length,2);
+  for(const id of ['spirit-beast','sect','life','karma','legacy','codex'])assert.ok(ctx.buttons.some(button=>button.action===id&&button.ui));
 });
 
 test('V4 山海图志只重组地志与路签，不改行旅状态或可用动作',()=>{
   const V=runtime(),state=entered(),ctx=context(V,state),before=E.serialize(state);
   const html=V.render('WorldMapWindow',ctx);
   assert.match(html,/v4-atlas-window/);assert.match(html,/v4-atlas-dossier/);assert.match(html,/v4-route-card/);
+  assert.match(html,/v4-atlas-camera/);assert.match(html,/地图工具/);assert.match(html,/v4-atlas-side/);assert.match(html,/旁支历练/);
   assert.equal(ctx.buttons.filter(button=>button.action==='journey-start').length,J.ROUTES.filter(route=>route.region===J.REGIONS[0].id).length);
   assert.equal(E.serialize(state),before);
 });

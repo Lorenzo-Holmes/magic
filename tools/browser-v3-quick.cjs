@@ -80,6 +80,7 @@ async function main() {
       await inspect(`${id}-${width}x${height}`);
     }
     await page.locator('[data-ui="nav-panel"][data-id="inventory"]').click();
+    await page.locator('.v4-bag-tools summary').click();
     await page.locator('[data-ui="forge"]').click();
     await inspect(`forge-${width}x${height}`);
   }
@@ -98,6 +99,7 @@ async function main() {
   const runtimeArtCount=await page.evaluate(()=>FSArt.runtimeIds.length);
   assert.equal(report.artworkDecode.length,runtimeArtCount);assert.ok(report.artworkDecode.every(x=>x.passed));
   await page.locator('[data-ui="nav-panel"][data-id="atlas"]').click();
+  await page.locator('.v4-atlas-camera summary').click();
   const cameraBefore=await page.locator('.v3-map-viewport').getAttribute('data-camera-scale');
   await page.locator('[data-camera="in"]').click();
   assert.ok(Number(await page.locator('.v3-map-viewport').getAttribute('data-camera-scale'))>Number(cameraBefore));
@@ -106,7 +108,9 @@ async function main() {
   assert.notEqual(await page.locator('.v3-map-viewport .v3-art-canvas').getAttribute('style'),transformBefore,'Dragging the map did not move its shared canvas');
   await page.locator('[data-camera="reset"]').click();
   for(const id of ['forest','marsh','village','peaks','ruins','canyon']){
-    await page.locator('[data-camera="overview"]').click();
+    const overview=page.locator('[data-camera="overview"]');
+    if(!(await overview.isVisible()))await page.locator('.v4-atlas-camera summary').click();
+    await overview.click();
     await page.locator(`[data-ui="region"][data-id="${id}"]`).click();
     assert.equal(await page.locator(`[data-ui="region"][data-id="${id}"]`).getAttribute('aria-pressed'),'true');
   }
@@ -142,6 +146,7 @@ async function main() {
   assert.equal(await page.evaluate(()=>localStorage.getItem('feisheng.run.v1')),bagSave,'Selecting a treasure cell changed gameplay save');
   await page.locator('.v4-treasure-grid').evaluate(el=>el.scrollTop=el.scrollHeight);
   await inspect('inventory-full-scroll-end');
+  await page.locator('.v4-bag-tools summary').click();
   await page.locator('[data-ui="forge"]').click();
   await page.locator('[data-ui="v3-forge-select"][data-id="qi"]').click();
   await page.locator('[data-action="craft-pill"][data-id="qi"][data-kind="gentle"]').click();

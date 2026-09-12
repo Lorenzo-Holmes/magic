@@ -166,7 +166,11 @@ async (page, options = {}) => {
     if(a.type==='journey-start'){
       await page.locator('[data-ui="nav-panel"][data-id="atlas"]').click();
       const region=await page.evaluate(id=>FSJourney.ROUTES.find(r=>r.id===id).region,a.id);
-      if(await page.locator('[data-camera="overview"]').count())await page.locator('[data-camera="overview"]').click();
+      if(await page.locator('[data-camera="overview"]').count()){
+        const overview=page.locator('[data-camera="overview"]').first();
+        if(!(await overview.isVisible()))await overview.evaluate(el=>{const details=el.closest('details');if(details)details.open=true;});
+        await overview.click();
+      }
       await page.locator('[data-ui="region"][data-id="'+region+'"]:visible').first().click();
       await page.locator('#journey-kit').selectOption(a.kind);
       if(!journeyChecked)await layout('journey-atlas');
@@ -257,7 +261,13 @@ async (page, options = {}) => {
     else if (s.realm === 3 && s.advancedResolved < 2) await action('act', '[data-kind="explore"]').click();
     else if (s.realm >= 4 && s.realm <= 8 && !s.realmProofs.includes(s.realm)) await action('seek-proof').click();
     else if (s.realm === 1 && !s.flags.swordEvent) await action('act', '[data-kind="explore"]').click();
-    else if (s.realm === 1 && !hunted) { hunted = true; await page.locator('[data-ui="nav-panel"][data-id="atlas"]').click(); await action('act', '[data-kind="hunt"]').click(); }
+    else if (s.realm === 1 && !hunted) {
+      hunted = true;
+      await page.locator('[data-ui="nav-panel"][data-id="atlas"]').click();
+      const hunt=action('act', '[data-kind="hunt"]');
+      if(!(await hunt.isVisible()))await page.locator('.v4-atlas-side summary').click();
+      await hunt.click();
+    }
     else if (await action('cultivate-to-ready').isEnabled()) await action('cultivate-to-ready').click();
     else await action('act', '[data-kind="cultivate"]').click();
   }

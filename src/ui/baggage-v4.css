@@ -1,6 +1,7 @@
 .v4-baggage-window{background:#eeeae0 url('../../assets/ui-v3/panels/paper.webp') center/360px auto}
 .v4-baggage-window .v3-page-head{min-height:82px;padding-bottom:7px}
 .v4-baggage-window .v3-bag-tools{background:#e8e1d2cc}
+.v4-baggage-window>.v4-bag-tools{border-top:1px solid #b7a784;background:#e9e2d4}
 .v4-bag-tools{flex:0 0 auto;background:#e9e1d1;border-block:1px solid #b7a784}.v4-bag-tools>summary{display:flex;align-items:center;justify-content:center;min-height:44px;cursor:pointer;list-style:none;color:#5f6658;font:12px var(--ui-font-body);letter-spacing:2px}.v4-bag-tools>summary::-webkit-details-marker{display:none}.v4-bag-tools>summary:after{content:'⌄';margin-left:8px;color:#8b754d}.v4-bag-tools[open]>summary{border-bottom:1px solid #b7a78466;color:#40584d}.v4-bag-tools[open]>summary:after{content:'⌃'}
 .v4-bag-tools:not([open]) .v3-bag-tools{display:none!important}
 .v4-bag-main{flex:1;min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto;border-bottom:1px solid #b7a78466}
